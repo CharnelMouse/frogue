@@ -25,6 +25,17 @@ module Action =
         writeAt newPos '@'
         newGameState
 
+    let mutateSingleChar str index char =
+        String.mapi (fun i x -> if i = index then char else x) str
+
+    let openDoorAction gameState pos =
+        let map = gameState.Map
+        let newTiles = List.mapi (fun i x -> if i = pos.Y then mutateSingleChar x pos.X '-' else x) map.Tiles
+        let newMap = createMap map.Width map.Height newTiles
+        let newGameState = {Player = gameState.Player; Map = newMap; StatusBar = gameState.StatusBar}
+        drawTileAt pos newMap
+        writeStatusAndPass newGameState "You open the door." true
+
     let resolveMoveCommand gameState direction =
         let {Player = {Position = oldPos}; Map = map; StatusBar = _} = gameState
         let {X = oldX; Y = oldY} = oldPos
@@ -40,4 +51,5 @@ module Action =
             let targetTileType = posTileType newPos gameState.Map
             match targetTileType with
             | Wall -> writeStatusAndPass gameState "You bump up against the wall." true
+            | ClosedDoor -> openDoorAction gameState newPos
             | _ -> moveAction gameState newPos

@@ -38,6 +38,7 @@ module Map =
     type TileType =
     | Wall
     | ClosedDoor
+    | OpenDoor
     | Empty
     | UnknownTileType
 
@@ -45,5 +46,6 @@ module Map =
         match getTileAt pos map with
         | '#' -> Wall
         | '+' -> ClosedDoor
+        | '-' -> OpenDoor
         | ' ' -> Empty
         | _ -> UnknownTileType
