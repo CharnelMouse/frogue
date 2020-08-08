@@ -2,26 +2,33 @@ namespace Frogue
 module Screen =
     open System
     open Types
+
+    let cursorTo pos =
+        Console.SetCursorPosition(pos.X, pos.Y)
+
+    let resetCursor() =
+        cursorTo {X = 0; Y = 0}
+
     let printMap map =
         Console.Clear()
         for row in map.Tiles do
             Console.Write(row + "\n")
 
     let writeAt pos symb  =
-        Console.SetCursorPosition(pos.X, pos.Y)
+        cursorTo pos
         Console.Write(symb: char)
 
     let clearBox box =
-        Console.SetCursorPosition(box.Start.X, box.Start.Y)
+        cursorTo box.Start
         String.replicate box.Length " "
         |> Console.Write
 
-    let writeFrom from str =
-        Console.SetCursorPosition(from.X, from.Y)
+    let writeFrom startPos str =
+        cursorTo startPos
         Console.Write(str: string)
 
     let writeBox str box reset =
         if String.length(str) > box.Length then failwith "String larger than box length"
         clearBox box
         writeFrom box.Start str
-        if reset then Console.SetCursorPosition(0, 0)
+        if reset then resetCursor()

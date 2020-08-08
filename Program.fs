@@ -24,7 +24,7 @@ module Main =
         Map = levelMap;
     }
  
-    let getCoord(x, y) =
+    let getCoord x y =
         match (x, y) with
         | (x, y) when
             x < 0
@@ -51,5 +51,5 @@ module Main =
         writeAt startingGameState.Player.Position '@'
         writeBox "Ready." statusBar true
         mainLoop startingGameState
-        writeBox ("Symbol at (3, 1): " + getCoord(3, 1)) statusBar false
+        writeBox ("Symbol at (3, 1): " + getCoord 3 1) statusBar false
         0 // return an integer exit code
