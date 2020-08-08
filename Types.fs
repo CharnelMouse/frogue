@@ -15,6 +15,7 @@ module Types =
         | Up
         | Down
         | Wait
+        | Help
         | Quit
         | Unknown
 

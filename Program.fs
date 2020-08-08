@@ -33,21 +33,28 @@ module Main =
             -> failwith "position out of map bounds"
         | (x, y) -> Char.ToString(levelMap.Tiles.[y].[x])
 
-    let rec getCommand() =
-        let input = Console.ReadKey(true);
+    let getNonUnicodeCommand(input: ConsoleKeyInfo) =
         match input.Key with
         | ConsoleKey.LeftArrow -> Left
         | ConsoleKey.RightArrow -> Right
         | ConsoleKey.UpArrow -> Up
         | ConsoleKey.DownArrow -> Down
-        | ConsoleKey.OemPeriod -> Wait
-        | ConsoleKey.Q -> Quit
+        | _ -> Unknown
+
+    let rec getCommand() =
+        let input = Console.ReadKey(true);
+        match input.KeyChar with
+        | '.' -> Wait
+        | '?' -> Help
+        | 'q' -> Quit
+        | '\u0000' -> input |> getNonUnicodeCommand
         | _ -> Unknown
 
     let rec mainLoop x =
-        let input = getCommand()
-        match input with
+        let command = getCommand()
+        match command with
         | Quit -> ()
+        | Help -> writeBox("Move: arrow keys Wait: . Quit: q", statusBar, true) |> mainLoop
         | Wait -> writeBox("Waiting...", statusBar, true) |> mainLoop
         | Left -> writeBox("I wanna move left!", statusBar, true) |> mainLoop
         | Right -> writeBox("I wanna move right!", statusBar, true) |> mainLoop
