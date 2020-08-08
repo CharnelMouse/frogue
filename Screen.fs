@@ -12,7 +12,7 @@ module Screen =
     let printMap map =
         Console.Clear()
         for row in map.Tiles do
-            Console.Write(row + "\n")
+            Console.WriteLine(row)
 
     let writeAt pos symb  =
         cursorTo pos
