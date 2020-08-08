@@ -9,7 +9,7 @@ module Input =
         | ConsoleKey.RightArrow -> Move Right
         | ConsoleKey.UpArrow -> Move Up
         | ConsoleKey.DownArrow -> Move Down
-        | _ -> Unknown
+        | _ -> UnknownCommand
 
     let rec getCommand() =
         let input = Console.ReadKey(true);
@@ -18,4 +18,4 @@ module Input =
         | '?' -> Help
         | 'q' -> Quit
         | '\u0000' -> input |> getNonUnicodeCommand
-        | _ -> Unknown
+        | _ -> UnknownCommand

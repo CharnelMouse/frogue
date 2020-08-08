@@ -34,3 +34,16 @@ module Map =
         match getTileAt pos map with
         | '#' -> false
         | _ -> true
+
+    type TileType =
+    | Wall
+    | ClosedDoor
+    | Empty
+    | UnknownTileType
+
+    let posTileType pos map =
+        match getTileAt pos map with
+        | '#' -> Wall
+        | '+' -> ClosedDoor
+        | ' ' -> Empty
+        | _ -> UnknownTileType

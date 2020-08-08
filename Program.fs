@@ -26,8 +26,8 @@ module Main =
             | Quit -> writeStatusAndPass gameState "Bye." false // assumes status bar is last line
             | Help -> writeStatusAndPass gameState "Move: arrow keys Wait: . Quit: q" true
             | Wait -> writeStatusAndPass gameState "Waiting..." true
-            | Move direction -> moveAction gameState direction
-            | Unknown -> writeStatusAndPass gameState "Unknown command, type ? for help." true
+            | Move direction -> resolveMoveCommand gameState direction
+            | UnknownCommand -> writeStatusAndPass gameState "Unknown command, type ? for help." true
         if command <> Quit
             then mainLoop newGameState
 

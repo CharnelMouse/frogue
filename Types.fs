@@ -20,7 +20,7 @@ module Types =
         | Wait
         | Help
         | Quit
-        | Unknown
+        | UnknownCommand
 
     type TextBox = {
         Start: Position;
