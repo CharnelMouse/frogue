@@ -40,10 +40,7 @@ module Main =
         | Quit -> ()
         | Help -> writeBox "Move: arrow keys Wait: . Quit: q" statusBar true
         | Wait -> writeBox "Waiting..." statusBar true
-        | Left -> writeBox "I wanna move left!" statusBar true
-        | Right -> writeBox "I wanna move right!" statusBar true
-        | Up -> writeBox "I wanna move up!" statusBar true
-        | Down -> writeBox "I wanna move down!" statusBar true
+        | Move direction -> writeBox ("I wanna move " + string(direction).ToLower() + "!") statusBar true
         | Unknown -> writeBox "Unknown command, type ? for help." statusBar true
         if command <> Quit
             then mainLoop gameState

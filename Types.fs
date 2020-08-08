@@ -9,11 +9,14 @@ module Types =
         Position: Position;
     }
 
-    type Command =
-        | Left
-        | Right
+    type Direction =
         | Up
         | Down
+        | Left
+        | Right
+
+    type Command =
+        | Move of Direction
         | Wait
         | Help
         | Quit

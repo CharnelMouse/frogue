@@ -5,10 +5,10 @@ module Input =
 
     let getNonUnicodeCommand(input: ConsoleKeyInfo) =
         match input.Key with
-        | ConsoleKey.LeftArrow -> Left
-        | ConsoleKey.RightArrow -> Right
-        | ConsoleKey.UpArrow -> Up
-        | ConsoleKey.DownArrow -> Down
+        | ConsoleKey.LeftArrow -> Move Left
+        | ConsoleKey.RightArrow -> Move Right
+        | ConsoleKey.UpArrow -> Move Up
+        | ConsoleKey.DownArrow -> Move Down
         | _ -> Unknown
 
     let rec getCommand() =
