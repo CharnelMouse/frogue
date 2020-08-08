@@ -20,9 +20,8 @@ module Screen =
         Console.SetCursorPosition(from.X, from.Y)
         Console.Write(str: string)
 
-    let writeBox(str, box, reset) =
+    let writeBox str box reset =
         if String.length(str) > box.Length then failwith "String larger than box length"
         clearBox box
         writeFrom box.Start str
         if reset then Console.SetCursorPosition(0, 0)
-        0
