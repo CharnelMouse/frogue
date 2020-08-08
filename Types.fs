@@ -22,3 +22,12 @@ module Types =
         Start: Position;
         Length: int;
     }
+
+    type Map = {
+        Tiles: string list
+    }
+
+    type GameState = {
+        Player: Player;
+        Map: Map;
+    }

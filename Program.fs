@@ -4,28 +4,34 @@ module Main =
     open Types
     open Screen
 
-    let levelMap = [
-        "#######";
-        "#  +  #";
-        "#  #  #";
-        "#######"
-    ];
+    let levelMap = {
+        Tiles = [
+            "#######";
+            "#  +  #";
+            "#  #  #";
+            "#######"
+        ]
+    }
 
-    let startingPosition = {X = 1; Y = 1}
     let statusBar = {
         Start = {X = 0; Y = 6};
         Length = 35
         }
 
+    let startingGameState = {
+        Player = {Position = {X = 1; Y = 1}};
+        Map = levelMap;
+    }
+ 
     let getCoord(x, y) =
         match (x, y) with
         | (x, y) when
             x < 0
-            || x >= List.length(levelMap)
+            || x >= List.length(levelMap.Tiles)
             || y < 0
-            || y >= levelMap.[1].Length
+            || y >= levelMap.Tiles.[1].Length
             -> failwith "position out of map bounds"
-        | (x, y) -> Char.ToString(levelMap.[y].[x])
+        | (x, y) -> Char.ToString(levelMap.Tiles.[y].[x])
 
     let rec getCommand() =
         let input = Console.ReadKey(true);
@@ -52,8 +58,7 @@ module Main =
     [<EntryPoint>]
     let main argv =
         printMap levelMap
-        let player = {Position = startingPosition}
-        writeAt startingPosition '@'
+        writeAt startingGameState.Player.Position '@'
         writeBox("Ready.", statusBar, true)
         |> ignore
         mainLoop 0
