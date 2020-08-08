@@ -17,6 +17,7 @@ module Screen =
     let writeAt pos symb  =
         cursorTo pos
         Console.Write(symb: char)
+        resetCursor()
 
     let clearBox box =
         cursorTo box.Start

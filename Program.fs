@@ -4,6 +4,7 @@ module Main =
     open Types
     open Input
     open Screen
+    open Action
 
     let levelMap = {
         Tiles = [
@@ -24,26 +25,17 @@ module Main =
         Map = levelMap;
     }
  
-    let getCoord x y =
-        match (x, y) with
-        | (x, y) when
-            x < 0
-            || x >= List.length(levelMap.Tiles)
-            || y < 0
-            || y >= levelMap.Tiles.[1].Length
-            -> failwith "position out of map bounds"
-        | (x, y) -> Char.ToString(levelMap.Tiles.[y].[x])
-
     let rec mainLoop gameState =
         let command = getCommand()
-        match command with
-        | Quit -> ()
-        | Help -> writeBox "Move: arrow keys Wait: . Quit: q" statusBar true
-        | Wait -> writeBox "Waiting..." statusBar true
-        | Move direction -> writeBox ("I wanna move " + string(direction).ToLower() + "!") statusBar true
-        | Unknown -> writeBox "Unknown command, type ? for help." statusBar true
+        let newGameState =
+            match command with
+            | Quit -> gameState
+            | Help -> writeAndPass gameState "Move: arrow keys Wait: . Quit: q" statusBar
+            | Wait -> writeAndPass gameState "Waiting..." statusBar
+            | Move direction -> moveAction gameState direction
+            | Unknown -> writeAndPass gameState "Unknown command, type ? for help." statusBar
         if command <> Quit
-            then mainLoop gameState
+            then mainLoop newGameState
 
     [<EntryPoint>]
     let main argv =
@@ -51,5 +43,5 @@ module Main =
         writeAt startingGameState.Player.Position '@'
         writeBox "Ready." statusBar true
         mainLoop startingGameState
-        writeBox ("Symbol at (3, 1): " + getCoord 3 1) statusBar false
+        writeBox ("Symbol at (3, 1): " + Char.ToString(getTileAt {X = 3; Y = 1} levelMap)) statusBar false
         0 // return an integer exit code
