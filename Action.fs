@@ -1,6 +1,7 @@
 namespace Frogue
 module Action =
     open Types
+    open Frogue.Map
     open Output
 
     let writeStatusAndPass gameState str reset =

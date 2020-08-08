@@ -6,6 +6,7 @@
   <ItemGroup>
     <Compile Include="Types.fs" />
     <Compile Include="Input.fs" />
+    <Compile Include="Map.fs" />
     <Compile Include="Output.fs" />
     <Compile Include="Action.fs" />
     <Compile Include="Program.fs" />

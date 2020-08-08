@@ -2,6 +2,7 @@ namespace Frogue
 module Output =
     open System
     open Types
+    open Frogue.Map
 
     let private cursorTo pos =
         Console.SetCursorPosition(pos.X, pos.Y)
@@ -13,21 +14,6 @@ module Output =
         Console.Clear()
         for row in map.Tiles do
             Console.WriteLine(row)
-
-    let posIsOnMap pos map =
-        let {X = x; Y = y} = pos
-        x >= 0 && x < map.Width && y >= 0 && y < map.Height
-
-    let getTileAt pos map =
-        let {X = x; Y = y} = pos
-        match posIsOnMap pos map with
-        | false -> failwith "position out of map bounds"
-        | true -> map.Tiles.[y].[x]
-
-    let posIsTraversable pos map =
-        match getTileAt pos map with
-        | '#' -> false
-        | _ -> true
 
     let writeAt pos symb  =
         cursorTo pos

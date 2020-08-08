@@ -2,6 +2,7 @@
 module Main =
     open Types
     open Input
+    open Frogue.Map
     open Output
     open Action
 
