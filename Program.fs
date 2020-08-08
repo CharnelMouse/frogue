@@ -2,6 +2,7 @@
 module Main =
     open System
     open Types
+    open Screen
 
     let levelMap = [
         "#######";
@@ -9,11 +10,6 @@ module Main =
         "#  #  #";
         "#######"
     ];
-
-    let printMap map =
-        Console.Clear()
-        for row in map do
-            Console.Write(row + "\n")
 
     let startingPosition = {X = 1; Y = 1}
     let statusBar = {
@@ -31,10 +27,6 @@ module Main =
             -> failwith "position out of map bounds"
         | (x, y) -> Char.ToString(levelMap.[y].[x])
 
-    let writeAt pos symb  =
-        Console.SetCursorPosition(pos.X, pos.Y)
-        Console.Write(symb: char)
-
     let rec getCommand() =
         let input = Console.ReadKey(true);
         match input.Key with
@@ -45,16 +37,6 @@ module Main =
         | ConsoleKey.OemPeriod -> Wait
         | ConsoleKey.Q -> Quit
         | _ -> Unknown
-
-    let writeBox(str, box, reset) =
-        if String.length(str) > box.Length then failwith "String larger than box length"
-        Console.SetCursorPosition(box.Start.X, box.Start.Y)
-        String.replicate box.Length " "
-        |> Console.Write
-        Console.SetCursorPosition(box.Start.X, box.Start.Y)
-        Console.Write(string str)
-        if reset then Console.SetCursorPosition(0, 0)
-        0
 
     let rec mainLoop x =
         let input = getCommand()
