@@ -34,6 +34,7 @@ module Types =
     }
 
     type GameState = {
-        Player: Player;
-        Map: Map;
+        Player: Player
+        Map: Map
+        StatusBar: TextBox
     }

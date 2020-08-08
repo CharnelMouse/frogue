@@ -14,16 +14,20 @@ module Screen =
         for row in map.Tiles do
             Console.WriteLine(row)
 
-    let private getTileAt pos map =
+    let posIsOnMap pos map =
         let {X = x; Y = y} = pos
-        match (x, y) with
-        | (x, y) when
-            x < 0
-            || x >= map.Width
-            || y < 0
-            || y >= map.Height
-            -> failwith "position out of map bounds"
-        | (x, y) -> map.Tiles.[y].[x]
+        x >= 0 && x < map.Width && y >= 0 && y < map.Height
+
+    let getTileAt pos map =
+        let {X = x; Y = y} = pos
+        match posIsOnMap pos map with
+        | false -> failwith "position out of map bounds"
+        | true -> map.Tiles.[y].[x]
+
+    let posIsTraversable pos map =
+        match getTileAt pos map with
+        | '#' -> false
+        | _ -> true
 
     let writeAt pos symb  =
         cursorTo pos
