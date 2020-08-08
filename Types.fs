@@ -29,6 +29,8 @@ module Types =
 
     type Map = {
         Tiles: string list
+        Width: int
+        Height: int
     }
 
     type GameState = {

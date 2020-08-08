@@ -13,6 +13,8 @@ module Main =
             "#  #  #";
             "#######"
         ]
+        Width = 7
+        Height = 4
     }
 
     let statusBar = {

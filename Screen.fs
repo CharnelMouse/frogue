@@ -18,10 +18,10 @@ module Screen =
         let {X = x; Y = y} = pos
         match (x, y) with
         | (x, y) when
-            y < 0
-            || y >= List.length(map.Tiles)
-            || x < 0
-            || x >= map.Tiles.[1].Length
+            x < 0
+            || x >= map.Width
+            || y < 0
+            || y >= map.Height
             -> failwith "position out of map bounds"
         | (x, y) -> map.Tiles.[y].[x]
 
