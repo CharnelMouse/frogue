@@ -3,7 +3,7 @@ module Input =
     open System
     open Types
 
-    let getNonUnicodeCommand(input: ConsoleKeyInfo) =
+    let private getNonUnicodeCommand(input: ConsoleKeyInfo) =
         match input.Key with
         | ConsoleKey.LeftArrow -> Move Left
         | ConsoleKey.RightArrow -> Move Right

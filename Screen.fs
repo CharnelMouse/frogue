@@ -3,10 +3,10 @@ module Screen =
     open System
     open Types
 
-    let cursorTo pos =
+    let private cursorTo pos =
         Console.SetCursorPosition(pos.X, pos.Y)
 
-    let resetCursor() =
+    let private resetCursor() =
         cursorTo {X = 0; Y = 0}
 
     let printMap map =
@@ -14,7 +14,7 @@ module Screen =
         for row in map.Tiles do
             Console.WriteLine(row)
 
-    let getTileAt pos map =
+    let private getTileAt pos map =
         let {X = x; Y = y} = pos
         match (x, y) with
         | (x, y) when
@@ -34,12 +34,12 @@ module Screen =
         getTileAt pos map
         |> writeAt pos
 
-    let clearBox box =
+    let private clearBox box =
         cursorTo box.Start
         String.replicate box.Length " "
         |> Console.Write
 
-    let writeFrom startPos str =
+    let private writeFrom startPos str =
         cursorTo startPos
         Console.Write(str: string)
 
