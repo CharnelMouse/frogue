@@ -7,7 +7,7 @@ module Main =
 
     let levelMap = createMap 7 4 [
             "#######";
-            "#  +  #";
+            "#  +   ";
             "#  #  #";
             "#######"
         ]
