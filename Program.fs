@@ -29,11 +29,11 @@ module Main =
         let command = getCommand()
         let newGameState =
             match command with
-            | Quit -> gameState
-            | Help -> writeAndPass gameState "Move: arrow keys Wait: . Quit: q" statusBar
-            | Wait -> writeAndPass gameState "Waiting..." statusBar
+            | Quit -> writeAndPass gameState "Bye." statusBar false // assumes status bar is last line
+            | Help -> writeAndPass gameState "Move: arrow keys Wait: . Quit: q" statusBar true
+            | Wait -> writeAndPass gameState "Waiting..." statusBar true
             | Move direction -> moveAction gameState direction
-            | Unknown -> writeAndPass gameState "Unknown command, type ? for help." statusBar
+            | Unknown -> writeAndPass gameState "Unknown command, type ? for help." statusBar true
         if command <> Quit
             then mainLoop newGameState
 
@@ -43,5 +43,4 @@ module Main =
         writeAt startingGameState.Player.Position '@'
         writeBox "Ready." statusBar true
         mainLoop startingGameState
-        writeBox ("Symbol at (3, 1): " + Char.ToString(getTileAt {X = 3; Y = 1} levelMap)) statusBar false
         0 // return an integer exit code

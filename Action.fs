@@ -4,17 +4,6 @@ module Action =
     open Types
     open Screen
 
-    let getTileAt pos map =
-        let {X = x; Y = y} = pos
-        match (x, y) with
-        | (x, y) when
-            y < 0
-            || y >= List.length(map.Tiles)
-            || x < 0
-            || x >= map.Tiles.[1].Length
-            -> failwith "position out of map bounds"
-        | (x, y) -> map.Tiles.[y].[x]
-
     let moveAction gameState direction =
         let {Player = {Position = oldPos}; Map = map} = gameState
         let {X = oldX; Y = oldY} = oldPos
@@ -30,11 +19,10 @@ module Action =
             }
             Map = map
         }
-        getTileAt oldPos map
-        |> writeAt oldPos
+        drawTileAt oldPos map
         writeAt newPos '@'
         newGameState
 
-    let writeAndPass x str box =
-        writeBox str box true
+    let writeAndPass x str box reset =
+        writeBox str box reset
         x
