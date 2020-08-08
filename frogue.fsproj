@@ -6,7 +6,7 @@
   <ItemGroup>
     <Compile Include="Types.fs" />
     <Compile Include="Input.fs" />
-    <Compile Include="Screen.fs" />
+    <Compile Include="Output.fs" />
     <Compile Include="Action.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

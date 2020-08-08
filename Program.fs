@@ -2,7 +2,7 @@
 module Main =
     open Types
     open Input
-    open Screen
+    open Output
     open Action
 
     let levelMap = createMap 7 4 [

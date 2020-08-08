@@ -1,5 +1,5 @@
 namespace Frogue
-module Screen =
+module Output =
     open System
     open Types
 

@@ -1,7 +1,7 @@
 namespace Frogue
 module Action =
     open Types
-    open Screen
+    open Output
 
     let writeStatusAndPass gameState str reset =
         writeBox str gameState.StatusBar reset
