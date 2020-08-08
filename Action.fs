@@ -1,6 +1,5 @@
 namespace Frogue
 module Action =
-    open System
     open Types
     open Screen
 

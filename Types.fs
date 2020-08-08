@@ -33,6 +33,13 @@ module Types =
         Height: int
     }
 
+    let createMap width height tiles =
+        let widthIsValid = List.length(tiles) = height
+        let heightIsValid = List.reduce (&&) (List.map (function x -> (String.length(x) = width)) tiles)
+        if not (widthIsValid && heightIsValid)
+            then failwith "Invalid map"
+        {Tiles = tiles; Width = width; Height = height}
+
     type GameState = {
         Player: Player
         Map: Map

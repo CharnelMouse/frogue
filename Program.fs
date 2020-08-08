@@ -1,21 +1,16 @@
 ﻿namespace Frogue
 module Main =
-    open System
     open Types
     open Input
     open Screen
     open Action
 
-    let levelMap = {
-        Tiles = [
+    let levelMap = createMap 7 4 [
             "#######";
             "#  +  #";
             "#  #  #";
             "#######"
         ]
-        Width = 7
-        Height = 4
-    }
 
     let startingGameState = {
         Player = {Position = {X = 1; Y = 1}}
