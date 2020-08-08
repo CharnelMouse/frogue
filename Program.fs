@@ -16,7 +16,7 @@ module Main =
     let statusBar = {
         Start = {X = 0; Y = 6};
         Length = 35
-        }
+    }
 
     let startingGameState = {
         Player = {Position = {X = 1; Y = 1}};
