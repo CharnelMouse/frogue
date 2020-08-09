@@ -36,19 +36,21 @@ module Types =
     type CompleteAction =
         | StartSession
         | MoveAction of Position * Position
-        | MoveActionBlockedByWall
-        | MoveActionBlockedByVoid
         | OpenDoorAction of Position
         | CloseDoorAction of Position
-        | OpenToActionBlockedByVoid
-        | OpenToActionBlockedByInvalidTile
-        | CloseToActionBlockedByVoid
-        | CloseToActionBlockedByInvalidTile
         | WaitAction
         | HelpAction
         | QuitAction
         | CancelAction
         | UnknownAction
+
+    type BlockedAction =
+        | MoveActionBlockedByWall
+        | MoveActionBlockedByVoid
+        | OpenToActionBlockedByVoid
+        | OpenToActionBlockedByInvalidTile
+        | CloseToActionBlockedByVoid
+        | CloseToActionBlockedByInvalidTile
 
     type IncompleteAction =
         | OpenAction
@@ -56,6 +58,7 @@ module Types =
 
     type Action =
         | CompleteAction of CompleteAction
+        | BlockedAction of BlockedAction
         | IncompleteAction of IncompleteAction
 
     type TextBox = {

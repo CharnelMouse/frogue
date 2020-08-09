@@ -41,7 +41,7 @@ module Action =
                 Player = {Position = pos}
                 Map = gameState.Map
                 StatusBar = gameState.StatusBar
-                LastAction = CompleteAction OpenToActionBlockedByVoid
+                LastAction = BlockedAction OpenToActionBlockedByVoid
             }
         else
             let targetTileType = posTileType toPos gameState.Map
@@ -51,7 +51,7 @@ module Action =
                 Player = {Position = pos}
                 Map = gameState.Map
                 StatusBar = gameState.StatusBar
-                LastAction = CompleteAction OpenToActionBlockedByInvalidTile
+                LastAction = BlockedAction OpenToActionBlockedByInvalidTile
                 }
 
     let private resolveCloseToCommand gameState direction =
@@ -67,7 +67,7 @@ module Action =
                 Player = {Position = pos}
                 Map = gameState.Map
                 StatusBar = gameState.StatusBar
-                LastAction = CompleteAction CloseToActionBlockedByVoid
+                LastAction = BlockedAction CloseToActionBlockedByVoid
             }
         else
             let targetTileType = posTileType toPos gameState.Map
@@ -77,7 +77,7 @@ module Action =
                 Player = {Position = pos}
                 Map = gameState.Map
                 StatusBar = gameState.StatusBar
-                LastAction = CompleteAction CloseToActionBlockedByInvalidTile
+                LastAction = BlockedAction CloseToActionBlockedByInvalidTile
                 }
 
     let private resolveMoveCommand gameState direction =
@@ -94,7 +94,7 @@ module Action =
                 Player = {Position = oldPos}
                 Map = map
                 StatusBar = statusBar
-                LastAction = CompleteAction MoveActionBlockedByVoid
+                LastAction = BlockedAction MoveActionBlockedByVoid
             }
         else
             let targetTileType = posTileType newPos gameState.Map
@@ -103,7 +103,7 @@ module Action =
                 Player = {Position = oldPos}
                 Map = map
                 StatusBar = statusBar
-                LastAction = CompleteAction MoveActionBlockedByWall
+                LastAction = BlockedAction MoveActionBlockedByWall
                 }
             | ClosedDoor -> openDoorAction gameState newPos
             | _ -> {

@@ -14,7 +14,7 @@ module Input =
     let rec getCommand lastAction =
         let input = Console.ReadKey(true);
         match lastAction with
-        | CompleteAction _ ->
+        | CompleteAction _ | BlockedAction _ ->
             match input.KeyChar with
             | 'o' -> IncompleteCommand Open
             | 'c' -> IncompleteCommand Close
