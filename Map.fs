@@ -38,11 +38,6 @@ module Map =
         | false -> failwith "position out of map bounds"
         | true -> map.Tiles.[y].[x]
 
-    let posIsTraversable pos map =
-        match getTileAt pos map with
-        | '#' -> false
-        | _ -> true
-
     let posTileType pos map =
         match getTileAt pos map with
         | '#' -> Wall
