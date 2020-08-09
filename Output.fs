@@ -41,12 +41,16 @@ module Output =
 
     let updateOutput gameState =
         match gameState.LastAction with
-        | StartSession -> printMap gameState.Map; writeAt gameState.Player.Position '@'; writeBox "Ready." gameState.StatusBar true
-        | MoveAction (origin, destination) -> drawTileAt origin gameState.Map; writeAt destination '@'
-        | MoveActionBlockedByVoid -> writeBox "There's nothing here!" gameState.StatusBar true
-        | MoveActionBlockedByWall -> writeBox "You bump up against the wall." gameState.StatusBar true
-        | OpenDoorAction pos -> drawTileAt pos gameState.Map; writeBox "You open the door." gameState.StatusBar true
-        | WaitAction -> writeBox "Waiting..." gameState.StatusBar true
-        | HelpAction -> writeBox "Move: arrow keys Wait: . Quit: q" gameState.StatusBar true
-        | QuitAction -> writeBox "Bye." gameState.StatusBar false // assumes status bar is last line
-        | UnknownAction -> writeBox "Unknown command, type ? for help." gameState.StatusBar true
+        | CompleteAction StartSession -> printMap gameState.Map; writeAt gameState.Player.Position '@'; writeBox "Ready." gameState.StatusBar true
+        | CompleteAction (MoveAction (origin, destination)) -> drawTileAt origin gameState.Map; writeAt destination '@'
+        | CompleteAction MoveActionBlockedByVoid -> writeBox "There's nothing there!" gameState.StatusBar true
+        | CompleteAction MoveActionBlockedByWall -> writeBox "You bump up against the wall." gameState.StatusBar true
+        | CompleteAction (OpenDoorAction pos) -> drawTileAt pos gameState.Map; writeBox "You open the door." gameState.StatusBar true
+        | CompleteAction OpenToActionBlockedByVoid -> writeBox "There's nothing there!" gameState.StatusBar true
+        | CompleteAction OpenToActionBlockedByInvalidTile -> writeBox "There's nothing there to open!" gameState.StatusBar true
+        | IncompleteAction OpenAction -> writeBox "Open in which direction?" gameState.StatusBar true
+        | CompleteAction WaitAction -> writeBox "Waiting..." gameState.StatusBar true
+        | CompleteAction HelpAction -> writeBox "Move: arrow keys Open: o Wait: . Quit: q" gameState.StatusBar true
+        | CompleteAction QuitAction -> writeBox "Bye." gameState.StatusBar false // assumes status bar is last line
+        | CompleteAction CancelAction -> writeBox "OK." gameState.StatusBar true
+        | CompleteAction UnknownAction -> writeBox "Unknown command, type ? for help." gameState.StatusBar true

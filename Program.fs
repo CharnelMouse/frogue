@@ -22,16 +22,16 @@ module Main =
     let startingGameState = {
         Player = {Position = {X = 1; Y = 1}}
         Map = levelMap
-        StatusBar = {Start = {X = 0; Y = levelMap.Height + 1}; Length = 35}
-        LastAction = StartSession
+        StatusBar = {Start = {X = 0; Y = levelMap.Height + 1}; Length = 40}
+        LastAction = CompleteAction StartSession
     }
 
     let rec mainLoop gameState =
-        let command = getCommand()
+        let command = getCommand gameState.LastAction
         let newGameState = resolveCommand gameState command
         updateOutput newGameState
-        match command with
-        | Quit -> ()
+        match newGameState.LastAction with
+        | CompleteAction QuitAction -> ()
         | _ -> mainLoop newGameState
 
     [<EntryPoint>]
