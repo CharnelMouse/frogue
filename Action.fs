@@ -41,10 +41,10 @@ module Action =
         let {X = oldX; Y = oldY} = oldPos
         let newPos =
             match direction with
-            | Up -> {X = oldX; Y = oldY - 1}
-            | Down -> {X = oldX; Y = oldY + 1}
-            | Left -> {X = oldX - 1; Y = oldY}
-            | Right -> {X = oldX + 1; Y = oldY}
+            | North -> {X = oldX; Y = oldY - 1}
+            | South -> {X = oldX; Y = oldY + 1}
+            | West -> {X = oldX - 1; Y = oldY}
+            | East -> {X = oldX + 1; Y = oldY}
         if not (posIsOnMap newPos gameState.Map)
             then writeStatusAndPass gameState "There's nothing here!" true
         else

@@ -7,9 +7,9 @@ module Main =
     open Action
 
     let levelMap = createMap 7 4 [
-            "#######";
-            "#  +   ";
-            "#  #  #";
+            "#######"
+            "#  +   "
+            "#  #  #"
             "#######"
         ]
 

@@ -10,10 +10,10 @@ module Types =
     }
 
     type Direction =
-        | Up
-        | Down
-        | Left
-        | Right
+        | North
+        | South
+        | East
+        | West
 
     type Command =
         | Move of Direction
