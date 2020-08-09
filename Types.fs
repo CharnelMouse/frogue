@@ -18,6 +18,7 @@ module Types =
     type CompleteCommand =
         | Move of Direction
         | OpenTo of Direction
+        | CloseTo of Direction
         | Wait
         | Help
         | Quit
@@ -26,6 +27,7 @@ module Types =
 
     type IncompleteCommand =
         | Open
+        | Close
 
     type Command =
         | CompleteCommand of CompleteCommand
@@ -37,8 +39,11 @@ module Types =
         | MoveActionBlockedByWall
         | MoveActionBlockedByVoid
         | OpenDoorAction of Position
+        | CloseDoorAction of Position
         | OpenToActionBlockedByVoid
         | OpenToActionBlockedByInvalidTile
+        | CloseToActionBlockedByVoid
+        | CloseToActionBlockedByInvalidTile
         | WaitAction
         | HelpAction
         | QuitAction
@@ -47,6 +52,7 @@ module Types =
 
     type IncompleteAction =
         | OpenAction
+        | CloseAction
 
     type Action =
         | CompleteAction of CompleteAction

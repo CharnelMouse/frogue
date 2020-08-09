@@ -17,6 +17,7 @@ module Input =
         | CompleteAction _ ->
             match input.KeyChar with
             | 'o' -> IncompleteCommand Open
+            | 'c' -> IncompleteCommand Close
             | '.' -> CompleteCommand Wait
             | '?' -> CompleteCommand Help
             | 'q' -> CompleteCommand Quit
@@ -28,5 +29,13 @@ module Input =
             | ConsoleKey.RightArrow -> CompleteCommand (OpenTo East)
             | ConsoleKey.UpArrow -> CompleteCommand (OpenTo North)
             | ConsoleKey.DownArrow -> CompleteCommand (OpenTo South)
+            | ConsoleKey.Escape -> CompleteCommand (Cancel)
+            | _ -> getCommand lastAction
+        | IncompleteAction CloseAction ->
+            match input.Key with
+            | ConsoleKey.LeftArrow -> CompleteCommand (CloseTo West)
+            | ConsoleKey.RightArrow -> CompleteCommand (CloseTo East)
+            | ConsoleKey.UpArrow -> CompleteCommand (CloseTo North)
+            | ConsoleKey.DownArrow -> CompleteCommand (CloseTo South)
             | ConsoleKey.Escape -> CompleteCommand (Cancel)
             | _ -> getCommand lastAction

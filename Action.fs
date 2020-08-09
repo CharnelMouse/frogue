@@ -17,6 +17,17 @@ module Action =
             LastAction = CompleteAction (OpenDoorAction pos)}
         newGameState
 
+    let private closeDoorAction gameState pos =
+        let map = gameState.Map
+        let newTiles = List.mapi (fun i x -> if i = pos.Y then mutateSingleChar x pos.X '+' else x) map.Tiles
+        let newMap = createMap map.Width map.Height newTiles
+        let newGameState = {
+            Player = gameState.Player
+            Map = newMap
+            StatusBar = gameState.StatusBar
+            LastAction = CompleteAction (CloseDoorAction pos)}
+        newGameState
+
     let private resolveOpenToCommand gameState direction =
         let {Player = {Position = pos}} = gameState
         let toPos =
@@ -43,6 +54,31 @@ module Action =
                 LastAction = CompleteAction OpenToActionBlockedByInvalidTile
                 }
 
+    let private resolveCloseToCommand gameState direction =
+        let {Player = {Position = pos}} = gameState
+        let toPos =
+            match direction with
+            | North -> {X = pos.X; Y = pos.Y - 1}
+            | South -> {X = pos.X; Y = pos.Y + 1}
+            | West -> {X = pos.X - 1; Y = pos.Y}
+            | East -> {X = pos.X + 1; Y = pos.Y}
+        if not (posIsOnMap toPos gameState.Map)
+            then {
+                Player = {Position = pos}
+                Map = gameState.Map
+                StatusBar = gameState.StatusBar
+                LastAction = CompleteAction CloseToActionBlockedByVoid
+            }
+        else
+            let targetTileType = posTileType toPos gameState.Map
+            match targetTileType with
+            | OpenDoor -> closeDoorAction gameState toPos
+            | _ -> {
+                Player = {Position = pos}
+                Map = gameState.Map
+                StatusBar = gameState.StatusBar
+                LastAction = CompleteAction CloseToActionBlockedByInvalidTile
+                }
 
     let private resolveMoveCommand gameState direction =
         let {Player = {Position = oldPos}; Map = map; StatusBar = statusBar; LastAction = _} = gameState
@@ -82,9 +118,11 @@ module Action =
         match command with
         | CompleteCommand (Move direction) -> resolveMoveCommand gameState direction
         | CompleteCommand (OpenTo direction) -> resolveOpenToCommand gameState direction
+        | CompleteCommand (CloseTo direction) -> resolveCloseToCommand gameState direction
         | CompleteCommand Wait -> {Player = player; Map = map; StatusBar = statusBar; LastAction = CompleteAction WaitAction}
         | CompleteCommand Help -> {Player = player; Map = map; StatusBar = statusBar; LastAction = CompleteAction HelpAction}
         | CompleteCommand Quit -> {Player = player; Map = map; StatusBar = statusBar; LastAction = CompleteAction QuitAction}
         | CompleteCommand Cancel -> {Player = player; Map = map; StatusBar = statusBar; LastAction = CompleteAction CancelAction}
         | CompleteCommand UnknownCommand -> {Player = player; Map = map; StatusBar = statusBar; LastAction = CompleteAction UnknownAction}
         | IncompleteCommand Open -> {Player = player; Map = map; StatusBar = statusBar; LastAction = IncompleteAction OpenAction}
+        | IncompleteCommand Close -> {Player = player; Map = map; StatusBar = statusBar; LastAction = IncompleteAction CloseAction}

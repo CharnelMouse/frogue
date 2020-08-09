@@ -49,8 +49,12 @@ module Output =
         | CompleteAction OpenToActionBlockedByVoid -> writeBox "There's nothing there!" gameState.StatusBar true
         | CompleteAction OpenToActionBlockedByInvalidTile -> writeBox "There's nothing there to open!" gameState.StatusBar true
         | IncompleteAction OpenAction -> writeBox "Open in which direction?" gameState.StatusBar true
+        | CompleteAction (CloseDoorAction pos) -> drawTileAt pos gameState.Map; writeBox "You close the door." gameState.StatusBar true
+        | CompleteAction CloseToActionBlockedByVoid -> writeBox "There's nothing there!" gameState.StatusBar true
+        | CompleteAction CloseToActionBlockedByInvalidTile -> writeBox "There's nothing there to close!" gameState.StatusBar true
+        | IncompleteAction CloseAction -> writeBox "Close in which direction?" gameState.StatusBar true
         | CompleteAction WaitAction -> writeBox "Waiting..." gameState.StatusBar true
-        | CompleteAction HelpAction -> writeBox "Move: arrow keys Open: o Wait: . Quit: q" gameState.StatusBar true
+        | CompleteAction HelpAction -> writeBox "Move: arrow keys Open: o Close: c Wait: . Quit: q" gameState.StatusBar true
         | CompleteAction QuitAction -> writeBox "Bye." gameState.StatusBar false // assumes status bar is last line
         | CompleteAction CancelAction -> writeBox "OK." gameState.StatusBar true
         | CompleteAction UnknownAction -> writeBox "Unknown command, type ? for help." gameState.StatusBar true
