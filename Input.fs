@@ -11,7 +11,7 @@ module Input =
         | ConsoleKey.DownArrow -> Move South
         | _ -> UnknownCommand
 
-    let rec getCommand() =
+    let getCommand() =
         let input = Console.ReadKey(true);
         match input.KeyChar with
         | '.' -> Wait

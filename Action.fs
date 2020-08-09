@@ -4,11 +4,11 @@ module Action =
     open Frogue.Map
     open Output
 
-    let writeStatusAndPass gameState str reset =
+    let private writeStatusAndPass gameState str reset =
         writeBox str gameState.StatusBar reset
         gameState
 
-    let moveAction gameState newPos =
+    let private moveAction gameState newPos =
         let newGameState = {
             Player = {
                 Position = newPos
@@ -20,10 +20,10 @@ module Action =
         writeAt newPos '@'
         newGameState
 
-    let mutateSingleChar str index char =
+    let private mutateSingleChar str index char =
         String.mapi (fun i x -> if i = index then char else x) str
 
-    let openDoorAction gameState pos =
+    let private openDoorAction gameState pos =
         let map = gameState.Map
         let newTiles = List.mapi (fun i x -> if i = pos.Y then mutateSingleChar x pos.X '-' else x) map.Tiles
         let newMap = createMap map.Width map.Height newTiles
@@ -31,7 +31,7 @@ module Action =
         drawTileAt pos newMap
         writeStatusAndPass newGameState "You open the door." true
 
-    let resolveMoveCommand gameState direction =
+    let private resolveMoveCommand gameState direction =
         let {Player = {Position = oldPos}; Map = map; StatusBar = _} = gameState
         let {X = oldX; Y = oldY} = oldPos
         let newPos =

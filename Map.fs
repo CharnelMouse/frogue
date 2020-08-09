@@ -7,18 +7,25 @@ module Map =
         Height: int
     }
 
+    type GameState = {
+        Player: Player
+        Map: Map
+        StatusBar: TextBox
+    }
+
+    type TileType =
+    | Wall
+    | ClosedDoor
+    | OpenDoor
+    | Empty
+    | UnknownTileType
+
     let createMap width height tiles =
         let widthIsValid = List.length(tiles) = height
         let heightIsValid = List.reduce (&&) (List.map (function x -> (String.length(x) = width)) tiles)
         if not (widthIsValid && heightIsValid)
             then failwith "Invalid map"
         {Tiles = tiles; Width = width; Height = height}
-
-    type GameState = {
-        Player: Player
-        Map: Map
-        StatusBar: TextBox
-    }
 
     let posIsOnMap pos map =
         let {X = x; Y = y} = pos
@@ -34,13 +41,6 @@ module Map =
         match getTileAt pos map with
         | '#' -> false
         | _ -> true
-
-    type TileType =
-    | Wall
-    | ClosedDoor
-    | OpenDoor
-    | Empty
-    | UnknownTileType
 
     let posTileType pos map =
         match getTileAt pos map with
