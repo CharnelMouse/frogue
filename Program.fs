@@ -16,7 +16,7 @@ module Main =
     let startingGameState = {
         Player = {Position = {X = 1; Y = 1}}
         Map = levelMap
-        StatusBar = {Start = {X = 0; Y = 6}; Length = 35}
+        StatusBar = {Start = {X = 0; Y = levelMap.Height + 1}; Length = 35}
         LastAction = StartSession
     }
 
