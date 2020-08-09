@@ -2,23 +2,6 @@ namespace Frogue
 module Action =
     open Types
     open Frogue.Map
-    open Output
-
-    let private writeStatusAndPass gameState str reset =
-        writeBox str gameState.StatusBar reset
-        gameState
-
-    let private moveAction gameState newPos =
-        let newGameState = {
-            Player = {
-                Position = newPos
-            }
-            Map = gameState.Map
-            StatusBar = gameState.StatusBar
-        }
-        drawTileAt gameState.Player.Position gameState.Map
-        writeAt newPos '@'
-        newGameState
 
     let private mutateSingleChar str index char =
         String.mapi (fun i x -> if i = index then char else x) str
@@ -27,12 +10,15 @@ module Action =
         let map = gameState.Map
         let newTiles = List.mapi (fun i x -> if i = pos.Y then mutateSingleChar x pos.X '-' else x) map.Tiles
         let newMap = createMap map.Width map.Height newTiles
-        let newGameState = {Player = gameState.Player; Map = newMap; StatusBar = gameState.StatusBar}
-        drawTileAt pos newMap
-        writeStatusAndPass newGameState "You open the door." true
+        let newGameState = {
+            Player = gameState.Player
+            Map = newMap
+            StatusBar = gameState.StatusBar
+            LastAction = OpenDoorAction pos}
+        newGameState
 
     let private resolveMoveCommand gameState direction =
-        let {Player = {Position = oldPos}; Map = map; StatusBar = _} = gameState
+        let {Player = {Position = oldPos}; Map = map; StatusBar = statusBar; LastAction = _} = gameState
         let {X = oldX; Y = oldY} = oldPos
         let newPos =
             match direction with
@@ -41,18 +27,34 @@ module Action =
             | West -> {X = oldX - 1; Y = oldY}
             | East -> {X = oldX + 1; Y = oldY}
         if not (posIsOnMap newPos gameState.Map)
-            then writeStatusAndPass gameState "There's nothing here!" true
+            then {
+                Player = {Position = oldPos}
+                Map = map
+                StatusBar = statusBar
+                LastAction = MoveActionBlockedByVoid
+            }
         else
             let targetTileType = posTileType newPos gameState.Map
             match targetTileType with
-            | Wall -> writeStatusAndPass gameState "You bump up against the wall." true
+            | Wall -> {
+                Player = {Position = oldPos}
+                Map = map
+                StatusBar = statusBar
+                LastAction = MoveActionBlockedByWall
+                }
             | ClosedDoor -> openDoorAction gameState newPos
-            | _ -> moveAction gameState newPos
+            | _ -> {
+                Player = {Position = newPos}
+                Map = gameState.Map
+                StatusBar = gameState.StatusBar
+                LastAction = MoveAction (gameState.Player.Position, newPos)
+                }
 
     let resolveCommand gameState command =
+        let {Player = player; Map = map; StatusBar = statusBar; LastAction = _} = gameState
         match command with
-        | Quit -> writeStatusAndPass gameState "Bye." false // assumes status bar is last line
-        | Help -> writeStatusAndPass gameState "Move: arrow keys Wait: . Quit: q" true
-        | Wait -> writeStatusAndPass gameState "Waiting..." true
         | Move direction -> resolveMoveCommand gameState direction
-        | UnknownCommand -> writeStatusAndPass gameState "Unknown command, type ? for help." true
+        | Wait -> {Player = player; Map = map; StatusBar = statusBar; LastAction = WaitAction}
+        | Help -> {Player = player; Map = map; StatusBar = statusBar; LastAction = HelpAction}
+        | Quit -> {Player = player; Map = map; StatusBar = statusBar; LastAction = QuitAction}
+        | UnknownCommand -> {Player = player; Map = map; StatusBar = statusBar; LastAction = UnknownAction}

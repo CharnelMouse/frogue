@@ -17,19 +17,19 @@ module Main =
         Player = {Position = {X = 1; Y = 1}}
         Map = levelMap
         StatusBar = {Start = {X = 0; Y = 6}; Length = 35}
+        LastAction = StartSession
     }
 
     let rec mainLoop gameState =
         let command = getCommand()
-        let newGameState =
-            resolveCommand gameState command
-        if command <> Quit
-            then mainLoop newGameState
+        let newGameState = resolveCommand gameState command
+        updateOutput newGameState
+        match command with
+        | Quit -> ()
+        | _ -> mainLoop newGameState
 
     [<EntryPoint>]
     let main argv =
-        printMap levelMap
-        writeAt startingGameState.Player.Position '@'
-        writeBox "Ready." startingGameState.StatusBar true
+        updateOutput startingGameState
         mainLoop startingGameState
         0 // return an integer exit code

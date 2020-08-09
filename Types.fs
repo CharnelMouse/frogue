@@ -22,6 +22,17 @@ module Types =
         | Quit
         | UnknownCommand
 
+    type Action =
+        | StartSession
+        | MoveAction of Position * Position
+        | MoveActionBlockedByWall
+        | MoveActionBlockedByVoid
+        | OpenDoorAction of Position
+        | WaitAction
+        | HelpAction
+        | QuitAction
+        | UnknownAction
+
     type TextBox = {
         Start: Position;
         Length: int;

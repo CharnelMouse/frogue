@@ -38,3 +38,15 @@ module Output =
         clearBox box
         writeFrom box.Start str
         if reset then resetCursor()
+
+    let updateOutput gameState =
+        match gameState.LastAction with
+        | StartSession -> printMap gameState.Map; writeAt gameState.Player.Position '@'; writeBox "Ready." gameState.StatusBar true
+        | MoveAction (origin, destination) -> drawTileAt origin gameState.Map; writeAt destination '@'
+        | MoveActionBlockedByVoid -> writeBox "There's nothing here!" gameState.StatusBar true
+        | MoveActionBlockedByWall -> writeBox "You bump up against the wall." gameState.StatusBar true
+        | OpenDoorAction pos -> drawTileAt pos gameState.Map; writeBox "You open the door." gameState.StatusBar true
+        | WaitAction -> writeBox "Waiting..." gameState.StatusBar true
+        | HelpAction -> writeBox "Move: arrow keys Wait: . Quit: q" gameState.StatusBar true
+        | QuitAction -> writeBox "Bye." gameState.StatusBar false // assumes status bar is last line
+        | UnknownAction -> writeBox "Unknown command, type ? for help." gameState.StatusBar true

@@ -11,6 +11,7 @@ module Map =
         Player: Player
         Map: Map
         StatusBar: TextBox
+        LastAction: Action
     }
 
     type TileType =
