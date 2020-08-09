@@ -6,12 +6,18 @@ module Main =
     open Output
     open Action
 
-    let levelMap = createMap 7 4 [
-            "#######"
-            "#  +   "
-            "#  #  #"
-            "#######"
-        ]
+    let levelMap = createMap 20 10 [
+        "####################"
+        "#              +    "
+        "#              #   #"
+        "#              #   #"
+        "#              #   #"
+        "#              #   #"
+        "#              #   #"
+        "#              #   #"
+        "#              #   #"
+        "####################"
+    ]
 
     let startingGameState = {
         Player = {Position = {X = 1; Y = 1}}
