@@ -1,4 +1,4 @@
-﻿namespace Frogue
+namespace Frogue
 module Main =
     open Types
     open Input
