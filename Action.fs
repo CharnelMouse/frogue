@@ -4,11 +4,6 @@ module Action =
     open Frogue.Map
     open Output
 
-    type Action =
-    | StatusAction
-    | MoveAction
-    | OpenDoorAction
-
     let writeStatusAndPass gameState str reset =
         writeBox str gameState.StatusBar reset
         gameState
@@ -53,3 +48,11 @@ module Action =
             | Wall -> writeStatusAndPass gameState "You bump up against the wall." true
             | ClosedDoor -> openDoorAction gameState newPos
             | _ -> moveAction gameState newPos
+
+    let resolveCommand gameState command =
+        match command with
+        | Quit -> writeStatusAndPass gameState "Bye." false // assumes status bar is last line
+        | Help -> writeStatusAndPass gameState "Move: arrow keys Wait: . Quit: q" true
+        | Wait -> writeStatusAndPass gameState "Waiting..." true
+        | Move direction -> resolveMoveCommand gameState direction
+        | UnknownCommand -> writeStatusAndPass gameState "Unknown command, type ? for help." true

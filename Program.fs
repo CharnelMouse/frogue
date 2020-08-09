@@ -18,16 +18,11 @@ module Main =
         Map = levelMap
         StatusBar = {Start = {X = 0; Y = 6}; Length = 35}
     }
- 
+
     let rec mainLoop gameState =
         let command = getCommand()
         let newGameState =
-            match command with
-            | Quit -> writeStatusAndPass gameState "Bye." false // assumes status bar is last line
-            | Help -> writeStatusAndPass gameState "Move: arrow keys Wait: . Quit: q" true
-            | Wait -> writeStatusAndPass gameState "Waiting..." true
-            | Move direction -> resolveMoveCommand gameState direction
-            | UnknownCommand -> writeStatusAndPass gameState "Unknown command, type ? for help." true
+            resolveCommand gameState command
         if command <> Quit
             then mainLoop newGameState
 
