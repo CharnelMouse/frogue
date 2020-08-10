@@ -2,6 +2,7 @@ namespace Frogue
 module Action =
     open Types
     open Frogue.Map
+    open Tilesets
 
     let private mutateSingleChar str index char =
         String.mapi (fun i x -> if i = index then char else x) str
@@ -14,7 +15,8 @@ module Action =
             Player = gameState.Player
             Map = newMap
             StatusBar = gameState.StatusBar
-            LastAction = CompleteAction (OpenDoorAction pos)}
+            LastAction = CompleteAction (OpenDoorAction pos)
+            Tileset = gameState.Tileset}
         newGameState
 
     let private closeDoorAction gameState pos =
@@ -25,7 +27,8 @@ module Action =
             Player = gameState.Player
             Map = newMap
             StatusBar = gameState.StatusBar
-            LastAction = CompleteAction (CloseDoorAction pos)}
+            LastAction = CompleteAction (CloseDoorAction pos)
+            Tileset = gameState.Tileset}
         newGameState
 
     let private resolveOpenToCommand gameState direction =
@@ -42,6 +45,7 @@ module Action =
                 Map = gameState.Map
                 StatusBar = gameState.StatusBar
                 LastAction = BlockedAction OpenToActionBlockedByVoid
+                Tileset = gameState.Tileset
             }
         else
             let targetTileType = getTileAt toPos gameState.Map
@@ -52,6 +56,7 @@ module Action =
                 Map = gameState.Map
                 StatusBar = gameState.StatusBar
                 LastAction = BlockedAction OpenToActionBlockedByInvalidTile
+                Tileset = gameState.Tileset
                 }
 
     let private resolveCloseToCommand gameState direction =
@@ -68,6 +73,7 @@ module Action =
                 Map = gameState.Map
                 StatusBar = gameState.StatusBar
                 LastAction = BlockedAction CloseToActionBlockedByVoid
+                Tileset = gameState.Tileset
             }
         else
             let targetTileType = getTileAt toPos gameState.Map
@@ -78,6 +84,7 @@ module Action =
                 Map = gameState.Map
                 StatusBar = gameState.StatusBar
                 LastAction = BlockedAction CloseToActionBlockedByInvalidTile
+                Tileset = gameState.Tileset
                 }
 
     let private resolveMoveCommand gameState direction =
@@ -95,6 +102,7 @@ module Action =
                 Map = map
                 StatusBar = statusBar
                 LastAction = BlockedAction MoveActionBlockedByVoid
+                Tileset = gameState.Tileset
             }
         else
             let targetTileType = getTileAt newPos gameState.Map
@@ -104,6 +112,7 @@ module Action =
                 Map = map
                 StatusBar = statusBar
                 LastAction = BlockedAction MoveActionBlockedByWall
+                Tileset = gameState.Tileset
                 }
             | ClosedDoorTile -> openDoorAction gameState newPos
             | _ -> {
@@ -111,6 +120,7 @@ module Action =
                 Map = gameState.Map
                 StatusBar = gameState.StatusBar
                 LastAction = CompleteAction (MoveAction (gameState.Player.Position, newPos))
+                Tileset = gameState.Tileset
                 }
 
     let changeLastAction gameState action =
@@ -119,6 +129,7 @@ module Action =
             Map = gameState.Map
             StatusBar = gameState.StatusBar
             LastAction = action
+            Tileset = gameState.Tileset
         }
 
     let resolveCommand gameState command =
@@ -131,6 +142,18 @@ module Action =
         | CompleteCommand Quit -> changeLastAction gameState (CompleteAction QuitAction)
         | CompleteCommand Cancel -> changeLastAction gameState (CompleteAction CancelAction)
         | CompleteCommand SaveGameCommand -> changeLastAction gameState (CompleteAction SaveGameAction)
+        | CompleteCommand ToggleTilesetCommand ->
+            let newGameState = {
+                Player = gameState.Player
+                Map = gameState.Map
+                StatusBar = gameState.StatusBar
+                LastAction = CompleteAction ToggleTileSetAction
+                Tileset =
+                    match gameState.Tileset with
+                    | DefaultTileset -> DottedTileset
+                    | DottedTileset -> DefaultTileset
+            }
+            newGameState
         | CompleteCommand UnknownCommand -> changeLastAction gameState (CompleteAction UnknownAction)
         | IncompleteCommand Open -> changeLastAction gameState (IncompleteAction OpenAction)
         | IncompleteCommand Close -> changeLastAction gameState (IncompleteAction CloseAction)

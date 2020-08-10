@@ -7,6 +7,7 @@
     <Compile Include="Types.fs" />
     <Compile Include="Input.fs" />
     <Compile Include="Map.fs" />
+    <Compile Include="Tilesets.fs" />
     <Compile Include="SaveSystem.fs" />
     <Compile Include="Output.fs" />
     <Compile Include="Action.fs" />

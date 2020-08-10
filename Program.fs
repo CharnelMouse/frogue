@@ -3,6 +3,7 @@ module Main =
     open Types
     open Input
     open Frogue.Map
+    open Tilesets
     open Output
     open SaveSystem
     open Action
@@ -25,6 +26,7 @@ module Main =
         Map = levelMap
         StatusBar = {Start = {X = 0; Y = levelMap.Height + 1}; Length = 50}
         LastAction = CompleteAction StartSession
+        Tileset = DefaultTileset
     }
 
     let rec mainLoop gameState =

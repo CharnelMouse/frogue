@@ -3,6 +3,7 @@ module Output =
     open System
     open Types
     open Frogue.Map
+    open Tilesets
     open SaveSystem
 
     let private cursorTo pos =
@@ -11,28 +12,28 @@ module Output =
     let private resetCursor() =
         cursorTo {X = 0; Y = 0}
 
-    let printMap map =
+    let printMap map tileset =
+        let tilesetParser =
+            match tileset with
+            | DefaultTileset -> defaultTilesetParser
+            | DottedTileset -> dottedTilesetParser
         Console.Clear()
         for row in map.Tiles do
-            Console.WriteLine(row)
+            Console.WriteLine(String.map (getInternalTileType >> tilesetParser) row)
 
-    let writeAt pos symb  =
+    let writeAt pos (symb: char)  =
         cursorTo pos
-        Console.Write(symb: char)
+        Console.Write(symb)
         resetCursor()
 
-    let getOutputTile x =
-        match x with
-        | PlayerTile -> '@'
-        | WallTile -> '#'
-        | ClosedDoorTile -> '+'
-        | OpenDoorTile -> '-'
-        | EmptyTile -> ' '
-        | UnknownTile -> failwith "tile not included in tileset"
+    let getOutputTile tileset x =
+        match tileset with
+        | DefaultTileset -> defaultTilesetParser x
+        | DottedTileset -> dottedTilesetParser x
 
-    let drawTileAt pos map =
+    let drawTileAt pos map tileset =
         getTileAt pos map
-        |> getOutputTile
+        |> getOutputTile tileset
         |> writeAt pos
 
     let private clearBox box =
@@ -53,22 +54,22 @@ module Output =
     let updateOutput gameState =
         match gameState.LastAction with
         | CompleteAction StartSession ->
-            printMap gameState.Map
-            writeAt gameState.Player.Position (getOutputTile PlayerTile)
+            printMap gameState.Map gameState.Tileset
+            writeAt gameState.Player.Position (getOutputTile gameState.Tileset PlayerTile)
             writeBox "Ready." gameState.StatusBar true
         | CompleteAction (MoveAction (origin, destination)) ->
-            drawTileAt origin gameState.Map
-            writeAt destination (getOutputTile PlayerTile)
+            drawTileAt origin gameState.Map gameState.Tileset
+            writeAt destination (getOutputTile gameState.Tileset PlayerTile)
         | BlockedAction MoveActionBlockedByVoid -> writeBox "There's nothing there!" gameState.StatusBar true
         | BlockedAction MoveActionBlockedByWall -> writeBox "You bump up against the wall." gameState.StatusBar true
         | CompleteAction (OpenDoorAction pos) ->
-            drawTileAt pos gameState.Map
+            drawTileAt pos gameState.Map gameState.Tileset
             writeBox "You open the door." gameState.StatusBar true
         | BlockedAction OpenToActionBlockedByVoid -> writeBox "There's nothing there!" gameState.StatusBar true
         | BlockedAction OpenToActionBlockedByInvalidTile -> writeBox "There's nothing there to open!" gameState.StatusBar true
         | IncompleteAction OpenAction -> writeBox "Open in which direction?" gameState.StatusBar true
         | CompleteAction (CloseDoorAction pos) ->
-            drawTileAt pos gameState.Map
+            drawTileAt pos gameState.Map gameState.Tileset
             writeBox "You close the door." gameState.StatusBar true
         | BlockedAction CloseToActionBlockedByVoid -> writeBox "There's nothing there!" gameState.StatusBar true
         | BlockedAction CloseToActionBlockedByInvalidTile -> writeBox "There's nothing there to close!" gameState.StatusBar true
@@ -80,4 +81,14 @@ module Output =
         | CompleteAction SaveGameAction ->
             saveGame gameState
             writeBox "Game saved." gameState.StatusBar true
+        | CompleteAction ToggleTileSetAction ->
+            printMap gameState.Map gameState.Tileset
+            writeAt gameState.Player.Position (getOutputTile gameState.Tileset PlayerTile)
+            writeBox (
+                "Tileset changed to " +
+                match gameState.Tileset with
+                | DefaultTileset -> "default"
+                | DottedTileset -> "dots"
+                + "."
+                ) gameState.StatusBar true
         | CompleteAction UnknownAction -> writeBox "Unknown command, type ? for help." gameState.StatusBar true

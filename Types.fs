@@ -35,6 +35,7 @@ module Types =
         | Quit
         | Cancel
         | SaveGameCommand
+        | ToggleTilesetCommand
         | UnknownCommand
 
     type IncompleteCommand =
@@ -55,6 +56,7 @@ module Types =
         | QuitAction
         | CancelAction
         | SaveGameAction
+        | ToggleTileSetAction
         | UnknownAction
 
     type BlockedAction =
@@ -74,9 +76,24 @@ module Types =
         | BlockedAction of BlockedAction
         | IncompleteAction of IncompleteAction
 
+    type InternalTile =
+    | EmptyTile
+    | OpenDoorTile
+    | ClosedDoorTile
+    | WallTile
+    | PlayerTile
+    | UnknownTile
+
+    type TilesetParser = InternalTile -> char
+
+    type Tileset =
+    | DefaultTileset
+    | DottedTileset
+
     type GameState = {
         Player: Player
         Map: Map
         StatusBar: TextBox
         LastAction: Action
+        Tileset: Tileset
     }

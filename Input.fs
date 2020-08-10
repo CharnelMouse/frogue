@@ -22,6 +22,7 @@ module Input =
             | '?' -> CompleteCommand Help
             | 'q' -> CompleteCommand Quit
             | 's' -> CompleteCommand SaveGameCommand
+            | 't' -> CompleteCommand ToggleTilesetCommand
             | '\u0000' -> input |> getNonUnicodeCommand
             | _ -> CompleteCommand UnknownCommand
         | IncompleteAction OpenAction ->

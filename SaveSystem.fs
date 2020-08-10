@@ -2,6 +2,7 @@ namespace Frogue
 module SaveSystem =
     open System.IO
     open Types
+    open Tilesets
 
     let convertGameStateToText gameState =
         let {
@@ -27,6 +28,7 @@ module SaveSystem =
             Map = {Width = int strs.[2]; Height = int strs.[3]; Tiles = Array.toList(strs.[4].Split ";")}
             StatusBar = {Start = {X = int strs.[5]; Y = int strs.[6]}; Length = int strs.[7]}
             LastAction = CompleteAction StartSession
+            Tileset = DefaultTileset
         }
 
     let saveGameExists () =

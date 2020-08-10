@@ -1,13 +1,6 @@
 namespace Frogue
 module Map =
     open Types
-    type InternalTile =
-    | EmptyTile
-    | OpenDoorTile
-    | ClosedDoorTile
-    | WallTile
-    | PlayerTile
-    | UnknownTile
 
     let createMap width height tiles =
         let widthIsValid = List.length(tiles) = height
@@ -20,12 +13,7 @@ module Map =
         let {X = x; Y = y} = pos
         x >= 0 && x < map.Width && y >= 0 && y < map.Height
 
-    let getTileAt pos map =
-        let {X = x; Y = y} = pos
-        let internalTile =
-            match posIsOnMap pos map with
-            | false -> failwith "position out of map bounds"
-            | true -> map.Tiles.[y].[x]
+    let getInternalTileType internalTile =
         match internalTile with
         | ' ' -> EmptyTile
         | '-' -> OpenDoorTile
@@ -33,3 +21,11 @@ module Map =
         | '#' -> WallTile
         | '@' -> PlayerTile
         | _ -> UnknownTile
+
+    let getTileAt pos map =
+        let {X = x; Y = y} = pos
+        let internalTile =
+            match posIsOnMap pos map with
+            | false -> failwith "position out of map bounds"
+            | true -> map.Tiles.[y].[x]
+        getInternalTileType internalTile
