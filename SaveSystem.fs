@@ -10,6 +10,7 @@ module SaveSystem =
             Map = {Width = mW; Height = mH; Tiles = mT}
             StatusBar = {Start = {X = sX; Y = sY}; Length = sL}
             LastAction = _
+            Tileset = tileset
             } = gameState
         [
             string x
@@ -20,6 +21,7 @@ module SaveSystem =
             string sX
             string sY
             string sL
+            string tileset
         ]
 
     let convertTextToGameState (strs: string list) =
@@ -28,7 +30,11 @@ module SaveSystem =
             Map = {Width = int strs.[2]; Height = int strs.[3]; Tiles = Array.toList(strs.[4].Split ";")}
             StatusBar = {Start = {X = int strs.[5]; Y = int strs.[6]}; Length = int strs.[7]}
             LastAction = CompleteAction StartSession
-            Tileset = DefaultTileset
+            Tileset =
+                match strs.[8] with
+                | "DefaultTileset" -> DefaultTileset
+                | "DottedTileset" -> DottedTileset
+                | _ -> failwith "save file contains unknown tileset"
         }
 
     let saveGameExists () =
