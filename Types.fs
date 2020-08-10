@@ -23,6 +23,7 @@ module Types =
         | Help
         | Quit
         | Cancel
+        | SaveGameCommand
         | UnknownCommand
 
     type IncompleteCommand =
@@ -42,6 +43,7 @@ module Types =
         | HelpAction
         | QuitAction
         | CancelAction
+        | SaveGameAction
         | UnknownAction
 
     type BlockedAction =

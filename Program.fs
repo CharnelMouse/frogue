@@ -4,6 +4,7 @@ module Main =
     open Input
     open Frogue.Map
     open Output
+    open SaveSystem
     open Action
 
     let levelMap = createMap 20 10 [
@@ -36,6 +37,10 @@ module Main =
 
     [<EntryPoint>]
     let main argv =
-        updateOutput startingGameState
-        mainLoop startingGameState
+        let gameState =
+            if saveGameExists ()
+                then loadGame()
+                else startingGameState
+        updateOutput gameState
+        mainLoop gameState
         0 // return an integer exit code

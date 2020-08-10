@@ -3,6 +3,7 @@ module Output =
     open System
     open Types
     open Frogue.Map
+    open SaveSystem
 
     let private cursorTo pos =
         Console.SetCursorPosition(pos.X, pos.Y)
@@ -66,4 +67,7 @@ module Output =
         | CompleteAction HelpAction -> writeBox "Move: arrow keys Open: o Close: c Wait: . Quit: q" gameState.StatusBar true
         | CompleteAction QuitAction -> writeBox "Bye." gameState.StatusBar false // assumes status bar is last line
         | CompleteAction CancelAction -> writeBox "OK." gameState.StatusBar true
+        | CompleteAction SaveGameAction ->
+            saveGame gameState
+            writeBox "Game saved." gameState.StatusBar true
         | CompleteAction UnknownAction -> writeBox "Unknown command, type ? for help." gameState.StatusBar true

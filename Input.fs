@@ -21,6 +21,7 @@ module Input =
             | '.' -> CompleteCommand Wait
             | '?' -> CompleteCommand Help
             | 'q' -> CompleteCommand Quit
+            | 's' -> CompleteCommand SaveGameCommand
             | '\u0000' -> input |> getNonUnicodeCommand
             | _ -> CompleteCommand UnknownCommand
         | IncompleteAction OpenAction ->

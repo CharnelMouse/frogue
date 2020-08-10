@@ -130,6 +130,7 @@ module Action =
         | CompleteCommand Help -> changeLastAction gameState (CompleteAction HelpAction)
         | CompleteCommand Quit -> changeLastAction gameState (CompleteAction QuitAction)
         | CompleteCommand Cancel -> changeLastAction gameState (CompleteAction CancelAction)
+        | CompleteCommand SaveGameCommand -> changeLastAction gameState (CompleteAction SaveGameAction)
         | CompleteCommand UnknownCommand -> changeLastAction gameState (CompleteAction UnknownAction)
         | IncompleteCommand Open -> changeLastAction gameState (IncompleteAction OpenAction)
         | IncompleteCommand Close -> changeLastAction gameState (IncompleteAction CloseAction)
