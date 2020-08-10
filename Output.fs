@@ -21,8 +21,18 @@ module Output =
         Console.Write(symb: char)
         resetCursor()
 
+    let getOutputTile x =
+        match x with
+        | PlayerTile -> '@'
+        | WallTile -> '#'
+        | ClosedDoorTile -> '+'
+        | OpenDoorTile -> '-'
+        | EmptyTile -> ' '
+        | UnknownTile -> failwith "tile not included in tileset"
+
     let drawTileAt pos map =
         getTileAt pos map
+        |> getOutputTile
         |> writeAt pos
 
     let private clearBox box =
@@ -44,11 +54,11 @@ module Output =
         match gameState.LastAction with
         | CompleteAction StartSession ->
             printMap gameState.Map
-            writeAt gameState.Player.Position '@'
+            writeAt gameState.Player.Position (getOutputTile PlayerTile)
             writeBox "Ready." gameState.StatusBar true
         | CompleteAction (MoveAction (origin, destination)) ->
             drawTileAt origin gameState.Map
-            writeAt destination '@'
+            writeAt destination (getOutputTile PlayerTile)
         | BlockedAction MoveActionBlockedByVoid -> writeBox "There's nothing there!" gameState.StatusBar true
         | BlockedAction MoveActionBlockedByWall -> writeBox "You bump up against the wall." gameState.StatusBar true
         | CompleteAction (OpenDoorAction pos) ->

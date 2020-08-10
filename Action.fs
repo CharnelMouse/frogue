@@ -44,9 +44,9 @@ module Action =
                 LastAction = BlockedAction OpenToActionBlockedByVoid
             }
         else
-            let targetTileType = posTileType toPos gameState.Map
+            let targetTileType = getTileAt toPos gameState.Map
             match targetTileType with
-            | ClosedDoor -> openDoorAction gameState toPos
+            | ClosedDoorTile -> openDoorAction gameState toPos
             | _ -> {
                 Player = {Position = pos}
                 Map = gameState.Map
@@ -70,9 +70,9 @@ module Action =
                 LastAction = BlockedAction CloseToActionBlockedByVoid
             }
         else
-            let targetTileType = posTileType toPos gameState.Map
+            let targetTileType = getTileAt toPos gameState.Map
             match targetTileType with
-            | OpenDoor -> closeDoorAction gameState toPos
+            | OpenDoorTile -> closeDoorAction gameState toPos
             | _ -> {
                 Player = {Position = pos}
                 Map = gameState.Map
@@ -97,15 +97,15 @@ module Action =
                 LastAction = BlockedAction MoveActionBlockedByVoid
             }
         else
-            let targetTileType = posTileType newPos gameState.Map
+            let targetTileType = getTileAt newPos gameState.Map
             match targetTileType with
-            | Wall -> {
+            | WallTile -> {
                 Player = {Position = oldPos}
                 Map = map
                 StatusBar = statusBar
                 LastAction = BlockedAction MoveActionBlockedByWall
                 }
-            | ClosedDoor -> openDoorAction gameState newPos
+            | ClosedDoorTile -> openDoorAction gameState newPos
             | _ -> {
                 Player = {Position = newPos}
                 Map = gameState.Map
