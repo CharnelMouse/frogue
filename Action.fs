@@ -113,16 +113,23 @@ module Action =
                 LastAction = CompleteAction (MoveAction (gameState.Player.Position, newPos))
                 }
 
+    let changeLastAction gameState action =
+        {
+            Player = gameState.Player
+            Map = gameState.Map
+            StatusBar = gameState.StatusBar
+            LastAction = action
+        }
+
     let resolveCommand gameState command =
-        let {Player = player; Map = map; StatusBar = statusBar; LastAction = _} = gameState
         match command with
         | CompleteCommand (Move direction) -> resolveMoveCommand gameState direction
         | CompleteCommand (OpenTo direction) -> resolveOpenToCommand gameState direction
         | CompleteCommand (CloseTo direction) -> resolveCloseToCommand gameState direction
-        | CompleteCommand Wait -> {Player = player; Map = map; StatusBar = statusBar; LastAction = CompleteAction WaitAction}
-        | CompleteCommand Help -> {Player = player; Map = map; StatusBar = statusBar; LastAction = CompleteAction HelpAction}
-        | CompleteCommand Quit -> {Player = player; Map = map; StatusBar = statusBar; LastAction = CompleteAction QuitAction}
-        | CompleteCommand Cancel -> {Player = player; Map = map; StatusBar = statusBar; LastAction = CompleteAction CancelAction}
-        | CompleteCommand UnknownCommand -> {Player = player; Map = map; StatusBar = statusBar; LastAction = CompleteAction UnknownAction}
-        | IncompleteCommand Open -> {Player = player; Map = map; StatusBar = statusBar; LastAction = IncompleteAction OpenAction}
-        | IncompleteCommand Close -> {Player = player; Map = map; StatusBar = statusBar; LastAction = IncompleteAction CloseAction}
+        | CompleteCommand Wait -> changeLastAction gameState (CompleteAction WaitAction)
+        | CompleteCommand Help -> changeLastAction gameState (CompleteAction HelpAction)
+        | CompleteCommand Quit -> changeLastAction gameState (CompleteAction QuitAction)
+        | CompleteCommand Cancel -> changeLastAction gameState (CompleteAction CancelAction)
+        | CompleteCommand UnknownCommand -> changeLastAction gameState (CompleteAction UnknownAction)
+        | IncompleteCommand Open -> changeLastAction gameState (IncompleteAction OpenAction)
+        | IncompleteCommand Close -> changeLastAction gameState (IncompleteAction CloseAction)
