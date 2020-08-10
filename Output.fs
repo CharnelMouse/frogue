@@ -41,15 +41,24 @@ module Output =
 
     let updateOutput gameState =
         match gameState.LastAction with
-        | CompleteAction StartSession -> printMap gameState.Map; writeAt gameState.Player.Position '@'; writeBox "Ready." gameState.StatusBar true
-        | CompleteAction (MoveAction (origin, destination)) -> drawTileAt origin gameState.Map; writeAt destination '@'
+        | CompleteAction StartSession ->
+            printMap gameState.Map
+            writeAt gameState.Player.Position '@'
+            writeBox "Ready." gameState.StatusBar true
+        | CompleteAction (MoveAction (origin, destination)) ->
+            drawTileAt origin gameState.Map
+            writeAt destination '@'
         | BlockedAction MoveActionBlockedByVoid -> writeBox "There's nothing there!" gameState.StatusBar true
         | BlockedAction MoveActionBlockedByWall -> writeBox "You bump up against the wall." gameState.StatusBar true
-        | CompleteAction (OpenDoorAction pos) -> drawTileAt pos gameState.Map; writeBox "You open the door." gameState.StatusBar true
+        | CompleteAction (OpenDoorAction pos) ->
+            drawTileAt pos gameState.Map
+            writeBox "You open the door." gameState.StatusBar true
         | BlockedAction OpenToActionBlockedByVoid -> writeBox "There's nothing there!" gameState.StatusBar true
         | BlockedAction OpenToActionBlockedByInvalidTile -> writeBox "There's nothing there to open!" gameState.StatusBar true
         | IncompleteAction OpenAction -> writeBox "Open in which direction?" gameState.StatusBar true
-        | CompleteAction (CloseDoorAction pos) -> drawTileAt pos gameState.Map; writeBox "You close the door." gameState.StatusBar true
+        | CompleteAction (CloseDoorAction pos) ->
+            drawTileAt pos gameState.Map
+            writeBox "You close the door." gameState.StatusBar true
         | BlockedAction CloseToActionBlockedByVoid -> writeBox "There's nothing there!" gameState.StatusBar true
         | BlockedAction CloseToActionBlockedByInvalidTile -> writeBox "There's nothing there to close!" gameState.StatusBar true
         | IncompleteAction CloseAction -> writeBox "Close in which direction?" gameState.StatusBar true
