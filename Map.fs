@@ -1,19 +1,6 @@
 namespace Frogue
 module Map =
     open Types
-    type Map = {
-        Tiles: string list
-        Width: int
-        Height: int
-    }
-
-    type GameState = {
-        Player: Player
-        Map: Map
-        StatusBar: TextBox
-        LastAction: Action
-    }
-
     type TileType =
     | Wall
     | ClosedDoor

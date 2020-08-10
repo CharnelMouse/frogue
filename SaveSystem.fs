@@ -2,7 +2,6 @@ namespace Frogue
 module SaveSystem =
     open System.IO
     open Types
-    open Frogue.Map
 
     let convertGameStateToText gameState =
         let {

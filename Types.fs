@@ -9,6 +9,17 @@ module Types =
         Position: Position;
     }
 
+    type Map = {
+        Tiles: string list
+        Width: int
+        Height: int
+    }
+
+    type TextBox = {
+        Start: Position;
+        Length: int;
+    }
+
     type Direction =
         | North
         | South
@@ -63,7 +74,9 @@ module Types =
         | BlockedAction of BlockedAction
         | IncompleteAction of IncompleteAction
 
-    type TextBox = {
-        Start: Position;
-        Length: int;
+    type GameState = {
+        Player: Player
+        Map: Map
+        StatusBar: TextBox
+        LastAction: Action
     }
