@@ -13,9 +13,9 @@ module Tilesets =
 
     let (dottedTilesetParser: TilesetParser) = fun tile ->
         match tile with
-        | EmptyTile -> '.' // Block elements: medium shade
+        | EmptyTile -> '.'
         | OpenDoorTile -> '-'
         | ClosedDoorTile -> '+'
-        | WallTile -> '#' // Block elements: dark shade
+        | WallTile -> '#'
         | PlayerTile -> '@'
         | UnknownTile -> failwith "tile not found in tileset"
