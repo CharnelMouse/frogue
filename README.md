@@ -4,6 +4,7 @@ A small roguelike I'm making to learn F#.
 
 Current to-dos:
 
+- Handle void lookups with options instead of failures
 - Add some more interesting tilesets
   - Let tile char depend on tile's neighbours, e.g. doors/walls depend on nearby doors/walls
     - Consolas supports "pipe" walls (U+2580 to U+256c), so can do Rogue-style walls and directional door chars
