@@ -57,6 +57,10 @@ module Output =
             printMap gameState.Map gameState.Tileset
             writeAt gameState.Player.Position (getOutputTile gameState.Tileset PlayerTile)
             writeBox "Ready." gameState.StatusBar true
+        | CompleteAction StartSessionWithUnknownTileset ->
+            printMap gameState.Map gameState.Tileset
+            writeAt gameState.Player.Position (getOutputTile gameState.Tileset PlayerTile)
+            writeBox "Save game contained unknown tileset, switching to default." gameState.StatusBar true
         | CompleteAction (MoveAction (origin, destination)) ->
             drawTileAt origin gameState.Map gameState.Tileset
             writeAt destination (getOutputTile gameState.Tileset PlayerTile)

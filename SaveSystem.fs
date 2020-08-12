@@ -28,12 +28,16 @@ module SaveSystem =
             Player = {Position = {X = int strs.[0]; Y = int strs.[1]}}
             Map = {Width = int strs.[2]; Height = int strs.[3]; Tiles = Array.toList(strs.[4].Split ";")}
             StatusBar = {Start = {X = int strs.[5]; Y = int strs.[6]}; Length = int strs.[7]}
-            LastAction = CompleteAction StartSession
+            LastAction =
+                match strs.[8] with
+                | "DefaultTileset" -> CompleteAction StartSession
+                | "DottedTileset" -> CompleteAction StartSession
+                | _ -> CompleteAction StartSessionWithUnknownTileset
             Tileset =
                 match strs.[8] with
                 | "DefaultTileset" -> DefaultTileset
                 | "DottedTileset" -> DottedTileset
-                | _ -> failwith "save file contains unknown tileset"
+                | _ -> DefaultTileset
         }
 
     let saveGameExists () =

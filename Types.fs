@@ -48,6 +48,7 @@ module Types =
 
     type CompleteAction =
         | StartSession
+        | StartSessionWithUnknownTileset
         | MoveAction of Position * Position
         | OpenDoorAction of Position
         | CloseDoorAction of Position
