@@ -2,7 +2,6 @@ namespace Frogue
 module Action =
     open Types
     open Frogue.Map
-    open Tilesets
 
     let private mutateSingleChar str index char =
         String.mapi (fun i x -> if i = index then char else x) str

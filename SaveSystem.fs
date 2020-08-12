@@ -2,7 +2,6 @@ namespace Frogue
 module SaveSystem =
     open System.IO
     open Types
-    open Tilesets
 
     let convertGameStateToText gameState =
         let {

@@ -3,7 +3,6 @@ module Main =
     open Types
     open Input
     open Frogue.Map
-    open Tilesets
     open Output
     open SaveSystem
     open Action
