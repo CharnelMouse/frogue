@@ -6,57 +6,66 @@ module Action =
     let private mutateSingleChar str index char =
         String.mapi (fun i x -> if i = index then char else x) str
 
-    let private openDoorAction gameState pos =
+    let changeMapTile map pos char =
+        List.mapi (fun i x -> if i = pos.Y then mutateSingleChar x pos.X char else x) map.Tiles
+
+    let private changeMap gameState map = {
+        Player = gameState.Player
+        Map = map
+        StatusBar = gameState.StatusBar
+        Action = gameState.Action
+        Tileset = gameState.Tileset
+    }
+
+    let private changeAction gameState action =
+        {
+            Player = gameState.Player
+            Map = gameState.Map
+            StatusBar = gameState.StatusBar
+            Action = action
+            Tileset = gameState.Tileset
+        }
+
+    let private changeTileset gameState = {
+        Player = gameState.Player
+        Map = gameState.Map
+        StatusBar = gameState.StatusBar
+        Action = gameState.Action
+        Tileset =
+            match gameState.Tileset with
+            | DefaultTileset -> DottedTileset
+            | DottedTileset -> DefaultTileset
+    }
+
+    let private executeOpenDoorAction gameState pos =
         let map = gameState.Map
         let newTiles = List.mapi (fun i x -> if i = pos.Y then mutateSingleChar x pos.X '-' else x) map.Tiles
         let newMap = createMap map.Width map.Height newTiles
-        let newGameState = {
-            Player = gameState.Player
-            Map = newMap
-            StatusBar = gameState.StatusBar
-            Action = CompleteAction (OpenDoorAction pos)
-            Tileset = gameState.Tileset}
-        newGameState
+        changeMap gameState newMap
 
-    let private closeDoorAction gameState pos =
+    let private executeCloseDoorAction gameState pos =
         let map = gameState.Map
-        let newTiles = List.mapi (fun i x -> if i = pos.Y then mutateSingleChar x pos.X '+' else x) map.Tiles
+        let newTiles = changeMapTile map pos '+'
         let newMap = createMap map.Width map.Height newTiles
-        let newGameState = {
-            Player = gameState.Player
-            Map = newMap
-            StatusBar = gameState.StatusBar
-            Action = CompleteAction (CloseDoorAction pos)
-            Tileset = gameState.Tileset}
-        newGameState
+        changeMap gameState newMap
 
     let private resolveOpenToCommand gameState direction =
-        let {Player = {Position = pos}} = gameState
+        let {Player = {Position = {X = x; Y = y}}} = gameState
         let toPos =
             match direction with
-            | North -> {X = pos.X; Y = pos.Y - 1}
-            | South -> {X = pos.X; Y = pos.Y + 1}
-            | West -> {X = pos.X - 1; Y = pos.Y}
-            | East -> {X = pos.X + 1; Y = pos.Y}
-        if not (posIsOnMap toPos gameState.Map)
-            then {
-                Player = {Position = pos}
-                Map = gameState.Map
-                StatusBar = gameState.StatusBar
-                Action = BlockedAction OpenToActionBlockedByVoid
-                Tileset = gameState.Tileset
-            }
-        else
-            let targetTileType = getTileAt toPos gameState.Map
-            match targetTileType with
-            | ClosedDoorTile -> openDoorAction gameState toPos
-            | _ -> {
-                Player = {Position = pos}
-                Map = gameState.Map
-                StatusBar = gameState.StatusBar
-                Action = BlockedAction OpenToActionBlockedByInvalidTile
-                Tileset = gameState.Tileset
-                }
+            | North -> {X = x; Y = y - 1}
+            | South -> {X = x; Y = y + 1}
+            | West -> {X = x - 1; Y = y}
+            | East -> {X = x + 1; Y = y}
+        let newAction =
+            if not (posIsOnMap toPos gameState.Map)
+                then BlockedAction OpenToActionBlockedByVoid
+            else
+                let targetTileType = getTileAt toPos gameState.Map
+                match targetTileType with
+                | ClosedDoorTile -> CompleteAction (OpenDoorAction toPos)
+                | _ -> BlockedAction OpenToActionBlockedByInvalidTile
+        changeAction gameState newAction
 
     let private resolveCloseToCommand gameState direction =
         let {Player = {Position = pos}} = gameState
@@ -66,28 +75,18 @@ module Action =
             | South -> {X = pos.X; Y = pos.Y + 1}
             | West -> {X = pos.X - 1; Y = pos.Y}
             | East -> {X = pos.X + 1; Y = pos.Y}
-        if not (posIsOnMap toPos gameState.Map)
-            then {
-                Player = {Position = pos}
-                Map = gameState.Map
-                StatusBar = gameState.StatusBar
-                Action = BlockedAction CloseToActionBlockedByVoid
-                Tileset = gameState.Tileset
-            }
-        else
-            let targetTileType = getTileAt toPos gameState.Map
-            match targetTileType with
-            | OpenDoorTile -> closeDoorAction gameState toPos
-            | _ -> {
-                Player = {Position = pos}
-                Map = gameState.Map
-                StatusBar = gameState.StatusBar
-                Action = BlockedAction CloseToActionBlockedByInvalidTile
-                Tileset = gameState.Tileset
-                }
+        let newAction =
+            if not (posIsOnMap toPos gameState.Map)
+                then BlockedAction CloseToActionBlockedByVoid
+            else
+                let targetTileType = getTileAt toPos gameState.Map
+                match targetTileType with
+                | OpenDoorTile -> CompleteAction (CloseDoorAction toPos)
+                | _ -> BlockedAction CloseToActionBlockedByInvalidTile
+        changeAction gameState newAction
 
     let private resolveMoveCommand gameState direction =
-        let {Player = {Position = oldPos}; Map = map; StatusBar = statusBar; Action = _} = gameState
+        let {Player = {Position = oldPos}; Map = map; Action = _} = gameState
         let {X = oldX; Y = oldY} = oldPos
         let newPos =
             match direction with
@@ -95,41 +94,16 @@ module Action =
             | South -> {X = oldX; Y = oldY + 1}
             | West -> {X = oldX - 1; Y = oldY}
             | East -> {X = oldX + 1; Y = oldY}
-        if not (posIsOnMap newPos gameState.Map)
-            then {
-                Player = {Position = oldPos}
-                Map = map
-                StatusBar = statusBar
-                Action = BlockedAction MoveActionBlockedByVoid
-                Tileset = gameState.Tileset
-            }
-        else
-            let targetTileType = getTileAt newPos gameState.Map
-            match targetTileType with
-            | WallTile -> {
-                Player = {Position = oldPos}
-                Map = map
-                StatusBar = statusBar
-                Action = BlockedAction MoveActionBlockedByWall
-                Tileset = gameState.Tileset
-                }
-            | ClosedDoorTile -> openDoorAction gameState newPos
-            | _ -> {
-                Player = {Position = newPos}
-                Map = gameState.Map
-                StatusBar = gameState.StatusBar
-                Action = CompleteAction (MoveAction (gameState.Player.Position, newPos))
-                Tileset = gameState.Tileset
-                }
-
-    let changeAction gameState action =
-        {
-            Player = gameState.Player
-            Map = gameState.Map
-            StatusBar = gameState.StatusBar
-            Action = action
-            Tileset = gameState.Tileset
-        }
+        let newAction =
+            if not (posIsOnMap newPos map)
+                then BlockedAction MoveActionBlockedByVoid
+            else
+                let targetTileType = getTileAt newPos map
+                match targetTileType with
+                | WallTile -> BlockedAction MoveActionBlockedByWall
+                | ClosedDoorTile -> CompleteAction (OpenDoorAction newPos)
+                | _ -> CompleteAction (MoveAction  (oldPos, newPos))
+        changeAction gameState newAction
 
     let resolveCommand gameState command =
         match command with
@@ -141,18 +115,36 @@ module Action =
         | CompleteCommand Quit -> changeAction gameState (CompleteAction QuitAction)
         | CompleteCommand Cancel -> changeAction gameState (CompleteAction CancelAction)
         | CompleteCommand SaveGameCommand -> changeAction gameState (CompleteAction SaveGameAction)
-        | CompleteCommand ToggleTilesetCommand ->
-            let newGameState = {
-                Player = gameState.Player
-                Map = gameState.Map
-                StatusBar = gameState.StatusBar
-                Action = CompleteAction ToggleTileSetAction
-                Tileset =
-                    match gameState.Tileset with
-                    | DefaultTileset -> DottedTileset
-                    | DottedTileset -> DefaultTileset
-            }
-            newGameState
+        | CompleteCommand ToggleTilesetCommand -> changeAction gameState (CompleteAction ToggleTileSetAction)
         | CompleteCommand UnknownCommand -> changeAction gameState (CompleteAction UnknownAction)
         | IncompleteCommand Open -> changeAction gameState (IncompleteAction OpenAction)
         | IncompleteCommand Close -> changeAction gameState (IncompleteAction CloseAction)
+
+    let executeAction gameState =
+        match gameState.Action with
+        | CompleteAction (OpenDoorAction toPos) -> executeOpenDoorAction gameState toPos
+        | CompleteAction (CloseDoorAction toPos) -> executeCloseDoorAction gameState toPos
+        | CompleteAction (MoveAction (_, newPos)) -> {
+                Player = {Position = newPos}
+                Map = gameState.Map
+                StatusBar = gameState.StatusBar
+                Action = gameState.Action
+                Tileset = gameState.Tileset
+            }
+        | CompleteAction ToggleTileSetAction -> changeTileset gameState
+        | BlockedAction MoveActionBlockedByVoid -> gameState
+        | BlockedAction MoveActionBlockedByWall -> gameState
+        | BlockedAction OpenToActionBlockedByVoid -> gameState
+        | BlockedAction OpenToActionBlockedByInvalidTile -> gameState
+        | BlockedAction CloseToActionBlockedByVoid -> gameState
+        | BlockedAction CloseToActionBlockedByInvalidTile -> gameState
+        | CompleteAction StartSession -> gameState
+        | CompleteAction StartSessionWithUnknownTileset -> gameState
+        | CompleteAction WaitAction -> gameState
+        | CompleteAction HelpAction -> gameState
+        | CompleteAction QuitAction -> gameState
+        | CompleteAction CancelAction -> gameState
+        | CompleteAction SaveGameAction -> gameState
+        | CompleteAction UnknownAction -> gameState
+        | IncompleteAction OpenAction -> gameState
+        | IncompleteAction CloseAction -> gameState

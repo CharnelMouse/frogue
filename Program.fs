@@ -30,7 +30,9 @@ module Main =
 
     let rec mainLoop gameState =
         let command = getCommand gameState.Action
-        let newGameState = resolveCommand gameState command
+        let newGameState =
+            resolveCommand gameState command
+            |> executeAction
         updateOutput newGameState
         match newGameState.Action with
         | CompleteAction QuitAction -> ()
