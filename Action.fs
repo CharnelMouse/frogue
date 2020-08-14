@@ -6,7 +6,7 @@ module Action =
     let private mutateSingleChar str index char =
         String.mapi (fun i x -> if i = index then char else x) str
 
-    let changeMapTile map pos char =
+    let private changeMapTile map pos char =
         List.mapi (fun i x -> if i = pos.Y then mutateSingleChar x pos.X char else x) map.Tiles
 
     let private changePlayerPosition gameState pos = {

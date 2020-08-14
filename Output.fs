@@ -12,7 +12,7 @@ module Output =
     let private resetCursor() =
         cursorTo {X = 0; Y = 0}
 
-    let printMap map tileset =
+    let private printMap map tileset =
         let tilesetParser =
             match tileset with
             | DefaultTileset -> defaultTilesetParser
@@ -21,17 +21,17 @@ module Output =
         for row in map.Tiles do
             Console.WriteLine(String.map (getInternalTileType >> tilesetParser) row)
 
-    let writeAt pos (symb: char)  =
+    let private writeAt pos (symb: char)  =
         cursorTo pos
         Console.Write(symb)
         resetCursor()
 
-    let getOutputTile tileset x =
+    let private getOutputTile tileset x =
         match tileset with
         | DefaultTileset -> defaultTilesetParser x
         | DottedTileset -> dottedTilesetParser x
 
-    let drawTileAt pos map tileset =
+    let private drawTileAt pos map tileset =
         getTileAt pos map
         |> getOutputTile tileset
         |> writeAt pos
@@ -45,7 +45,7 @@ module Output =
         cursorTo startPos
         Console.Write(str: string)
 
-    let writeBox str box reset =
+    let private writeBox str box reset =
         if String.length(str) > box.Length then failwith "String larger than box length"
         clearBox box
         writeFrom box.Start str

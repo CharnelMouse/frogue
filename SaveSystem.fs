@@ -3,7 +3,7 @@ module SaveSystem =
     open System.IO
     open Types
 
-    let convertGameStateToText gameState =
+    let private convertGameStateToText gameState =
         let {
             Player = {Position = {X = x; Y = y}}
             Map = {Width = mW; Height = mH; Tiles = mT}
@@ -23,7 +23,7 @@ module SaveSystem =
             string tileset
         ]
 
-    let convertTextToGameState (strs: string list) =
+    let private convertTextToGameState (strs: string list) =
         {
             Player = {Position = {X = int strs.[0]; Y = int strs.[1]}}
             Map = {Width = int strs.[2]; Height = int strs.[3]; Tiles = Array.toList(strs.[4].Split ";")}
