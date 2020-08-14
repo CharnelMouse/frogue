@@ -52,7 +52,7 @@ module Output =
         if reset then resetCursor()
 
     let updateOutput gameState =
-        match gameState.LastAction with
+        match gameState.Action with
         | CompleteAction StartSession ->
             printMap gameState.Map gameState.Tileset
             writeAt gameState.Player.Position (getOutputTile gameState.Tileset PlayerTile)

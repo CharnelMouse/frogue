@@ -24,15 +24,15 @@ module Main =
         Player = {Position = {X = 1; Y = 1}}
         Map = levelMap
         StatusBar = {Start = {X = 0; Y = levelMap.Height + 1}; Length = 50}
-        LastAction = CompleteAction StartSession
+        Action = CompleteAction StartSession
         Tileset = DefaultTileset
     }
 
     let rec mainLoop gameState =
-        let command = getCommand gameState.LastAction
+        let command = getCommand gameState.Action
         let newGameState = resolveCommand gameState command
         updateOutput newGameState
-        match newGameState.LastAction with
+        match newGameState.Action with
         | CompleteAction QuitAction -> ()
         | _ -> mainLoop newGameState
 

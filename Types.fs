@@ -95,6 +95,6 @@ module Types =
         Player: Player
         Map: Map
         StatusBar: TextBox
-        LastAction: Action
+        Action: Action
         Tileset: Tileset
     }

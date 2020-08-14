@@ -14,7 +14,7 @@ module Action =
             Player = gameState.Player
             Map = newMap
             StatusBar = gameState.StatusBar
-            LastAction = CompleteAction (OpenDoorAction pos)
+            Action = CompleteAction (OpenDoorAction pos)
             Tileset = gameState.Tileset}
         newGameState
 
@@ -26,7 +26,7 @@ module Action =
             Player = gameState.Player
             Map = newMap
             StatusBar = gameState.StatusBar
-            LastAction = CompleteAction (CloseDoorAction pos)
+            Action = CompleteAction (CloseDoorAction pos)
             Tileset = gameState.Tileset}
         newGameState
 
@@ -43,7 +43,7 @@ module Action =
                 Player = {Position = pos}
                 Map = gameState.Map
                 StatusBar = gameState.StatusBar
-                LastAction = BlockedAction OpenToActionBlockedByVoid
+                Action = BlockedAction OpenToActionBlockedByVoid
                 Tileset = gameState.Tileset
             }
         else
@@ -54,7 +54,7 @@ module Action =
                 Player = {Position = pos}
                 Map = gameState.Map
                 StatusBar = gameState.StatusBar
-                LastAction = BlockedAction OpenToActionBlockedByInvalidTile
+                Action = BlockedAction OpenToActionBlockedByInvalidTile
                 Tileset = gameState.Tileset
                 }
 
@@ -71,7 +71,7 @@ module Action =
                 Player = {Position = pos}
                 Map = gameState.Map
                 StatusBar = gameState.StatusBar
-                LastAction = BlockedAction CloseToActionBlockedByVoid
+                Action = BlockedAction CloseToActionBlockedByVoid
                 Tileset = gameState.Tileset
             }
         else
@@ -82,12 +82,12 @@ module Action =
                 Player = {Position = pos}
                 Map = gameState.Map
                 StatusBar = gameState.StatusBar
-                LastAction = BlockedAction CloseToActionBlockedByInvalidTile
+                Action = BlockedAction CloseToActionBlockedByInvalidTile
                 Tileset = gameState.Tileset
                 }
 
     let private resolveMoveCommand gameState direction =
-        let {Player = {Position = oldPos}; Map = map; StatusBar = statusBar; LastAction = _} = gameState
+        let {Player = {Position = oldPos}; Map = map; StatusBar = statusBar; Action = _} = gameState
         let {X = oldX; Y = oldY} = oldPos
         let newPos =
             match direction with
@@ -100,7 +100,7 @@ module Action =
                 Player = {Position = oldPos}
                 Map = map
                 StatusBar = statusBar
-                LastAction = BlockedAction MoveActionBlockedByVoid
+                Action = BlockedAction MoveActionBlockedByVoid
                 Tileset = gameState.Tileset
             }
         else
@@ -110,7 +110,7 @@ module Action =
                 Player = {Position = oldPos}
                 Map = map
                 StatusBar = statusBar
-                LastAction = BlockedAction MoveActionBlockedByWall
+                Action = BlockedAction MoveActionBlockedByWall
                 Tileset = gameState.Tileset
                 }
             | ClosedDoorTile -> openDoorAction gameState newPos
@@ -118,16 +118,16 @@ module Action =
                 Player = {Position = newPos}
                 Map = gameState.Map
                 StatusBar = gameState.StatusBar
-                LastAction = CompleteAction (MoveAction (gameState.Player.Position, newPos))
+                Action = CompleteAction (MoveAction (gameState.Player.Position, newPos))
                 Tileset = gameState.Tileset
                 }
 
-    let changeLastAction gameState action =
+    let changeAction gameState action =
         {
             Player = gameState.Player
             Map = gameState.Map
             StatusBar = gameState.StatusBar
-            LastAction = action
+            Action = action
             Tileset = gameState.Tileset
         }
 
@@ -136,23 +136,23 @@ module Action =
         | CompleteCommand (Move direction) -> resolveMoveCommand gameState direction
         | CompleteCommand (OpenTo direction) -> resolveOpenToCommand gameState direction
         | CompleteCommand (CloseTo direction) -> resolveCloseToCommand gameState direction
-        | CompleteCommand Wait -> changeLastAction gameState (CompleteAction WaitAction)
-        | CompleteCommand Help -> changeLastAction gameState (CompleteAction HelpAction)
-        | CompleteCommand Quit -> changeLastAction gameState (CompleteAction QuitAction)
-        | CompleteCommand Cancel -> changeLastAction gameState (CompleteAction CancelAction)
-        | CompleteCommand SaveGameCommand -> changeLastAction gameState (CompleteAction SaveGameAction)
+        | CompleteCommand Wait -> changeAction gameState (CompleteAction WaitAction)
+        | CompleteCommand Help -> changeAction gameState (CompleteAction HelpAction)
+        | CompleteCommand Quit -> changeAction gameState (CompleteAction QuitAction)
+        | CompleteCommand Cancel -> changeAction gameState (CompleteAction CancelAction)
+        | CompleteCommand SaveGameCommand -> changeAction gameState (CompleteAction SaveGameAction)
         | CompleteCommand ToggleTilesetCommand ->
             let newGameState = {
                 Player = gameState.Player
                 Map = gameState.Map
                 StatusBar = gameState.StatusBar
-                LastAction = CompleteAction ToggleTileSetAction
+                Action = CompleteAction ToggleTileSetAction
                 Tileset =
                     match gameState.Tileset with
                     | DefaultTileset -> DottedTileset
                     | DottedTileset -> DefaultTileset
             }
             newGameState
-        | CompleteCommand UnknownCommand -> changeLastAction gameState (CompleteAction UnknownAction)
-        | IncompleteCommand Open -> changeLastAction gameState (IncompleteAction OpenAction)
-        | IncompleteCommand Close -> changeLastAction gameState (IncompleteAction CloseAction)
+        | CompleteCommand UnknownCommand -> changeAction gameState (CompleteAction UnknownAction)
+        | IncompleteCommand Open -> changeAction gameState (IncompleteAction OpenAction)
+        | IncompleteCommand Close -> changeAction gameState (IncompleteAction CloseAction)

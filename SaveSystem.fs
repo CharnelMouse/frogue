@@ -8,7 +8,7 @@ module SaveSystem =
             Player = {Position = {X = x; Y = y}}
             Map = {Width = mW; Height = mH; Tiles = mT}
             StatusBar = {Start = {X = sX; Y = sY}; Length = sL}
-            LastAction = _
+            Action = _
             Tileset = tileset
             } = gameState
         [
@@ -28,7 +28,7 @@ module SaveSystem =
             Player = {Position = {X = int strs.[0]; Y = int strs.[1]}}
             Map = {Width = int strs.[2]; Height = int strs.[3]; Tiles = Array.toList(strs.[4].Split ";")}
             StatusBar = {Start = {X = int strs.[5]; Y = int strs.[6]}; Length = int strs.[7]}
-            LastAction =
+            Action =
                 match strs.[8] with
                 | "DefaultTileset" -> CompleteAction StartSession
                 | "DottedTileset" -> CompleteAction StartSession
