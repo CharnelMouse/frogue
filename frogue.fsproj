@@ -2,7 +2,6 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Types.fs" />
@@ -12,6 +11,7 @@
     <Compile Include="SaveSystem.fs" />
     <Compile Include="Output.fs" />
     <Compile Include="Action.fs" />
+    <Compile Include="CommandParser.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 </Project>
