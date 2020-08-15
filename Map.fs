@@ -15,6 +15,9 @@ module Map =
         | '@' -> PlayerTile
         | _ -> UnknownTile
 
+    let convertTextTilesToTiles textTiles =
+        List.map (function x -> List.map getInternalTileType (Seq.toList x)) textTiles
+
     let createMap width height textTiles =
         let widthIsValid = List.length(textTiles) = height
         let heightIsValid = List.reduce (&&) (List.map (function x -> (String.length(x) = width)) textTiles)
@@ -24,13 +27,11 @@ module Map =
             Width = width
             Height = height
             TextTiles = textTiles
-            Tiles = List.map (function x -> List.map getInternalTileType (Seq.toList x)) textTiles
+            Tiles = convertTextTilesToTiles textTiles
         }
 
     let getTileAt pos map =
         let {X = x; Y = y} = pos
-        let internalTile =
-            match posIsOnMap pos map with
-            | false -> failwith "position out of map bounds"
-            | true -> map.TextTiles.[y].[x]
-        getInternalTileType internalTile
+        match posIsOnMap pos map with
+        | false -> failwith "position out of map bounds"
+        | true -> map.Tiles.[y].[x]

@@ -12,14 +12,22 @@ module Output =
     let private resetCursor() =
         cursorTo {X = 0; Y = 0}
 
+    let convertInternalTilesToTiles (parser: TilesetParser) tiles =
+        tiles
+        |> List.map (parser >> string)
+        |> List.toSeq
+        |> String.concat "" 
+
     let private printMap map tileset =
         let tilesetParser =
             match tileset with
             | DefaultTileset -> defaultTilesetParser
             | DottedTileset -> dottedTilesetParser
         Console.Clear()
-        for row in map.TextTiles do
-            Console.WriteLine(String.map (getInternalTileType >> tilesetParser) row)
+        for row in map.Tiles do
+            row
+            |> convertInternalTilesToTiles tilesetParser
+            |> Console.WriteLine
 
     let private writeAt pos (symb: char)  =
         cursorTo pos

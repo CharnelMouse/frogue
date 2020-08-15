@@ -38,14 +38,14 @@ module Action =
 
     let private executeOpenDoorAction gameState pos =
         let map = gameState.Map
-        let newTiles = List.mapi (fun i x -> if i = pos.Y then mutateSingleChar x pos.X '-' else x) map.TextTiles
-        let newMap = createMap map.Width map.Height newTiles
+        let newTextTiles = List.mapi (fun i x -> if i = pos.Y then mutateSingleChar x pos.X '-' else x) map.TextTiles
+        let newMap = createMap map.Width map.Height newTextTiles
         changeMap gameState newMap
 
     let private executeCloseDoorAction gameState pos =
         let map = gameState.Map
-        let newTiles = changeMapTile map pos '+'
-        let newMap = createMap map.Width map.Height newTiles
+        let newTextTiles = changeMapTile map pos '+'
+        let newMap = createMap map.Width map.Height newTextTiles
         changeMap gameState newMap
 
     let executeAction gameState =
