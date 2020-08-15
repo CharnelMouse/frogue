@@ -2,11 +2,12 @@ namespace Frogue
 module SaveSystem =
     open System.IO
     open Types
+    open Frogue.Map
 
     let private convertGameStateToText gameState =
         let {
             Player = {Position = {X = x; Y = y}}
-            Map = {Width = mW; Height = mH; Tiles = mT}
+            Map = {Width = mW; Height = mH; TextTiles = mT}
             StatusBar = {Start = {X = sX; Y = sY}; Length = sL}
             Action = _
             Tileset = tileset
@@ -26,7 +27,7 @@ module SaveSystem =
     let private convertTextToGameState (strs: string list) =
         {
             Player = {Position = {X = int strs.[0]; Y = int strs.[1]}}
-            Map = {Width = int strs.[2]; Height = int strs.[3]; Tiles = Array.toList(strs.[4].Split ";")}
+            Map = createMap (int strs.[2]) (int strs.[3]) (Array.toList(strs.[4].Split ";"))
             StatusBar = {Start = {X = int strs.[5]; Y = int strs.[6]}; Length = int strs.[7]}
             Action =
                 match strs.[8] with

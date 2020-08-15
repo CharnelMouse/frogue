@@ -9,10 +9,19 @@ module Types =
         Position: Position;
     }
 
+    type InternalTile =
+    | EmptyTile
+    | OpenDoorTile
+    | ClosedDoorTile
+    | WallTile
+    | PlayerTile
+    | UnknownTile
+
     type Map = {
-        Tiles: string list
         Width: int
         Height: int
+        TextTiles: string list
+        Tiles: InternalTile list list
     }
 
     type TextBox = {
@@ -76,14 +85,6 @@ module Types =
         | CompleteAction of CompleteAction
         | BlockedAction of BlockedAction
         | IncompleteAction of IncompleteAction
-
-    type InternalTile =
-    | EmptyTile
-    | OpenDoorTile
-    | ClosedDoorTile
-    | WallTile
-    | PlayerTile
-    | UnknownTile
 
     type TilesetParser = InternalTile -> char
 

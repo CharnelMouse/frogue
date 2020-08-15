@@ -18,7 +18,7 @@ module Output =
             | DefaultTileset -> defaultTilesetParser
             | DottedTileset -> dottedTilesetParser
         Console.Clear()
-        for row in map.Tiles do
+        for row in map.TextTiles do
             Console.WriteLine(String.map (getInternalTileType >> tilesetParser) row)
 
     let private writeAt pos (symb: char)  =

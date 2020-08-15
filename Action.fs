@@ -7,7 +7,7 @@ module Action =
         String.mapi (fun i x -> if i = index then char else x) str
 
     let private changeMapTile map pos char =
-        List.mapi (fun i x -> if i = pos.Y then mutateSingleChar x pos.X char else x) map.Tiles
+        List.mapi (fun i x -> if i = pos.Y then mutateSingleChar x pos.X char else x) map.TextTiles
 
     let private changePlayerPosition gameState pos = {
         Player = {Position = pos}
@@ -38,7 +38,7 @@ module Action =
 
     let private executeOpenDoorAction gameState pos =
         let map = gameState.Map
-        let newTiles = List.mapi (fun i x -> if i = pos.Y then mutateSingleChar x pos.X '-' else x) map.Tiles
+        let newTiles = List.mapi (fun i x -> if i = pos.Y then mutateSingleChar x pos.X '-' else x) map.TextTiles
         let newMap = createMap map.Width map.Height newTiles
         changeMap gameState newMap
 
