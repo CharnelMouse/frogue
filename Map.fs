@@ -6,7 +6,7 @@ module Map =
         let {X = x; Y = y} = pos
         x >= 0 && x < map.Width && y >= 0 && y < map.Height
 
-    let getInternalTileType internalTile =
+    let private getInternalTileType internalTile =
         match internalTile with
         | ' ' -> EmptyTile
         | '-' -> OpenDoorTile
@@ -15,7 +15,7 @@ module Map =
         | '@' -> PlayerTile
         | _ -> UnknownTile
 
-    let convertTextTilesToTiles textTiles =
+    let private convertTextTilesToTiles textTiles =
         List.map (function x -> List.map getInternalTileType (Seq.toList x)) textTiles
 
     let createMap width height textTiles =

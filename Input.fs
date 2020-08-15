@@ -11,9 +11,9 @@ module Input =
         | ConsoleKey.DownArrow -> CompleteCommand (Move South)
         | _ -> CompleteCommand UnknownCommand
 
-    let rec getCommand lastAction =
+    let rec getCommand action =
         let input = Console.ReadKey(true);
-        match lastAction with
+        match action with
         | CompleteAction _ | BlockedAction _ ->
             match input.KeyChar with
             | 'o' -> IncompleteCommand Open
@@ -32,7 +32,7 @@ module Input =
             | ConsoleKey.UpArrow -> CompleteCommand (OpenTo North)
             | ConsoleKey.DownArrow -> CompleteCommand (OpenTo South)
             | ConsoleKey.Escape -> CompleteCommand (Cancel)
-            | _ -> getCommand lastAction
+            | _ -> getCommand action
         | IncompleteAction CloseAction ->
             match input.Key with
             | ConsoleKey.LeftArrow -> CompleteCommand (CloseTo West)
@@ -40,4 +40,4 @@ module Input =
             | ConsoleKey.UpArrow -> CompleteCommand (CloseTo North)
             | ConsoleKey.DownArrow -> CompleteCommand (CloseTo South)
             | ConsoleKey.Escape -> CompleteCommand (Cancel)
-            | _ -> getCommand lastAction
+            | _ -> getCommand action

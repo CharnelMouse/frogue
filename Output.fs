@@ -12,7 +12,7 @@ module Output =
     let private resetCursor() =
         cursorTo {X = 0; Y = 0}
 
-    let convertInternalTilesToTiles (parser: TilesetParser) tiles =
+    let private convertInternalTilesToTiles (parser: TilesetParser) tiles =
         tiles
         |> List.map (parser >> string)
         |> List.toSeq

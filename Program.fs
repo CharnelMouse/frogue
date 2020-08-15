@@ -8,7 +8,7 @@ module Main =
     open SaveSystem
     open Action
 
-    let levelMap = createMap 20 10 [
+    let private levelMap = createMap 20 10 [
         "####################"
         "#              +    "
         "#              #   #"
@@ -21,7 +21,7 @@ module Main =
         "####################"
     ]
 
-    let startingGameState = {
+    let private startingGameState = {
         Player = {Position = {X = 1; Y = 1}}
         Map = levelMap
         StatusBar = {Start = {X = 0; Y = levelMap.Height + 1}; Length = 50}
@@ -29,7 +29,7 @@ module Main =
         Tileset = DefaultTileset
     }
 
-    let rec mainLoop gameState =
+    let rec private mainLoop gameState =
         let command = getCommand gameState.Action
         let newGameState =
             resolveCommand gameState command
@@ -40,7 +40,7 @@ module Main =
         | _ -> mainLoop newGameState
 
     [<EntryPoint>]
-    let main argv =
+    let private main argv =
         let gameState =
             if saveGameExists ()
                 then loadGame()
