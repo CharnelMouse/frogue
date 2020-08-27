@@ -3,11 +3,11 @@ module Action =
     open Types
     open Frogue.Map
 
-    let private mutateSingleChar str index char =
-        String.mapi (fun i x -> if i = index then char else x) str
+    let private mutateSingleTile tiles index tile =
+        List.mapi (fun i x -> if i = index then tile else x) tiles
 
-    let private changeMapTile map pos char =
-        List.mapi (fun i x -> if i = pos.Y then mutateSingleChar x pos.X char else x) map.TextTiles
+    let private changeMapTile map pos tile =
+        List.mapi (fun i x -> if i = pos.Y then mutateSingleTile x pos.X tile else x) map.Tiles
 
     let private changePlayerPosition gameState pos = {
         Player = {Position = pos}
@@ -38,13 +38,13 @@ module Action =
 
     let private executeOpenDoorAction gameState pos =
         let map = gameState.Map
-        changeMapTile map pos '-'
+        changeMapTile map pos OpenDoorTile
         |> createMap map.Width map.Height
         |> changeMap gameState
 
     let private executeCloseDoorAction gameState pos =
         let map = gameState.Map
-        changeMapTile map pos '+'
+        changeMapTile map pos ClosedDoorTile
         |> createMap map.Width map.Height
         |> changeMap gameState
 

@@ -12,12 +12,6 @@ module Output =
     let private resetCursor() =
         cursorTo {X = 0; Y = 0}
 
-    let private convertInternalTilesToTiles (parser: TilesetParser) tiles =
-        tiles
-        |> List.map (parser >> string)
-        |> List.toSeq
-        |> String.concat "" 
-
     let private printMap map tileset =
         let tilesetParser =
             match tileset with

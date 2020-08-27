@@ -20,7 +20,6 @@ module Types =
     type Map = {
         Width: int
         Height: int
-        TextTiles: string list
         Tiles: InternalTile list list
     }
 

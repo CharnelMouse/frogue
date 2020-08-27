@@ -2,13 +2,14 @@ namespace Frogue
 module Main =
     open Types
     open Input
+    open Tilesets
     open Frogue.Map
     open Output
     open CommandParser
     open SaveSystem
     open Action
 
-    let private levelMap = createMap 20 10 [
+    let private levelMap = createMap 20 10 (convertTextTilesToTiles [
         "####################"
         "#              +    "
         "#              #   #"
@@ -19,7 +20,7 @@ module Main =
         "#              #   #"
         "#              #   #"
         "####################"
-    ]
+    ])
 
     let private startingGameState = {
         Player = {Position = {X = 1; Y = 1}}

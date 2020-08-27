@@ -3,11 +3,12 @@ module SaveSystem =
     open System.IO
     open Types
     open Frogue.Map
+    open Tilesets
 
     let private convertGameStateToText gameState =
         let {
             Player = {Position = {X = x; Y = y}}
-            Map = {Width = mW; Height = mH; TextTiles = mT}
+            Map = {Width = mW; Height = mH; Tiles = mT}
             StatusBar = {Start = {X = sX; Y = sY}; Length = sL}
             Action = _
             Tileset = tileset
@@ -17,7 +18,8 @@ module SaveSystem =
             string y
             string mW
             string mH
-            List.reduce (fun x y -> x + ";" + y) mT
+            List.map (fun x -> convertInternalTilesToTiles defaultTilesetParser x) mT
+            |> List.reduce (fun x y -> x + ";" + y)
             string sX
             string sY
             string sL
@@ -27,7 +29,7 @@ module SaveSystem =
     let private convertTextToGameState (strs: string list) =
         {
             Player = {Position = {X = int strs.[0]; Y = int strs.[1]}}
-            Map = createMap (int strs.[2]) (int strs.[3]) (Array.toList(strs.[4].Split ";"))
+            Map = createMap (int strs.[2]) (int strs.[3]) (convertTextTilesToTiles (Array.toList(strs.[4].Split ";")))
             StatusBar = {Start = {X = int strs.[5]; Y = int strs.[6]}; Length = int strs.[7]}
             Action =
                 match strs.[8] with
