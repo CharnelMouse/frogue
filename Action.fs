@@ -3,50 +3,29 @@ module Action =
     open Types
     open Frogue.Map
 
-    let private mutateSingleTile tiles index tile =
-        List.mapi (fun i x -> if i = index then tile else x) tiles
+    let private replaceSingleElementFn index replacer list =
+        List.mapi (fun i x -> if i = index then replacer x else x) list
 
     let private changeMapTile map pos tile =
-        List.mapi (fun i x -> if i = pos.Y then mutateSingleTile x pos.X tile else x) map.Tiles
+        replaceSingleElementFn pos.Y (replaceSingleElementFn pos.X (fun x -> tile)) map.Tiles
+        |> createMap map.Width map.Height
 
     let private changePlayerPosition gameState pos = {
-        Player = {Position = pos}
-        Map = gameState.Map
-        StatusBar = gameState.StatusBar
-        Action = gameState.Action
-        Tileset = gameState.Tileset
+        gameState with Player = {Position = pos}
     }
 
-    let private changeMap gameState map = {
-        Player = gameState.Player
-        Map = map
-        StatusBar = gameState.StatusBar
-        Action = gameState.Action
-        Tileset = gameState.Tileset
-    }
-
-    let private changeTileset gameState = {
-        Player = gameState.Player
-        Map = gameState.Map
-        StatusBar = gameState.StatusBar
-        Action = gameState.Action
-        Tileset =
+    let private changeTileset gameState = 
+        let newTileset = 
             match gameState.Tileset with
             | DefaultTileset -> DottedTileset
             | DottedTileset -> DefaultTileset
-    }
+        {gameState with Tileset = newTileset}
 
     let private executeOpenDoorAction gameState pos =
-        let map = gameState.Map
-        changeMapTile map pos OpenDoorTile
-        |> createMap map.Width map.Height
-        |> changeMap gameState
+        {gameState with Map = changeMapTile gameState.Map pos OpenDoorTile}
 
     let private executeCloseDoorAction gameState pos =
-        let map = gameState.Map
-        changeMapTile map pos ClosedDoorTile
-        |> createMap map.Width map.Height
-        |> changeMap gameState
+        {gameState with Map = changeMapTile gameState.Map pos ClosedDoorTile}
 
     let executeAction gameState =
         match gameState.Action with
