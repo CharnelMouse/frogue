@@ -35,15 +35,15 @@ module Main =
     }
 
     let rec private mainLoop gameState =
-        let command = getCommand gameState.Action
-        let newGameState =
-            resolveCommand gameState command
+        let preClock =
+            getCommand gameState.Action
+            |> resolveCommand gameState
             |> executeAction
-        updateOutput newGameState
-        let timedGameState = updateTime newGameState 
-        match timedGameState.Action with
+        updateOutput preClock
+        let postClock = updateTime preClock 
+        match postClock.Action with
         | CompleteAction QuitAction -> ()
-        | _ -> mainLoop timedGameState
+        | _ -> mainLoop postClock
 
     [<EntryPoint>]
     let private main argv =
