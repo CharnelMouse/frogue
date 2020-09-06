@@ -6,11 +6,11 @@ module SaveSystem =
     open Tilesets
 
     let private convertGameStateToText gameState =
+        let x = gameState.Actors.Head.Position.X
+        let y = gameState.Actors.Head.Position.Y
         let {
-            Player = {Position = {X = x; Y = y}}
             Map = {Width = mW; Height = mH; Tiles = mT}
             StatusBar = {Start = {X = sX; Y = sY}; Length = sL}
-            Action = _
             Tileset = tileset
             } = gameState
         [
@@ -28,7 +28,7 @@ module SaveSystem =
 
     let private convertTextToGameState (strs: string list) =
         {
-            Player = {Position = {X = int strs.[0]; Y = int strs.[1]}}
+            Actors = [{Position = {X = int strs.[0]; Y = int strs.[1]}}]
             Map = createMap (int strs.[2]) (int strs.[3]) (convertTextTilesToTiles (Array.toList(strs.[4].Split ";")))
             StatusBar = {Start = {X = int strs.[5]; Y = int strs.[6]}; Length = int strs.[7]}
             Action =

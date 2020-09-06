@@ -5,7 +5,7 @@ module Types =
        Y: int;
     }
     
-    type Player = {
+    type Actor = {
         Position: Position;
     }
 
@@ -92,7 +92,7 @@ module Types =
     | DottedTileset
 
     type GameState = {
-        Player: Player
+        Actors: Actor list
         Map: Map
         StatusBar: TextBox
         Action: Action

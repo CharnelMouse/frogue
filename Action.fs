@@ -11,7 +11,7 @@ module Action =
         |> createMap map.Width map.Height
 
     let private changePlayerPosition gameState pos = {
-        gameState with Player = {Position = pos}
+        gameState with Actors = [{Position = pos}]
     }
 
     let private changeTileset gameState = 

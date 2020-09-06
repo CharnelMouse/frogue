@@ -7,7 +7,8 @@ module CommandParser =
     }
 
     let private resolveMoveCommand gameState direction =
-        let {Player = {Position = oldPos}; Map = map; Action = _} = gameState
+        let oldPos = gameState.Actors.Head.Position
+        let map = gameState.Map
         let {X = oldX; Y = oldY} = oldPos
         let newPos =
             match direction with
@@ -27,7 +28,9 @@ module CommandParser =
         changeAction gameState newAction
 
     let private resolveOpenToCommand gameState direction =
-        let {Player = {Position = {X = x; Y = y}}; Map = map} = gameState
+        let x = gameState.Actors.Head.Position.X
+        let y = gameState.Actors.Head.Position.Y
+        let map = gameState.Map
         let toPos =
             match direction with
             | North -> {X = x; Y = y - 1}
@@ -45,7 +48,8 @@ module CommandParser =
         changeAction gameState newAction
 
     let private resolveCloseToCommand gameState direction =
-        let {Player = {Position = pos}; Map = map} = gameState
+        let pos = gameState.Actors.Head.Position
+        let map = gameState.Map
         let toPos =
             match direction with
             | North -> {X = pos.X; Y = pos.Y - 1}

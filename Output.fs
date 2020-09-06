@@ -57,11 +57,11 @@ module Output =
         match gameState.Action with
         | CompleteAction StartSession ->
             printMap gameState.Map gameState.Tileset
-            writeAt gameState.Player.Position (getOutputTile gameState.Tileset PlayerTile)
+            writeAt gameState.Actors.Head.Position (getOutputTile gameState.Tileset PlayerTile)
             writeBox "Ready." gameState.StatusBar true
         | CompleteAction StartSessionWithUnknownTileset ->
             printMap gameState.Map gameState.Tileset
-            writeAt gameState.Player.Position (getOutputTile gameState.Tileset PlayerTile)
+            writeAt gameState.Actors.Head.Position (getOutputTile gameState.Tileset PlayerTile)
             writeBox "Save game contained unknown tileset, switching to default." gameState.StatusBar true
         | CompleteAction (MoveAction (origin, destination)) ->
             drawTileAt origin gameState.Map gameState.Tileset
@@ -89,7 +89,7 @@ module Output =
             writeBox "Game saved." gameState.StatusBar true
         | CompleteAction ToggleTileSetAction ->
             printMap gameState.Map gameState.Tileset
-            writeAt gameState.Player.Position (getOutputTile gameState.Tileset PlayerTile)
+            writeAt gameState.Actors.Head.Position (getOutputTile gameState.Tileset PlayerTile)
             writeBox (
                 "Tileset changed to " +
                 match gameState.Tileset with
