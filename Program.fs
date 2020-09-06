@@ -8,6 +8,7 @@ module Main =
     open CommandParser
     open SaveSystem
     open Action
+    open TimeSystem
 
     let private levelMap = createMap 20 10 (convertTextTilesToTiles [
         "####################"
@@ -39,9 +40,10 @@ module Main =
             resolveCommand gameState command
             |> executeAction
         updateOutput newGameState
-        match newGameState.Action with
+        let timedGameState = updateTime newGameState 
+        match timedGameState.Action with
         | CompleteAction QuitAction -> ()
-        | _ -> mainLoop newGameState
+        | _ -> mainLoop timedGameState
 
     [<EntryPoint>]
     let private main argv =

@@ -11,6 +11,7 @@
     <Compile Include="SaveSystem.fs" />
     <Compile Include="Output.fs" />
     <Compile Include="Action.fs" />
+    <Compile Include="TimeSystem.fs" />
     <Compile Include="CommandParser.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

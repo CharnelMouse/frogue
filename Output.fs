@@ -68,8 +68,7 @@ module Output =
             writeBox "Save game contained unknown tileset, switching to default." gameState.StatusBar true
         | CompleteAction (MoveAction (origin, destination)) ->
             drawTileAt origin gameState.Map gameState.Tileset
-            let nActors = List.length gameState.Actors
-            writeAt destination (getOutputTile gameState.Tileset gameState.Actors.[nActors - 1].Tile)
+            writeAt destination (getOutputTile gameState.Tileset gameState.Actors.Head.Tile)
         | BlockedAction MoveActionBlockedByVoid -> writeBox "There's nothing there!" gameState.StatusBar true
         | BlockedAction MoveActionBlockedByWall -> writeBox "You bump up against the wall." gameState.StatusBar true
         | BlockedAction MoveActionBlockedByActor -> writeBox "There's someone already there!" gameState.StatusBar true

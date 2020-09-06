@@ -3,10 +3,6 @@ module Action =
     open Types
     open Frogue.Map
 
-    let private rotateActors gameState = {
-        gameState with Actors = gameState.Actors.Tail @ [gameState.Actors.Head]
-    }
-
     let private replaceSingleElementFn index replacer list =
         List.mapi (fun i x -> if i = index then replacer x else x) list
 
@@ -33,9 +29,9 @@ module Action =
 
     let executeAction gameState =
         match gameState.Action with
-        | CompleteAction (OpenDoorAction toPos) -> executeOpenDoorAction gameState toPos |> rotateActors
-        | CompleteAction (CloseDoorAction toPos) -> executeCloseDoorAction gameState toPos |> rotateActors
-        | CompleteAction (MoveAction (_, newPos)) -> changePlayerPosition gameState newPos |> rotateActors
+        | CompleteAction (OpenDoorAction toPos) -> executeOpenDoorAction gameState toPos
+        | CompleteAction (CloseDoorAction toPos) -> executeCloseDoorAction gameState toPos
+        | CompleteAction (MoveAction (_, newPos)) -> changePlayerPosition gameState newPos
         | CompleteAction ToggleTileSetAction -> changeTileset gameState
         | BlockedAction MoveActionBlockedByVoid -> gameState
         | BlockedAction MoveActionBlockedByWall -> gameState
@@ -46,7 +42,7 @@ module Action =
         | BlockedAction CloseToActionBlockedByInvalidTile -> gameState
         | CompleteAction StartSession -> gameState
         | CompleteAction StartSessionWithUnknownTileset -> gameState
-        | CompleteAction WaitAction -> rotateActors gameState
+        | CompleteAction WaitAction -> gameState
         | CompleteAction HelpAction -> gameState
         | CompleteAction QuitAction -> gameState
         | CompleteAction CancelAction -> gameState
