@@ -12,7 +12,7 @@ module Output =
     let private resetCursor() =
         cursorTo {X = 0; Y = 0}
 
-    let private printMap map tileset =
+    let private printMap tileset map =
         let tilesetParser =
             match tileset with
             | DefaultTileset -> defaultTilesetParser
@@ -32,6 +32,9 @@ module Output =
         match tileset with
         | DefaultTileset -> defaultTilesetParser x
         | DottedTileset -> dottedTilesetParser x
+
+    let private printActors tileset actors =
+        List.iter (fun x -> writeAt x.Position (getOutputTile tileset PlayerTile)) actors
 
     let private drawTileAt pos map tileset =
         getTileAt pos map
@@ -56,14 +59,12 @@ module Output =
     let updateOutput gameState =
         match gameState.Action with
         | CompleteAction StartSession ->
-            printMap gameState.Map gameState.Tileset
-            List.map (fun x -> writeAt x.Position (getOutputTile gameState.Tileset PlayerTile)) gameState.Actors
-            |> ignore
+            printMap gameState.Tileset gameState.Map
+            printActors gameState.Tileset gameState.Actors
             writeBox "Ready." gameState.StatusBar true
         | CompleteAction StartSessionWithUnknownTileset ->
-            printMap gameState.Map gameState.Tileset
-            List.map (fun x -> writeAt x.Position (getOutputTile gameState.Tileset PlayerTile)) gameState.Actors
-            |> ignore
+            printMap gameState.Tileset gameState.Map
+            printActors gameState.Tileset gameState.Actors
             writeBox "Save game contained unknown tileset, switching to default." gameState.StatusBar true
         | CompleteAction (MoveAction (origin, destination)) ->
             drawTileAt origin gameState.Map gameState.Tileset
@@ -91,8 +92,9 @@ module Output =
             saveGame gameState
             writeBox "Game saved." gameState.StatusBar true
         | CompleteAction ToggleTileSetAction ->
-            printMap gameState.Map gameState.Tileset
-            writeAt gameState.Actors.Head.Position (getOutputTile gameState.Tileset PlayerTile)
+            printMap gameState.Tileset gameState.Map
+            printActors gameState.Tileset gameState.Actors
+            List.iter (fun x -> writeAt x.Position (getOutputTile gameState.Tileset PlayerTile)) gameState.Actors
             writeBox (
                 "Tileset changed to " +
                 match gameState.Tileset with

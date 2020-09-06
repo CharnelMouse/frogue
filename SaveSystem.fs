@@ -5,17 +5,25 @@ module SaveSystem =
     open Frogue.Map
     open Tilesets
 
-    let private convertGameStateToText gameState =
-        let x = gameState.Actors.Head.Position.X
-        let y = gameState.Actors.Head.Position.Y
+    let private exportActor actor =
+        string actor.Position.X + ";" + string actor.Position.Y
+
+    let private importActor (str: string) =
+        let vals = str.Split ";"
+        match vals.Length with
+        | 2 -> {Position = {X = int vals.[0]; Y = int vals.[1]}}
+        | _ -> failwith "invalid actor position"
+
+    let private exportGameState gameState =
+        let actorStrings = List.map exportActor gameState.Actors
         let {
             Map = {Width = mW; Height = mH; Tiles = mT}
             StatusBar = {Start = {X = sX; Y = sY}; Length = sL}
             Tileset = tileset
             } = gameState
-        [
-            string x
-            string y
+        string (List.length actorStrings)
+        :: actorStrings
+        @ [
             string mW
             string mH
             List.map (fun x -> convertInternalTilesToTiles defaultTilesetParser x) mT
@@ -26,18 +34,19 @@ module SaveSystem =
             string tileset
         ]
 
-    let private convertTextToGameState (strs: string list) =
+    let private importGameState (strs: string list) =
+        let nActors = int strs.[0]
         {
-            Actors = [{Position = {X = int strs.[0]; Y = int strs.[1]}}]
-            Map = createMap (int strs.[2]) (int strs.[3]) (convertTextTilesToTiles (Array.toList(strs.[4].Split ";")))
-            StatusBar = {Start = {X = int strs.[5]; Y = int strs.[6]}; Length = int strs.[7]}
+            Actors = List.map importActor strs.[1..nActors]
+            Map = createMap (int strs.[nActors + 1]) (int strs.[nActors + 2]) (convertTextTilesToTiles (Array.toList(strs.[nActors + 3].Split ";")))
+            StatusBar = {Start = {X = int strs.[nActors + 4]; Y = int strs.[nActors + 5]}; Length = int strs.[nActors + 6]}
             Action =
-                match strs.[8] with
+                match strs.[nActors + 7] with
                 | "DefaultTileset" -> CompleteAction StartSession
                 | "DottedTileset" -> CompleteAction StartSession
                 | _ -> CompleteAction StartSessionWithUnknownTileset
             Tileset =
-                match strs.[8] with
+                match strs.[nActors + 7] with
                 | "DefaultTileset" -> DefaultTileset
                 | "DottedTileset" -> DottedTileset
                 | _ -> DefaultTileset
@@ -47,9 +56,9 @@ module SaveSystem =
         File.Exists "save.sav"
 
     let saveGame gameState =
-        File.WriteAllLines ("save.sav", convertGameStateToText gameState)
+        File.WriteAllLines ("save.sav", exportGameState gameState)
 
     let loadGame () =
         File.ReadAllLines "save.sav"
         |> Array.toList
-        |> convertTextToGameState
+        |> importGameState
