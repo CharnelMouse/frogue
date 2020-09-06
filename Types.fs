@@ -5,17 +5,19 @@ module Types =
        Y: int;
     }
     
-    type Actor = {
-        Position: Position;
-    }
-
     type InternalTile =
     | EmptyTile
     | OpenDoorTile
     | ClosedDoorTile
     | WallTile
     | PlayerTile
+    | OrcTile
     | UnknownTile
+
+    type Actor = {
+        Position: Position;
+        Tile: InternalTile;
+    }
 
     type Map = {
         Width: int

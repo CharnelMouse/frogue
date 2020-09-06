@@ -6,12 +6,17 @@ module SaveSystem =
     open Tilesets
 
     let private exportActor actor =
-        string actor.Position.X + ";" + string actor.Position.Y
+        string actor.Position.X + ";"
+        + string actor.Position.Y + ";"
+        + string (defaultTilesetParser actor.Tile)
 
     let private importActor (str: string) =
         let vals = str.Split ";"
         match vals.Length with
-        | 2 -> {Position = {X = int vals.[0]; Y = int vals.[1]}}
+        | 3 -> {
+            Position = {X = int vals.[0]; Y = int vals.[1]}
+            Tile = getInternalTileType (char vals.[2])
+            }
         | _ -> failwith "invalid actor position"
 
     let private exportGameState gameState =

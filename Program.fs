@@ -24,8 +24,8 @@ module Main =
 
     let private startingGameState = {
         Actors = [
-            {Position = {X = 1; Y = 1}}
-            {Position = {X = 7; Y = 6}}
+            {Position = {X = 1; Y = 1}; Tile = PlayerTile}
+            {Position = {X = 7; Y = 6}; Tile = OrcTile}
             ]
         Map = levelMap
         StatusBar = {Start = {X = 0; Y = levelMap.Height + 1}; Length = 50}

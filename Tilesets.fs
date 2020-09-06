@@ -9,6 +9,7 @@ module Tilesets =
         | ClosedDoorTile -> '+'
         | WallTile -> '#'
         | PlayerTile -> '@'
+        | OrcTile -> 'o'
         | UnknownTile -> failwith "tile not found in tileset"
 
     let (dottedTilesetParser: TilesetParser) = fun tile ->
@@ -18,6 +19,7 @@ module Tilesets =
         | ClosedDoorTile -> '+'
         | WallTile -> '#'
         | PlayerTile -> '@'
+        | OrcTile -> 'o'
         | UnknownTile -> failwith "tile not found in tileset"
 
     let convertInternalTilesToTiles (parser: TilesetParser) tiles =
@@ -26,13 +28,14 @@ module Tilesets =
         |> List.toSeq
         |> String.concat "" 
 
-    let private getInternalTileType internalTile =
+    let getInternalTileType internalTile =
         match internalTile with
         | ' ' -> EmptyTile
         | '-' -> OpenDoorTile
         | '+' -> ClosedDoorTile
         | '#' -> WallTile
         | '@' -> PlayerTile
+        | 'o' -> OrcTile
         | _ -> UnknownTile
 
     let convertTextTilesToTiles (textTiles: string list) =

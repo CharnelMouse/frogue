@@ -34,7 +34,7 @@ module Output =
         | DottedTileset -> dottedTilesetParser x
 
     let private printActors tileset actors =
-        List.iter (fun x -> writeAt x.Position (getOutputTile tileset PlayerTile)) actors
+        List.iter (fun x -> writeAt x.Position (getOutputTile tileset x.Tile)) actors
 
     let private drawTileAt pos map tileset =
         getTileAt pos map
@@ -68,7 +68,8 @@ module Output =
             writeBox "Save game contained unknown tileset, switching to default." gameState.StatusBar true
         | CompleteAction (MoveAction (origin, destination)) ->
             drawTileAt origin gameState.Map gameState.Tileset
-            writeAt destination (getOutputTile gameState.Tileset PlayerTile)
+            let nActors = List.length gameState.Actors
+            writeAt destination (getOutputTile gameState.Tileset gameState.Actors.[nActors - 1].Tile)
         | BlockedAction MoveActionBlockedByVoid -> writeBox "There's nothing there!" gameState.StatusBar true
         | BlockedAction MoveActionBlockedByWall -> writeBox "You bump up against the wall." gameState.StatusBar true
         | BlockedAction MoveActionBlockedByActor -> writeBox "There's someone already there!" gameState.StatusBar true
@@ -94,7 +95,6 @@ module Output =
         | CompleteAction ToggleTileSetAction ->
             printMap gameState.Tileset gameState.Map
             printActors gameState.Tileset gameState.Actors
-            List.iter (fun x -> writeAt x.Position (getOutputTile gameState.Tileset PlayerTile)) gameState.Actors
             writeBox (
                 "Tileset changed to " +
                 match gameState.Tileset with
