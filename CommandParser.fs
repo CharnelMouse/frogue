@@ -2,14 +2,9 @@ namespace Frogue
 module CommandParser =
     open Types
     open Frogue.Map
-    let private changeAction gameState action =
-        {
-            Player = gameState.Player
-            Map = gameState.Map
-            StatusBar = gameState.StatusBar
-            Action = action
-            Tileset = gameState.Tileset
-        }
+    let private changeAction gameState action = {
+        gameState with Action = action
+    }
 
     let private resolveMoveCommand gameState direction =
         let {Player = {Position = oldPos}; Map = map; Action = _} = gameState
@@ -32,7 +27,7 @@ module CommandParser =
         changeAction gameState newAction
 
     let private resolveOpenToCommand gameState direction =
-        let {Player = {Position = {X = x; Y = y}}} = gameState
+        let {Player = {Position = {X = x; Y = y}}; Map = map} = gameState
         let toPos =
             match direction with
             | North -> {X = x; Y = y - 1}
@@ -40,17 +35,17 @@ module CommandParser =
             | West -> {X = x - 1; Y = y}
             | East -> {X = x + 1; Y = y}
         let newAction =
-            if not (posIsOnMap toPos gameState.Map)
+            if not (posIsOnMap toPos map)
                 then BlockedAction OpenToActionBlockedByVoid
             else
-                let targetTileType = getTileAt toPos gameState.Map
+                let targetTileType = getTileAt toPos map
                 match targetTileType with
                 | ClosedDoorTile -> CompleteAction (OpenDoorAction toPos)
                 | _ -> BlockedAction OpenToActionBlockedByInvalidTile
         changeAction gameState newAction
 
     let private resolveCloseToCommand gameState direction =
-        let {Player = {Position = pos}} = gameState
+        let {Player = {Position = pos}; Map = map} = gameState
         let toPos =
             match direction with
             | North -> {X = pos.X; Y = pos.Y - 1}
@@ -58,10 +53,10 @@ module CommandParser =
             | West -> {X = pos.X - 1; Y = pos.Y}
             | East -> {X = pos.X + 1; Y = pos.Y}
         let newAction =
-            if not (posIsOnMap toPos gameState.Map)
+            if not (posIsOnMap toPos map)
                 then BlockedAction CloseToActionBlockedByVoid
             else
-                let targetTileType = getTileAt toPos gameState.Map
+                let targetTileType = getTileAt toPos map
                 match targetTileType with
                 | OpenDoorTile -> CompleteAction (CloseDoorAction toPos)
                 | _ -> BlockedAction CloseToActionBlockedByInvalidTile
