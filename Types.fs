@@ -69,6 +69,7 @@ module Types =
         | UnknownAction
 
     type BlockedAction =
+        | MoveActionBlockedByActor
         | MoveActionBlockedByWall
         | MoveActionBlockedByVoid
         | OpenToActionBlockedByVoid

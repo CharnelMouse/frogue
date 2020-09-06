@@ -16,15 +16,17 @@ module CommandParser =
             | South -> {X = oldX; Y = oldY + 1}
             | West -> {X = oldX - 1; Y = oldY}
             | East -> {X = oldX + 1; Y = oldY}
+        let actor = List.tryFind (fun x -> x.Position = newPos) gameState.Actors
         let newAction =
             if not (posIsOnMap newPos map)
                 then BlockedAction MoveActionBlockedByVoid
             else
                 let targetTileType = getTileAt newPos map
-                match targetTileType with
-                | WallTile -> BlockedAction MoveActionBlockedByWall
-                | ClosedDoorTile -> CompleteAction (OpenDoorAction newPos)
-                | _ -> CompleteAction (MoveAction  (oldPos, newPos))
+                match (actor, targetTileType) with
+                | (Some _, _) -> BlockedAction MoveActionBlockedByActor
+                | (None, WallTile) -> BlockedAction MoveActionBlockedByWall
+                | (None, ClosedDoorTile) -> CompleteAction (OpenDoorAction newPos)
+                | (None, _) -> CompleteAction (MoveAction  (oldPos, newPos))
         changeAction gameState newAction
 
     let private resolveOpenToCommand gameState direction =

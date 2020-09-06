@@ -23,7 +23,10 @@ module Main =
     ])
 
     let private startingGameState = {
-        Actors = [{Position = {X = 1; Y = 1}}]
+        Actors = [
+            {Position = {X = 1; Y = 1}}
+            {Position = {X = 7; Y = 6}}
+            ]
         Map = levelMap
         StatusBar = {Start = {X = 0; Y = levelMap.Height + 1}; Length = 50}
         Action = CompleteAction StartSession

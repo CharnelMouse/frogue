@@ -57,17 +57,20 @@ module Output =
         match gameState.Action with
         | CompleteAction StartSession ->
             printMap gameState.Map gameState.Tileset
-            writeAt gameState.Actors.Head.Position (getOutputTile gameState.Tileset PlayerTile)
+            List.map (fun x -> writeAt x.Position (getOutputTile gameState.Tileset PlayerTile)) gameState.Actors
+            |> ignore
             writeBox "Ready." gameState.StatusBar true
         | CompleteAction StartSessionWithUnknownTileset ->
             printMap gameState.Map gameState.Tileset
-            writeAt gameState.Actors.Head.Position (getOutputTile gameState.Tileset PlayerTile)
+            List.map (fun x -> writeAt x.Position (getOutputTile gameState.Tileset PlayerTile)) gameState.Actors
+            |> ignore
             writeBox "Save game contained unknown tileset, switching to default." gameState.StatusBar true
         | CompleteAction (MoveAction (origin, destination)) ->
             drawTileAt origin gameState.Map gameState.Tileset
             writeAt destination (getOutputTile gameState.Tileset PlayerTile)
         | BlockedAction MoveActionBlockedByVoid -> writeBox "There's nothing there!" gameState.StatusBar true
         | BlockedAction MoveActionBlockedByWall -> writeBox "You bump up against the wall." gameState.StatusBar true
+        | BlockedAction MoveActionBlockedByActor -> writeBox "There's someone already there!" gameState.StatusBar true
         | CompleteAction (OpenDoorAction pos) ->
             drawTileAt pos gameState.Map gameState.Tileset
             writeBox "You open the door." gameState.StatusBar true
