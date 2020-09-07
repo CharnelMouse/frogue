@@ -17,41 +17,63 @@ module SaveSystem =
             Position = {X = int vals.[0]; Y = int vals.[1]}
             Tile = getInternalTileType (char vals.[2])
             }
-        | _ -> failwith "invalid actor position"
+        | _ -> failwith "invalid actor"
 
-    let private exportGameState gameState =
-        let actorStrings = List.map exportActor gameState.Actors
-        let {
-            Map = {Width = mW; Height = mH; Tiles = mT}
-            StatusBar = {Start = {X = sX; Y = sY}; Length = sL}
-            Tileset = tileset
-            } = gameState
-        string (List.length actorStrings)
-        :: actorStrings
-        @ [
-            string mW
-            string mH
-            List.map (fun x -> convertInternalTilesToTiles defaultTilesetParser x) mT
+    let private pushActors actors stream =
+        let nActors = List.length actors
+        stream @ (string nActors :: List.map exportActor actors)
+
+    let private popActors (stream: string list) =
+        let nActors = int stream.[0]
+        (List.map importActor stream.[1..nActors], stream.[(nActors + 1)..])
+
+    let private pushMap map stream =
+        stream @ [
+            string map.Width
+            string map.Height
+            List.map (convertInternalTilesToTiles defaultTilesetParser) map.Tiles
             |> List.reduce (fun x y -> x + ";" + y)
-            string sX
-            string sY
-            string sL
+        ]
+
+    let private popMap (stream: string list) =
+        let width = int stream.[0]
+        let height = int stream.[1]
+        let tiles = convertTextTilesToTiles (Array.toList(stream.[2].Split ";"))
+        let map = createMap width height tiles
+        (map, stream.[3..])
+
+    let private pushRest statusBar tileset (stream: string list) =
+        stream @ [
+            string statusBar.Start.X
+            string statusBar.Start.Y
+            string statusBar.Length
             string tileset
         ]
 
-    let private importGameState (strs: string list) =
-        let nActors = int strs.[0]
+    let private exportGameState gameState =
+        let {
+            Map = map
+            StatusBar = statusBar
+            Tileset = tileset
+            } = gameState
+        pushActors gameState.Actors []
+        |> pushMap map
+        |> pushRest statusBar tileset
+
+    let private importGameState (stream: string list) =
+        let (actors, mapFirst) = popActors stream
+        let (map, rest) = popMap mapFirst
         {
-            Actors = List.map importActor strs.[1..nActors]
-            Map = createMap (int strs.[nActors + 1]) (int strs.[nActors + 2]) (convertTextTilesToTiles (Array.toList(strs.[nActors + 3].Split ";")))
-            StatusBar = {Start = {X = int strs.[nActors + 4]; Y = int strs.[nActors + 5]}; Length = int strs.[nActors + 6]}
+            Actors = actors
+            Map = map
+            StatusBar = {Start = {X = int rest.[0]; Y = int rest.[1]}; Length = int rest.[2]}
             Action =
-                match strs.[nActors + 7] with
+                match rest.[3] with
                 | "DefaultTileset" -> CompleteAction StartSession
                 | "DottedTileset" -> CompleteAction StartSession
                 | _ -> CompleteAction StartSessionWithUnknownTileset
             Tileset =
-                match strs.[nActors + 7] with
+                match rest.[3] with
                 | "DefaultTileset" -> DefaultTileset
                 | "DottedTileset" -> DottedTileset
                 | _ -> DefaultTileset
