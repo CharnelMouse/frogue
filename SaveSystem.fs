@@ -27,20 +27,25 @@ module SaveSystem =
         let nActors = int stream.[0]
         (List.map importActor stream.[1..nActors], stream.[(nActors + 1)..])
 
+    let private exportTiles tiles =
+        List.map (convertInternalTilesToTiles defaultTilesetParser) tiles
+
+    let importTiles (tiles: string list) =
+        List.map (function x -> List.map getInternalTileType (Seq.toList x))  tiles
+
     let private pushMap map stream =
         stream @ [
             string map.Width
             string map.Height
-            List.map (convertInternalTilesToTiles defaultTilesetParser) map.Tiles
-            |> List.reduce (fun x y -> x + ";" + y)
         ]
+        @ exportTiles map.Tiles
 
     let private popMap (stream: string list) =
         let width = int stream.[0]
         let height = int stream.[1]
-        let tiles = convertTextTilesToTiles (Array.toList(stream.[2].Split ";"))
+        let tiles = importTiles stream.[2..(height + 1)]
         let map = createMap width height tiles
-        (map, stream.[3..])
+        (map, stream.[(height + 2)..])
 
     let private pushRest statusBar tileset (stream: string list) =
         stream @ [

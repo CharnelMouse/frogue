@@ -37,6 +37,3 @@ module Tilesets =
         | '@' -> PlayerTile
         | 'o' -> OrcTile
         | _ -> UnknownTile
-
-    let convertTextTilesToTiles (textTiles: string list) =
-        List.map (function x -> List.map getInternalTileType (Seq.toList x)) textTiles

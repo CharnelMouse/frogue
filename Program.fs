@@ -10,7 +10,7 @@ module Main =
     open Action
     open TimeSystem
 
-    let private levelMap = createMap 20 10 (convertTextTilesToTiles [
+    let private levelMap = createMap 20 10 (importTiles [
         "####################"
         "#              +    "
         "#              #   #"
