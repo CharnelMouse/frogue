@@ -84,13 +84,13 @@ module SaveSystem =
                 | _ -> DefaultTileset
         }
 
-    let saveGameExists () =
-        File.Exists "save.sav"
+    let saveGameExists path =
+        File.Exists path
 
-    let saveGame gameState =
-        File.WriteAllLines ("save.sav", exportGameState gameState)
+    let saveGame path gameState =
+        File.WriteAllLines (path, exportGameState gameState)
 
-    let loadGame () =
-        File.ReadAllLines "save.sav"
+    let loadGame path =
+        File.ReadAllLines path
         |> Array.toList
         |> importGameState

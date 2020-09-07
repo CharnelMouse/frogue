@@ -48,8 +48,8 @@ module Main =
     [<EntryPoint>]
     let private main argv =
         let gameState =
-            if saveGameExists ()
-                then loadGame()
+            if saveGameExists "save.sav"
+                then loadGame "save.sav"
                 else startingGameState
         updateOutput gameState
         mainLoop gameState

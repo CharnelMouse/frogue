@@ -89,7 +89,7 @@ module Output =
         | CompleteAction QuitAction -> writeBox "Bye." gameState.StatusBar false // assumes status bar is last line
         | CompleteAction CancelAction -> writeBox "OK." gameState.StatusBar true
         | CompleteAction SaveGameAction ->
-            saveGame gameState
+            saveGame "save.sav" gameState
             writeBox "Game saved." gameState.StatusBar true
         | CompleteAction ToggleTileSetAction ->
             printMap gameState.Tileset gameState.Map
