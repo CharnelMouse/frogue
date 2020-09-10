@@ -36,19 +36,20 @@ module Main =
         ]
         Map = levelMap
         StatusBar = {Start = {X = 0; Y = levelMap.Height + 1}; Length = 50}
+        StatusBuffer = ""
         Action = CompleteAction StartSession
         Tileset = DefaultTileset
     }
 
     let rec private mainLoop gameState =
-        let preClock =
+        let postTime =
             generateAction gameState
             |> executeAction
-        updateOutput preClock
-        let postClock = updateTime preClock 
-        match postClock.Action with
-        | CompleteAction QuitAction -> ()
-        | _ -> mainLoop postClock
+            |> updateOutput
+            |> updateTime
+        match postTime.Action with
+        | CompleteAction QuitAction -> popStatus false postTime |> ignore
+        | _ -> popStatus true postTime |> mainLoop
 
     [<EntryPoint>]
     let private main argv =
@@ -57,5 +58,6 @@ module Main =
                 then loadGame "save.sav"
                 else startingGameState
         updateOutput gameState
-        mainLoop gameState
+        |> popStatus true
+        |> mainLoop
         0 // return an integer exit code

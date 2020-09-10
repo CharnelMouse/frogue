@@ -12,7 +12,7 @@ module SaveSystem =
             | AI -> "ai"
         string actor.Position.X + ";"
         + string actor.Position.Y + ";"
-        + string (defaultTilesetParser actor.Tile)
+        + string (defaultTilesetParser actor.Tile) + ";"
         + controllerName
 
     let private importActor (str: string) =
@@ -82,6 +82,7 @@ module SaveSystem =
             Actors = actors
             Map = map
             StatusBar = {Start = {X = int rest.[0]; Y = int rest.[1]}; Length = int rest.[2]}
+            StatusBuffer = ""
             Action =
                 match rest.[3] with
                 | "DefaultTileset" -> CompleteAction StartSession

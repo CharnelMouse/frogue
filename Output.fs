@@ -56,49 +56,62 @@ module Output =
         writeFrom box.Start str
         if reset then resetCursor()
 
+    let private pushStatus text gameState =
+        {gameState with
+            StatusBuffer =
+                match gameState.StatusBuffer with
+                | "" -> text
+                | a -> a + " " + text
+        }
+
+    let popStatus reset gameState =
+        writeBox gameState.StatusBuffer gameState.StatusBar reset
+        {gameState with StatusBuffer = ""}
+
     let updateOutput gameState =
         match gameState.Action with
         | CompleteAction StartSession ->
             printMap gameState.Tileset gameState.Map
             printActors gameState.Tileset gameState.Actors
-            writeBox "Ready." gameState.StatusBar true
+            pushStatus "Ready." gameState
         | CompleteAction StartSessionWithUnknownTileset ->
             printMap gameState.Tileset gameState.Map
             printActors gameState.Tileset gameState.Actors
-            writeBox "Save game contained unknown tileset, switching to default." gameState.StatusBar true
+            pushStatus "Save game contained unknown tileset, switching to default." gameState
         | CompleteAction (MoveAction (origin, destination)) ->
             drawTileAt origin gameState.Map gameState.Tileset
             writeAt destination (getOutputTile gameState.Tileset gameState.Actors.Head.Tile)
-        | BlockedAction MoveActionBlockedByVoid -> writeBox "There's nothing there!" gameState.StatusBar true
-        | BlockedAction MoveActionBlockedByWall -> writeBox "You bump up against the wall." gameState.StatusBar true
-        | BlockedAction MoveActionBlockedByActor -> writeBox "There's someone already there!" gameState.StatusBar true
+            gameState
+        | BlockedAction MoveActionBlockedByVoid -> pushStatus "There's nothing there!" gameState
+        | BlockedAction MoveActionBlockedByWall -> pushStatus "You bump up against the wall." gameState
+        | BlockedAction MoveActionBlockedByActor -> pushStatus "There's someone already there!" gameState
         | CompleteAction (OpenDoorAction pos) ->
             drawTileAt pos gameState.Map gameState.Tileset
-            writeBox "You open the door." gameState.StatusBar true
-        | BlockedAction OpenToActionBlockedByVoid -> writeBox "There's nothing there!" gameState.StatusBar true
-        | BlockedAction OpenToActionBlockedByInvalidTile -> writeBox "There's nothing there to open!" gameState.StatusBar true
-        | IncompleteAction OpenAction -> writeBox "Open in which direction?" gameState.StatusBar true
+            pushStatus "You open the door." gameState
+        | BlockedAction OpenToActionBlockedByVoid -> pushStatus "There's nothing there!" gameState
+        | BlockedAction OpenToActionBlockedByInvalidTile -> pushStatus "There's nothing there to open!" gameState
+        | IncompleteAction OpenAction -> pushStatus "Open in which direction?" gameState
         | CompleteAction (CloseDoorAction pos) ->
             drawTileAt pos gameState.Map gameState.Tileset
-            writeBox "You close the door." gameState.StatusBar true
-        | BlockedAction CloseToActionBlockedByVoid -> writeBox "There's nothing there!" gameState.StatusBar true
-        | BlockedAction CloseToActionBlockedByInvalidTile -> writeBox "There's nothing there to close!" gameState.StatusBar true
-        | IncompleteAction CloseAction -> writeBox "Close in which direction?" gameState.StatusBar true
-        | CompleteAction WaitAction -> writeBox "Waiting..." gameState.StatusBar true
-        | CompleteAction HelpAction -> writeBox "Move: arrow keys Open: o Close: c Wait: . Quit: q" gameState.StatusBar true
-        | CompleteAction QuitAction -> writeBox "Bye." gameState.StatusBar false // assumes status bar is last line
-        | CompleteAction CancelAction -> writeBox "OK." gameState.StatusBar true
+            pushStatus "You close the door." gameState
+        | BlockedAction CloseToActionBlockedByVoid -> pushStatus "There's nothing there!" gameState
+        | BlockedAction CloseToActionBlockedByInvalidTile -> pushStatus "There's nothing there to close!" gameState
+        | IncompleteAction CloseAction -> pushStatus "Close in which direction?" gameState
+        | CompleteAction WaitAction -> pushStatus "Waiting..." gameState
+        | CompleteAction HelpAction -> pushStatus "Move: arrow keys Open: o Close: c Wait: . Quit: q" gameState
+        | CompleteAction QuitAction -> pushStatus "Bye." gameState // assumes status bar is last line
+        | CompleteAction CancelAction -> pushStatus "OK." gameState
         | CompleteAction SaveGameAction ->
             saveGame "save.sav" gameState
-            writeBox "Game saved." gameState.StatusBar true
+            pushStatus "Game saved." gameState
         | CompleteAction ToggleTileSetAction ->
             printMap gameState.Tileset gameState.Map
             printActors gameState.Tileset gameState.Actors
-            writeBox (
+            pushStatus (
                 "Tileset changed to " +
                 match gameState.Tileset with
                 | DefaultTileset -> "default"
                 | DottedTileset -> "dots"
                 + "."
-                ) gameState.StatusBar true
-        | CompleteAction UnknownAction -> writeBox "Unknown command, type ? for help." gameState.StatusBar true
+                ) gameState
+        | CompleteAction UnknownAction -> pushStatus "Unknown command, type ? for help." gameState

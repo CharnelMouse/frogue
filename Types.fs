@@ -103,6 +103,7 @@ module Types =
         Actors: Actor list
         Map: Map
         StatusBar: TextBox
+        StatusBuffer: string
         Action: Action
         Tileset: Tileset
     }
