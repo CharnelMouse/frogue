@@ -16,17 +16,21 @@ module Types =
 
     type Controller =
     | Player
-    | AI
+    | AIController
 
     type ActorType =
     | Adventurer
     | Orc
+
+    type AIScript =
+    | WaitScript
 
     type Actor = {
         Position: Position
         Tile: InternalTile
         Controller: Controller
         Type: ActorType
+        Script: AIScript
     }
 
     type Map = {
