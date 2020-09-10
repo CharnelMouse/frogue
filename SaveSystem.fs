@@ -6,38 +6,38 @@ module SaveSystem =
     open Tilesets
 
     let private exportActor actor =
-        let controllerName =
+        let controller =
             match actor.Controller with
             | Player -> "player"
             | AI -> "ai"
-        let typeName =
+        let actorType =
             match actor.Type with
             | Adventurer -> "adventurer"
             | Orc -> "orc"
-        string actor.Position.X + ";"
-        + string actor.Position.Y + ";"
-        + string (defaultTilesetParser actor.Tile) + ";"
-        + controllerName + ";"
-        + typeName
+        let {X = x; Y = y} = actor.Position
+        [actorType; string (defaultTilesetParser actor.Tile); controller; string x; string y]
+        |> List.toSeq
+        |> String.concat ";"
 
     let private importActor (str: string) =
-        let vals = str.Split ";"
-        match vals.Length with
-        | 5 -> {
-            Position = {X = int vals.[0]; Y = int vals.[1]}
-            Tile = getInternalTileType (char vals.[2])
-            Controller =
-                match vals.[3] with
-                | "player" -> Player
-                | "ai" -> AI
-                | _ -> failwith "invalid actor: unrecognised controller"
-            Type =
-                match vals.[4] with
-                | "adventurer" -> Adventurer
-                | "orc" -> Orc
-                | _ -> failwith "invalid actor: unrecognised type"
+        let vals = Array.toList (str.Split ";")
+        match vals with
+        | [actorType; tile; controller; x; y]  ->
+            {
+                Position = {X = int x; Y = int y}
+                Tile = getInternalTileType (char tile)
+                Controller =
+                    match controller with
+                    | "player" -> Player
+                    | "ai" -> AI
+                    | _ -> failwith ("invalid actor: unrecognised controller: " + controller)
+                Type =
+                    match actorType with
+                    | "adventurer" -> Adventurer
+                    | "orc" -> Orc
+                    | _ -> failwith ("invalid actor: unrecognised type: " + actorType)
             }
-        | _ -> failwith "invalid actor: wrong length"
+        | _ -> failwith ("invalid actor: wrong length: " + str)
 
     let private pushActors actors stream =
         let nActors = List.length actors
