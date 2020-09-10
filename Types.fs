@@ -18,10 +18,15 @@ module Types =
     | Player
     | AI
 
+    type ActorType =
+    | Adventurer
+    | Orc
+
     type Actor = {
         Position: Position
         Tile: InternalTile
         Controller: Controller
+        Type: ActorType
     }
 
     type Map = {

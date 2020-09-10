@@ -10,15 +10,20 @@ module SaveSystem =
             match actor.Controller with
             | Player -> "player"
             | AI -> "ai"
+        let typeName =
+            match actor.Type with
+            | Adventurer -> "adventurer"
+            | Orc -> "orc"
         string actor.Position.X + ";"
         + string actor.Position.Y + ";"
         + string (defaultTilesetParser actor.Tile) + ";"
-        + controllerName
+        + controllerName + ";"
+        + typeName
 
     let private importActor (str: string) =
         let vals = str.Split ";"
         match vals.Length with
-        | 4 -> {
+        | 5 -> {
             Position = {X = int vals.[0]; Y = int vals.[1]}
             Tile = getInternalTileType (char vals.[2])
             Controller =
@@ -26,6 +31,11 @@ module SaveSystem =
                 | "player" -> Player
                 | "ai" -> AI
                 | _ -> failwith "invalid actor: unrecognised controller"
+            Type =
+                match vals.[4] with
+                | "adventurer" -> Adventurer
+                | "orc" -> Orc
+                | _ -> failwith "invalid actor: unrecognised type"
             }
         | _ -> failwith "invalid actor: wrong length"
 

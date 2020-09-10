@@ -64,6 +64,19 @@ module Output =
                 | a -> a + " " + text
         }
 
+    let private statusByController selfStatus otherSuffix gameState =
+        let actorType =
+            match gameState.Actors.Head.Type with
+            | Adventurer -> "adventurer"
+            | Orc -> "orc"
+        match gameState.Actors.Head.Controller with
+        | Player -> selfStatus
+        | AI -> "The " + actorType + " " + otherSuffix + "."
+
+    let private pushStatusByController selfStatus otherSuffix gameState =
+        let text = statusByController selfStatus otherSuffix gameState
+        pushStatus text gameState
+
     let popStatus reset gameState =
         writeBox gameState.StatusBuffer gameState.StatusBar reset
         {gameState with StatusBuffer = ""}
@@ -92,17 +105,17 @@ module Output =
         | BlockedAction MoveActionBlockedByActor -> pushStatus "There's someone already there!" gameState
         | CompleteAction (OpenDoorAction pos) ->
             drawTileAt pos gameState.Map gameState.Tileset
-            pushStatus "You open the door." gameState
+            pushStatusByController "You open the door." "opens the door" gameState
         | BlockedAction OpenToActionBlockedByVoid -> pushStatus "There's nothing there!" gameState
         | BlockedAction OpenToActionBlockedByInvalidTile -> pushStatus "There's nothing there to open!" gameState
         | IncompleteAction OpenAction -> pushStatus "Open in which direction?" gameState
         | CompleteAction (CloseDoorAction pos) ->
             drawTileAt pos gameState.Map gameState.Tileset
-            pushStatus "You close the door." gameState
+            pushStatusByController "You close the door." "closes the door" gameState
         | BlockedAction CloseToActionBlockedByVoid -> pushStatus "There's nothing there!" gameState
         | BlockedAction CloseToActionBlockedByInvalidTile -> pushStatus "There's nothing there to close!" gameState
         | IncompleteAction CloseAction -> pushStatus "Close in which direction?" gameState
-        | CompleteAction WaitAction -> pushStatus "Waiting..." gameState
+        | CompleteAction WaitAction -> pushStatusByController "Waiting..." "waits" gameState
         | CompleteAction HelpAction -> pushStatus "Move: arrow keys Open: o Close: c Wait: . Quit: q" gameState
         | CompleteAction QuitAction -> pushStatus "Bye." gameState // assumes status bar is last line
         | CompleteAction CancelAction -> pushStatus "OK." gameState
