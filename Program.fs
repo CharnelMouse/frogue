@@ -28,12 +28,14 @@ module Main =
                 Tile = PlayerTile
                 Controller = Player
                 Type = Adventurer
+                Script = WaitScript
             }
             {
                 Position = {X = 7; Y = 6}
                 Tile = OrcTile
-                Controller = AI
+                Controller = AIController
                 Type = Orc
+                Script = WaitScript
             }
         ]
         Map = levelMap

@@ -14,28 +14,35 @@ module SaveSystem =
             match actor.Type with
             | Adventurer -> "adventurer"
             | Orc -> "orc"
+        let script =
+            match actor.Script with
+            | WaitScript -> "waitAI"
         let {X = x; Y = y} = actor.Position
-        [actorType; string (defaultTilesetParser actor.Tile); controller; string x; string y]
+        [actorType; string (defaultTilesetParser actor.Tile); controller; script; string x; string y]
         |> List.toSeq
         |> String.concat ";"
 
     let private importActor (str: string) =
         let vals = Array.toList (str.Split ";")
         match vals with
-        | [actorType; tile; controller; x; y]  ->
+        | [actorType; tile; controller; script; x; y]  ->
             {
                 Position = {X = int x; Y = int y}
                 Tile = getInternalTileType (char tile)
                 Controller =
                     match controller with
                     | "player" -> Player
-                    | "ai" -> AI
+                    | "ai" -> AIController
                     | _ -> failwith ("invalid actor: unrecognised controller: " + controller)
                 Type =
                     match actorType with
                     | "adventurer" -> Adventurer
                     | "orc" -> Orc
                     | _ -> failwith ("invalid actor: unrecognised type: " + actorType)
+                Script =
+                    match script with
+                    | "waitAI" -> WaitScript
+                    | _ -> failwith ("invalid actor: unrecognised AI: " + script)
             }
         | _ -> failwith ("invalid actor: wrong length: " + str)
 
