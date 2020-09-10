@@ -31,7 +31,7 @@ module Main =
             {
                 Position = {X = 7; Y = 6}
                 Tile = OrcTile
-                Controller = Player
+                Controller = AI
             }
         ]
         Map = levelMap

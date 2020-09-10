@@ -8,4 +8,4 @@ module ActionGenerator =
         | Player ->
             getCommand gameState.Action
             |> resolveCommand gameState
-        | AI -> failwith "AI not implemented yet!"
+        | AI -> resolveCommand gameState (CompleteCommand Wait)
