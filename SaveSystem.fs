@@ -6,18 +6,28 @@ module SaveSystem =
     open Tilesets
 
     let private exportActor actor =
+        let controllerName =
+            match actor.Controller with
+            | Player -> "player"
+            | AI -> "ai"
         string actor.Position.X + ";"
         + string actor.Position.Y + ";"
         + string (defaultTilesetParser actor.Tile)
+        + controllerName
 
     let private importActor (str: string) =
         let vals = str.Split ";"
         match vals.Length with
-        | 3 -> {
+        | 4 -> {
             Position = {X = int vals.[0]; Y = int vals.[1]}
             Tile = getInternalTileType (char vals.[2])
+            Controller =
+                match vals.[3] with
+                | "player" -> Player
+                | "ai" -> AI
+                | _ -> failwith "invalid actor: unrecognised controller"
             }
-        | _ -> failwith "invalid actor"
+        | _ -> failwith "invalid actor: wrong length"
 
     let private pushActors actors stream =
         let nActors = List.length actors

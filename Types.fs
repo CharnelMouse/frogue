@@ -14,9 +14,14 @@ module Types =
     | OrcTile
     | UnknownTile
 
+    type Controller =
+    | Player
+    | AI
+
     type Actor = {
-        Position: Position;
-        Tile: InternalTile;
+        Position: Position
+        Tile: InternalTile
+        Controller: Controller
     }
 
     type Map = {

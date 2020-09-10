@@ -4,5 +4,8 @@ module ActionGenerator =
     open Input
     open CommandParser
     let generateAction gameState =
-        getCommand gameState.Action
-        |> resolveCommand gameState
+        match gameState.Actors.Head.Controller with
+        | Player ->
+            getCommand gameState.Action
+            |> resolveCommand gameState
+        | AI -> failwith "AI not implemented yet!"
