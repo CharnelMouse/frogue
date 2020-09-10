@@ -3,9 +3,10 @@ module ActionGenerator =
     open Types
     open Input
     open CommandParser
+    open Script
     let generateAction gameState =
         match gameState.Actors.Head.Controller with
         | Player ->
             getCommand gameState.Action
             |> resolveCommand gameState
-        | AI -> resolveCommand gameState (CompleteCommand Wait)
+        | AIController -> {gameState with Action = decideAction gameState}
