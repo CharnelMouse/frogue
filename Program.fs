@@ -1,14 +1,12 @@
 namespace Frogue
 module Main =
     open Types
-    open Input
-    open Tilesets
     open Frogue.Map
     open Output
-    open CommandParser
     open SaveSystem
     open Action
     open TimeSystem
+    open ActionGenerator
 
     let private levelMap = createMap 20 10 (importTiles [
         "####################"
@@ -36,8 +34,7 @@ module Main =
 
     let rec private mainLoop gameState =
         let preClock =
-            getCommand gameState.Action
-            |> resolveCommand gameState
+            generateAction gameState
             |> executeAction
         updateOutput preClock
         let postClock = updateTime preClock 

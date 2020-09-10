@@ -13,6 +13,7 @@
     <Compile Include="Action.fs" />
     <Compile Include="TimeSystem.fs" />
     <Compile Include="CommandParser.fs" />
+    <Compile Include="ActionGenerator.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 </Project>
