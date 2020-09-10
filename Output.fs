@@ -68,6 +68,11 @@ module Output =
         writeBox gameState.StatusBuffer gameState.StatusBar reset
         {gameState with StatusBuffer = ""}
 
+    let popStatusIfPlayerTurn reset gameState =
+        match gameState.Actors.Head.Controller with
+        | Player -> popStatus reset gameState
+        | AI -> gameState
+
     let updateOutput gameState =
         match gameState.Action with
         | CompleteAction StartSession ->
