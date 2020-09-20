@@ -40,7 +40,7 @@ module Main =
         ]
         Map = levelMap
         StatusBar = {Start = {X = 0; Y = levelMap.Height + 1}; Length = 50}
-        StatusBuffer = ""
+        StatusBuffer = {Receiver = Player; Stream = ""}
         Action = CompleteAction StartSession
         Tileset = DefaultTileset
     }

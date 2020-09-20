@@ -57,29 +57,30 @@ module Output =
         if reset then resetCursor()
 
     let private pushStatus text gameState =
+        let newStream =
+            match gameState.StatusBuffer.Stream with
+            | "" -> text
+            | a -> a + " " + text
         {gameState with
-            StatusBuffer =
-                match gameState.StatusBuffer with
-                | "" -> text
-                | a -> a + " " + text
+            StatusBuffer = {gameState.StatusBuffer with Stream = newStream}
         }
 
-    let private statusByController selfStatus otherSuffix gameState =
+    let private statusByController selfStatus otherSuffix currentActor receiver =
         let actorType =
-            match gameState.Actors.Head.Type with
+            match currentActor.Type with
             | Adventurer -> "adventurer"
             | Orc -> "orc"
-        match gameState.Actors.Head.Controller with
-        | Player -> selfStatus
-        | AIController -> "The " + actorType + " " + otherSuffix + "."
+        match currentActor.Controller with
+        | a when a = receiver -> selfStatus
+        | _ -> "The " + actorType + " " + otherSuffix + "."
 
     let private pushStatusByController selfStatus otherSuffix gameState =
-        let text = statusByController selfStatus otherSuffix gameState
+        let text = statusByController selfStatus otherSuffix gameState.Actors.Head gameState.StatusBuffer.Receiver
         pushStatus text gameState
 
     let popStatus reset gameState =
-        writeBox gameState.StatusBuffer gameState.StatusBar reset
-        {gameState with StatusBuffer = ""}
+        writeBox gameState.StatusBuffer.Stream gameState.StatusBar reset
+        {gameState with StatusBuffer = {gameState.StatusBuffer with Stream = ""}}
 
     let popStatusIfPlayerTurn reset gameState =
         match gameState.Actors.Head.Controller with

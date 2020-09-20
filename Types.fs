@@ -44,6 +44,11 @@ module Types =
         Length: int;
     }
 
+    type StatusBuffer = {
+        Receiver: Controller
+        Stream: string
+    }
+
     type Direction =
         | North
         | South
@@ -112,7 +117,7 @@ module Types =
         Actors: Actor list
         Map: Map
         StatusBar: TextBox
-        StatusBuffer: string
+        StatusBuffer: StatusBuffer
         Action: Action
         Tileset: Tileset
     }

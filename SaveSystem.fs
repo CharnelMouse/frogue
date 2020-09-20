@@ -99,7 +99,7 @@ module SaveSystem =
             Actors = actors
             Map = map
             StatusBar = {Start = {X = int rest.[0]; Y = int rest.[1]}; Length = int rest.[2]}
-            StatusBuffer = ""
+            StatusBuffer = {Receiver = Player; Stream = ""}
             Action =
                 match rest.[3] with
                 | "DefaultTileset" -> CompleteAction StartSession
