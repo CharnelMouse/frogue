@@ -71,7 +71,7 @@ module Output =
             | Orc -> "orc"
         match gameState.Actors.Head.Controller with
         | Player -> selfStatus
-        | AI -> "The " + actorType + " " + otherSuffix + "."
+        | AIController -> "The " + actorType + " " + otherSuffix + "."
 
     let private pushStatusByController selfStatus otherSuffix gameState =
         let text = statusByController selfStatus otherSuffix gameState
@@ -84,7 +84,7 @@ module Output =
     let popStatusIfPlayerTurn reset gameState =
         match gameState.Actors.Head.Controller with
         | Player -> popStatus reset gameState
-        | AI -> gameState
+        | AIController -> gameState
 
     let updateOutput gameState =
         match gameState.Action with

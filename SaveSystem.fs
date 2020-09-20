@@ -9,7 +9,7 @@ module SaveSystem =
         let controller =
             match actor.Controller with
             | Player -> "player"
-            | AI -> "ai"
+            | AIController -> "ai"
         let actorType =
             match actor.Type with
             | Adventurer -> "adventurer"

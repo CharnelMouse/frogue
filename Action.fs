@@ -33,20 +33,20 @@ module Action =
         | CompleteAction (CloseDoorAction toPos) -> executeCloseDoorAction gameState toPos
         | CompleteAction (MoveAction (_, newPos)) -> changePlayerPosition gameState newPos
         | CompleteAction ToggleTileSetAction -> changeTileset gameState
-        | BlockedAction MoveActionBlockedByVoid -> gameState
-        | BlockedAction MoveActionBlockedByWall -> gameState
-        | BlockedAction MoveActionBlockedByActor -> gameState
-        | BlockedAction OpenToActionBlockedByVoid -> gameState
-        | BlockedAction OpenToActionBlockedByInvalidTile -> gameState
-        | BlockedAction CloseToActionBlockedByVoid -> gameState
-        | BlockedAction CloseToActionBlockedByInvalidTile -> gameState
-        | CompleteAction StartSession -> gameState
-        | CompleteAction StartSessionWithUnknownTileset -> gameState
-        | CompleteAction WaitAction -> gameState
-        | CompleteAction HelpAction -> gameState
-        | CompleteAction QuitAction -> gameState
-        | CompleteAction CancelAction -> gameState
-        | CompleteAction SaveGameAction -> gameState
-        | CompleteAction UnknownAction -> gameState
-        | IncompleteAction OpenAction -> gameState
+        | BlockedAction MoveActionBlockedByVoid
+        | BlockedAction MoveActionBlockedByWall
+        | BlockedAction MoveActionBlockedByActor
+        | BlockedAction OpenToActionBlockedByVoid
+        | BlockedAction OpenToActionBlockedByInvalidTile
+        | BlockedAction CloseToActionBlockedByVoid
+        | BlockedAction CloseToActionBlockedByInvalidTile
+        | CompleteAction StartSession
+        | CompleteAction StartSessionWithUnknownTileset
+        | CompleteAction WaitAction
+        | CompleteAction HelpAction
+        | CompleteAction QuitAction
+        | CompleteAction CancelAction
+        | CompleteAction SaveGameAction
+        | CompleteAction UnknownAction
+        | IncompleteAction OpenAction
         | IncompleteAction CloseAction -> gameState
