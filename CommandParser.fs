@@ -23,7 +23,7 @@ module CommandParser =
             else
                 let targetTileType = getTileAt newPos map
                 match (actor, targetTileType) with
-                | (Some _, _) -> BlockedAction MoveActionBlockedByActor
+                | (Some _, _) -> CompleteAction (AttackAction newPos)
                 | (None, WallTile) -> BlockedAction MoveActionBlockedByWall
                 | (None, ClosedDoorTile) -> CompleteAction (OpenDoorAction newPos)
                 | (None, _) -> CompleteAction (MoveAction  (oldPos, newPos))

@@ -35,7 +35,7 @@ module Main =
                 Tile = OrcTile
                 Controller = AIController
                 Type = Orc
-                Script = WaitScript
+                Script = StandGround
             }
         ]
         Map = levelMap

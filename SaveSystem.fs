@@ -17,6 +17,7 @@ module SaveSystem =
         let script =
             match actor.Script with
             | WaitScript -> "waitAI"
+            | StandGround -> "standgroundAI"
         let {X = x; Y = y} = actor.Position
         [actorType; string (defaultTilesetParser actor.Tile); controller; script; string x; string y]
         |> List.toSeq
@@ -42,6 +43,7 @@ module SaveSystem =
                 Script =
                     match script with
                     | "waitAI" -> WaitScript
+                    | "standgroundAI" -> StandGround
                     | _ -> failwith ("invalid actor: unrecognised AI: " + script)
             }
         | _ -> failwith ("invalid actor: wrong length: " + str)

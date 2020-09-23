@@ -24,6 +24,7 @@ module Types =
 
     type AIScript =
     | WaitScript
+    | StandGround
 
     type Actor = {
         Position: Position
@@ -81,6 +82,7 @@ module Types =
         | MoveAction of Position * Position
         | OpenDoorAction of Position
         | CloseDoorAction of Position
+        | AttackAction of Position
         | WaitAction
         | HelpAction
         | QuitAction
@@ -90,7 +92,6 @@ module Types =
         | UnknownAction
 
     type BlockedAction =
-        | MoveActionBlockedByActor
         | MoveActionBlockedByWall
         | MoveActionBlockedByVoid
         | OpenToActionBlockedByVoid

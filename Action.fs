@@ -32,10 +32,10 @@ module Action =
         | CompleteAction (OpenDoorAction toPos) -> executeOpenDoorAction gameState toPos
         | CompleteAction (CloseDoorAction toPos) -> executeCloseDoorAction gameState toPos
         | CompleteAction (MoveAction (_, newPos)) -> changePlayerPosition gameState newPos
+        | CompleteAction (AttackAction _) -> gameState
         | CompleteAction ToggleTileSetAction -> changeTileset gameState
         | BlockedAction MoveActionBlockedByVoid
         | BlockedAction MoveActionBlockedByWall
-        | BlockedAction MoveActionBlockedByActor
         | BlockedAction OpenToActionBlockedByVoid
         | BlockedAction OpenToActionBlockedByInvalidTile
         | BlockedAction CloseToActionBlockedByVoid

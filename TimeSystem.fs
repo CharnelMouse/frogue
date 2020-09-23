@@ -11,5 +11,6 @@ module TimeSystem =
             | CompleteAction (OpenDoorAction _)
                 | CompleteAction (CloseDoorAction _)
                 | CompleteAction (MoveAction _)
+                | CompleteAction (AttackAction _)
                 | CompleteAction WaitAction -> rotateActors gameState
             | _ -> gameState

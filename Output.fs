@@ -72,7 +72,7 @@ module Output =
             | Orc -> "orc"
         match currentActor.Controller with
         | a when a = receiver -> selfStatus
-        | _ -> "The " + actorType + " " + otherSuffix + "."
+        | _ -> "The " + actorType + " " + otherSuffix
 
     let private pushStatusByController selfStatus otherSuffix gameState =
         let text = statusByController selfStatus otherSuffix gameState.Actors.Head gameState.StatusBuffer.Receiver
@@ -103,20 +103,20 @@ module Output =
             gameState
         | BlockedAction MoveActionBlockedByVoid -> pushStatus "There's nothing there!" gameState
         | BlockedAction MoveActionBlockedByWall -> pushStatus "You bump up against the wall." gameState
-        | BlockedAction MoveActionBlockedByActor -> pushStatus "There's someone already there!" gameState
+        | CompleteAction (AttackAction _) -> pushStatusByController "You miss!" "misses!" gameState
         | CompleteAction (OpenDoorAction pos) ->
             drawTileAt pos gameState.Map gameState.Tileset
-            pushStatusByController "You open the door." "opens the door" gameState
+            pushStatusByController "You open the door." "opens the door." gameState
         | BlockedAction OpenToActionBlockedByVoid -> pushStatus "There's nothing there!" gameState
         | BlockedAction OpenToActionBlockedByInvalidTile -> pushStatus "There's nothing there to open!" gameState
         | IncompleteAction OpenAction -> pushStatus "Open in which direction?" gameState
         | CompleteAction (CloseDoorAction pos) ->
             drawTileAt pos gameState.Map gameState.Tileset
-            pushStatusByController "You close the door." "closes the door" gameState
+            pushStatusByController "You close the door." "closes the door." gameState
         | BlockedAction CloseToActionBlockedByVoid -> pushStatus "There's nothing there!" gameState
         | BlockedAction CloseToActionBlockedByInvalidTile -> pushStatus "There's nothing there to close!" gameState
         | IncompleteAction CloseAction -> pushStatus "Close in which direction?" gameState
-        | CompleteAction WaitAction -> pushStatusByController "Waiting..." "waits" gameState
+        | CompleteAction WaitAction -> pushStatusByController "Waiting..." "waits." gameState
         | CompleteAction HelpAction -> pushStatus "Move: arrow keys Open: o Close: c Wait: . Quit: q" gameState
         | CompleteAction QuitAction -> pushStatus "Bye." gameState // assumes status bar is last line
         | CompleteAction CancelAction -> pushStatus "OK." gameState
