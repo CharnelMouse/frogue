@@ -6,7 +6,7 @@ module CommandParser =
         gameState with Action = action
     }
 
-    let private resolveMoveCommand gameState direction =
+    let parseMoveCommand gameState direction =
         let oldPos = gameState.Actors.Head.Position
         let map = gameState.Map
         let {X = oldX; Y = oldY} = oldPos
@@ -17,17 +17,18 @@ module CommandParser =
             | West -> {X = oldX - 1; Y = oldY}
             | East -> {X = oldX + 1; Y = oldY}
         let actor = List.tryFind (fun x -> x.Position = newPos) gameState.Actors
-        let newAction =
-            if not (posIsOnMap newPos map)
-                then BlockedAction MoveActionBlockedByVoid
-            else
-                let targetTileType = getTileAt newPos map
-                match (actor, targetTileType) with
-                | (Some _, _) -> CompleteAction (AttackAction newPos)
-                | (None, WallTile) -> BlockedAction MoveActionBlockedByWall
-                | (None, ClosedDoorTile) -> CompleteAction (OpenDoorAction newPos)
-                | (None, _) -> CompleteAction (MoveAction  (oldPos, newPos))
-        changeAction gameState newAction
+        if not (posIsOnMap newPos map)
+            then BlockedAction MoveActionBlockedByVoid
+        else
+            let targetTileType = getTileAt newPos map
+            match (actor, targetTileType) with
+            | (Some _, _) -> CompleteAction (AttackAction newPos)
+            | (None, WallTile) -> BlockedAction MoveActionBlockedByWall
+            | (None, ClosedDoorTile) -> CompleteAction (OpenDoorAction newPos)
+            | (None, _) -> CompleteAction (MoveAction  (oldPos, newPos))
+
+    let private resolveMoveCommand gameState direction =
+        changeAction gameState (parseMoveCommand gameState direction)
 
     let private resolveOpenToCommand gameState direction =
         let x = gameState.Actors.Head.Position.X

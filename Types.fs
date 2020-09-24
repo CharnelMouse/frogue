@@ -25,6 +25,7 @@ module Types =
     type AIScript =
     | WaitScript
     | StandGround
+    | DumbHunt
 
     type Actor = {
         Position: Position

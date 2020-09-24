@@ -35,7 +35,7 @@ module Main =
                 Tile = OrcTile
                 Controller = AIController
                 Type = Orc
-                Script = StandGround
+                Script = DumbHunt
             }
         ]
         Map = levelMap
