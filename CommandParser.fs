@@ -10,12 +10,7 @@ module CommandParser =
         let oldPos = gameState.Actors.Head.Position
         let map = gameState.Map
         let {X = oldX; Y = oldY} = oldPos
-        let newPos =
-            match direction with
-            | North -> {X = oldX; Y = oldY - 1}
-            | South -> {X = oldX; Y = oldY + 1}
-            | West -> {X = oldX - 1; Y = oldY}
-            | East -> {X = oldX + 1; Y = oldY}
+        let newPos = neighbour oldPos direction
         let actor = List.tryFind (fun x -> x.Position = newPos) gameState.Actors
         if not (posIsOnMap newPos map)
             then BlockedAction MoveActionBlockedByVoid
@@ -31,15 +26,9 @@ module CommandParser =
         changeAction gameState (parseMoveCommand gameState direction)
 
     let private resolveOpenToCommand gameState direction =
-        let x = gameState.Actors.Head.Position.X
-        let y = gameState.Actors.Head.Position.Y
+        let pos = gameState.Actors.Head.Position
         let map = gameState.Map
-        let toPos =
-            match direction with
-            | North -> {X = x; Y = y - 1}
-            | South -> {X = x; Y = y + 1}
-            | West -> {X = x - 1; Y = y}
-            | East -> {X = x + 1; Y = y}
+        let toPos = neighbour pos direction
         let newAction =
             if not (posIsOnMap toPos map)
                 then BlockedAction OpenToActionBlockedByVoid
@@ -53,12 +42,7 @@ module CommandParser =
     let private resolveCloseToCommand gameState direction =
         let pos = gameState.Actors.Head.Position
         let map = gameState.Map
-        let toPos =
-            match direction with
-            | North -> {X = pos.X; Y = pos.Y - 1}
-            | South -> {X = pos.X; Y = pos.Y + 1}
-            | West -> {X = pos.X - 1; Y = pos.Y}
-            | East -> {X = pos.X + 1; Y = pos.Y}
+        let toPos = neighbour pos direction
         let newAction =
             if not (posIsOnMap toPos map)
                 then BlockedAction CloseToActionBlockedByVoid

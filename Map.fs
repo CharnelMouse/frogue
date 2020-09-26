@@ -22,3 +22,10 @@ module Map =
         match posIsOnMap pos map with
         | false -> failwith "position out of map bounds"
         | true -> map.Tiles.[y].[x]
+
+    let neighbour {X = x; Y = y} direction =
+        match direction with
+        | North -> {X = x; Y = y - 1}
+        | South -> {X = x; Y = y + 1}
+        | East -> {X = x + 1; Y = y}
+        | West -> {X = x - 1; Y = y}
