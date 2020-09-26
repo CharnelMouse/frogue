@@ -18,9 +18,7 @@ module Types =
     | Player
     | AIController
 
-    type ActorType =
-    | Adventurer
-    | Orc
+    type ActorName = string
 
     type AIScript =
     | WaitScript
@@ -31,7 +29,7 @@ module Types =
         Position: Position
         Tile: InternalTile
         Controller: Controller
-        Type: ActorType
+        Name: ActorName
         Script: AIScript
     }
 

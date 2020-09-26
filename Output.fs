@@ -66,13 +66,10 @@ module Output =
         }
 
     let private statusByController selfStatus otherSuffix currentActor receiver =
-        let actorType =
-            match currentActor.Type with
-            | Adventurer -> "adventurer"
-            | Orc -> "orc"
+        let actorName = currentActor.Name
         match currentActor.Controller with
         | a when a = receiver -> selfStatus
-        | _ -> "The " + actorType + " " + otherSuffix
+        | _ -> "The " + actorName + " " + otherSuffix
 
     let private pushStatusByController selfStatus otherSuffix gameState =
         let text = statusByController selfStatus otherSuffix gameState.Actors.Head gameState.StatusBuffer.Receiver
