@@ -9,9 +9,11 @@ module Action =
         replaceSingleElementFn pos.Y (replaceSingleElementFn pos.X (fun x -> tile)) map.Tiles
         |> Map.create map.Width map.Height
 
-    let private changePlayerPosition gameState pos = {
-        gameState with Actors = {gameState.Actors.Head with Position = pos} :: gameState.Actors.Tail
-    }
+    let private changePlayerPosition worldState pos =
+        {
+            worldState with
+                Actors = {worldState.Actors.Head with Position = pos} :: worldState.Actors.Tail
+        }
 
     let private changeTileset gameState = 
         let newTileset = 
@@ -20,19 +22,26 @@ module Action =
             | DottedTileset -> DefaultTileset
         {gameState with Tileset = newTileset}
 
-    let private executeOpenDoorAction gameState pos =
-        {gameState with Map = changeMapTile gameState.Map pos OpenDoorTile}
+    let private executeOpenDoorAction worldState pos =
+        {worldState with
+            Map = changeMapTile worldState.Map pos OpenDoorTile
+        }
 
-    let private executeCloseDoorAction gameState pos =
-        {gameState with Map = changeMapTile gameState.Map pos ClosedDoorTile}
+    let private executeCloseDoorAction worldState pos =
+        {worldState with
+            Map = changeMapTile worldState.Map pos ClosedDoorTile
+        }
 
     let executeAction gameState =
-        match gameState.Action with
-        | CompleteAnyoneAction (OpenDoorAction toPos) -> executeOpenDoorAction gameState toPos
-        | CompleteAnyoneAction (CloseDoorAction toPos) -> executeCloseDoorAction gameState toPos
-        | CompleteAnyoneAction (MoveAction (_, newPos)) -> changePlayerPosition gameState newPos
-        | CompleteAnyoneAction (AttackAction _) -> gameState
+        match gameState.WorldState.Action with
+        | CompleteAnyoneAction (OpenDoorAction toPos) ->
+            {gameState with WorldState = executeOpenDoorAction gameState.WorldState toPos}
+        | CompleteAnyoneAction (CloseDoorAction toPos) ->
+            {gameState with WorldState = executeCloseDoorAction gameState.WorldState toPos}
+        | CompleteAnyoneAction (MoveAction (_, newPos)) ->
+            {gameState with WorldState = changePlayerPosition gameState.WorldState newPos}
         | CompletePlayerAction ToggleTileSetAction -> changeTileset gameState
+        | CompleteAnyoneAction (AttackAction _)
         | BlockedAction MoveActionBlockedByAlly
         | BlockedAction MoveActionBlockedByVoid
         | BlockedAction MoveActionBlockedByWall

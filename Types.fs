@@ -98,11 +98,15 @@ module Types =
     | DefaultTileset
     | DottedTileset
 
-    type GameState = {
+    type WorldState = {
         Actors: Actor list
         Map: Map
+        Action: Action
+    }
+
+    type GameState = {
+        WorldState: WorldState
         StatusBar: TextBox
         StatusBuffer: StatusBuffer
-        Action: Action
         Tileset: Tileset
     }

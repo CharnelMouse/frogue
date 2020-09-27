@@ -80,11 +80,11 @@ module SaveSystem =
 
     let private exportGameState gameState =
         let {
-            Map = map
+            WorldState = {Map = map; Actors = actors}
             StatusBar = statusBar
             Tileset = tileset
             } = gameState
-        pushActors gameState.Actors []
+        pushActors actors []
         |> pushMap map
         |> pushRest statusBar tileset
 
@@ -92,15 +92,17 @@ module SaveSystem =
         let (actors, mapFirst) = popActors stream
         let (map, rest) = popMap mapFirst
         {
-            Actors = actors
-            Map = map
+            WorldState = {
+                Actors = actors
+                Map = map
+                Action =
+                    match rest.[3] with
+                    | "DefaultTileset" -> CompletePlayerAction StartSession
+                    | "DottedTileset" -> CompletePlayerAction StartSession
+                    | _ -> CompletePlayerAction StartSessionWithUnknownTileset
+            }
             StatusBar = {Start = {X = int rest.[0]; Y = int rest.[1]}; Length = int rest.[2]}
             StatusBuffer = {Receiver = Player; Stream = ""}
-            Action =
-                match rest.[3] with
-                | "DefaultTileset" -> CompletePlayerAction StartSession
-                | "DottedTileset" -> CompletePlayerAction StartSession
-                | _ -> CompletePlayerAction StartSessionWithUnknownTileset
             Tileset =
                 match rest.[3] with
                 | "DefaultTileset" -> DefaultTileset

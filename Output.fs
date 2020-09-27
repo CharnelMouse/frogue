@@ -77,7 +77,7 @@ module Output =
         | _ -> "The " + actorName + " " + otherSuffix
 
     let private pushStatusByController selfStatus otherSuffix gameState =
-        let text = statusByController selfStatus otherSuffix gameState.Actors.Head gameState.StatusBuffer.Receiver
+        let text = statusByController selfStatus otherSuffix gameState.WorldState.Actors.Head gameState.StatusBuffer.Receiver
         pushStatus text gameState
 
     let popStatus reset gameState =
@@ -85,36 +85,36 @@ module Output =
         {gameState with StatusBuffer = {gameState.StatusBuffer with Stream = ""}}
 
     let popStatusIfReceiverTurn reset gameState =
-        if gameState.StatusBuffer.Receiver = gameState.Actors.Head.Controller
+        if gameState.StatusBuffer.Receiver = gameState.WorldState.Actors.Head.Controller
             then popStatus reset gameState
             else gameState
 
     let updateOutput gameState =
-        match gameState.Action with
+        match gameState.WorldState.Action with
         | CompletePlayerAction StartSession ->
-            printMap gameState.Tileset gameState.Map
-            printActors gameState.Tileset gameState.Actors
+            printMap gameState.Tileset gameState.WorldState.Map
+            printActors gameState.Tileset gameState.WorldState.Actors
             pushStatus "Ready." gameState
         | CompletePlayerAction StartSessionWithUnknownTileset ->
-            printMap gameState.Tileset gameState.Map
-            printActors gameState.Tileset gameState.Actors
+            printMap gameState.Tileset gameState.WorldState.Map
+            printActors gameState.Tileset gameState.WorldState.Actors
             pushStatus "Save game contained unknown tileset, switching to default." gameState
         | CompleteAnyoneAction (MoveAction (origin, destination)) ->
-            drawTileAt origin gameState.Map gameState.Tileset
-            writeAt destination (getOutputActorTile gameState.Tileset gameState.Actors.Head.Tile)
+            drawTileAt origin gameState.WorldState.Map gameState.Tileset
+            writeAt destination (getOutputActorTile gameState.Tileset gameState.WorldState.Actors.Head.Tile)
             gameState
         | BlockedAction MoveActionBlockedByAlly -> pushStatus "There's an ally there!" gameState
         | BlockedAction MoveActionBlockedByVoid -> pushStatus "There's nothing there!" gameState
         | BlockedAction MoveActionBlockedByWall -> pushStatus "You bump up against the wall." gameState
         | CompleteAnyoneAction (AttackAction _) -> pushStatusByController "You miss!" "misses!" gameState
         | CompleteAnyoneAction (OpenDoorAction pos) ->
-            drawTileAt pos gameState.Map gameState.Tileset
+            drawTileAt pos gameState.WorldState.Map gameState.Tileset
             pushStatusByController "You open the door." "opens the door." gameState
         | BlockedAction OpenToActionBlockedByVoid -> pushStatus "There's nothing there!" gameState
         | BlockedAction OpenToActionBlockedByInvalidTile -> pushStatus "There's nothing there to open!" gameState
         | IncompleteAction OpenAction -> pushStatus "Open in which direction?" gameState
         | CompleteAnyoneAction (CloseDoorAction pos) ->
-            drawTileAt pos gameState.Map gameState.Tileset
+            drawTileAt pos gameState.WorldState.Map gameState.Tileset
             pushStatusByController "You close the door." "closes the door." gameState
         | BlockedAction CloseToActionBlockedByVoid -> pushStatus "There's nothing there!" gameState
         | BlockedAction CloseToActionBlockedByInvalidTile -> pushStatus "There's nothing there to close!" gameState
@@ -127,8 +127,8 @@ module Output =
             saveGame "save.sav" gameState
             pushStatus "Game saved." gameState
         | CompletePlayerAction ToggleTileSetAction ->
-            printMap gameState.Tileset gameState.Map
-            printActors gameState.Tileset gameState.Actors
+            printMap gameState.Tileset gameState.WorldState.Map
+            printActors gameState.Tileset gameState.WorldState.Actors
             pushStatus (
                 "Tileset changed to " +
                 match gameState.Tileset with

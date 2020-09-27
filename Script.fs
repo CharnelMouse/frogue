@@ -4,8 +4,8 @@ module Script =
     open Frogue.Map
     open CommandParser
 
-    let decideAction gameState =
-        let actor = gameState.Actors.Head
+    let decideAction worldState =
+        let actor = worldState.Actors.Head
         match actor.Script with
         | WaitScript -> WaitAction
         | StandGround ->
@@ -16,17 +16,17 @@ module Script =
                 East
                 West
             ]
-            let neighbour = List.tryFind (fun x -> List.contains x.Position neighbourTiles) gameState.Actors
+            let neighbour = List.tryFind (fun x -> List.contains x.Position neighbourTiles) worldState.Actors
             match neighbour with
             | Some a -> AttackAction a.Position
             | None -> WaitAction
         | DumbHunt ->
             let pos = actor.Position
-            let nextPlayerIndex = List.tryFindIndex (fun x -> x.Controller = Player) gameState.Actors.Tail
+            let nextPlayerIndex = List.tryFindIndex (fun x -> x.Controller = Player) worldState.Actors.Tail
             match nextPlayerIndex with
             | None -> WaitAction
             | Some ind ->
-                let nextPlayerPos = gameState.Actors.Tail.[ind].Position
+                let nextPlayerPos = worldState.Actors.Tail.[ind].Position
                 let direction =
                     match nextPlayerPos with
                     | {X = x; Y = y} when x < pos.X && y < pos.Y -> [West; North]
@@ -45,7 +45,7 @@ module Script =
                     | _ -> None
                 let activeAction =
                     direction
-                    |> List.map (parseMoveCommand gameState >> getAnyAction)
+                    |> List.map (parseMoveCommand worldState >> getAnyAction)
                     |> List.tryFind (fun x -> x.IsSome)
                 match activeAction with
                 | Some (Some action) -> action

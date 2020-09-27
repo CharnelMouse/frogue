@@ -3,16 +3,15 @@ module CommandParser =
     open Types
     open Frogue.Map
     open Command
-    let private changeAction gameState action = {
-        gameState with Action = action
+    let private changeAction worldState action = {
+        worldState with Action = action
     }
 
-    let parseMoveCommand gameState direction =
-        let oldPos = gameState.Actors.Head.Position
-        let map = gameState.Map
-        let {X = oldX; Y = oldY} = oldPos
+    let parseMoveCommand worldState direction =
+        let oldPos = worldState.Actors.Head.Position
+        let map = worldState.Map
         let newPos = neighbour oldPos direction
-        let actor = List.tryFind (fun x -> x.Position = newPos) gameState.Actors
+        let actor = List.tryFind (fun x -> x.Position = newPos) worldState.Actors
         let controller =
             match actor with
                 | Some act -> Some act.Controller
@@ -22,18 +21,18 @@ module CommandParser =
         else
             let targetTileType = getTileAt newPos map
             match (controller, targetTileType) with
-            | (Some cont, _) when cont = gameState.Actors.Head.Controller -> BlockedAction MoveActionBlockedByAlly
+            | (Some cont, _) when cont = worldState.Actors.Head.Controller -> BlockedAction MoveActionBlockedByAlly
             | (Some _, _) -> CompleteAnyoneAction (AttackAction newPos)
             | (None, WallTile) -> BlockedAction MoveActionBlockedByWall
             | (None, ClosedDoorTile) -> CompleteAnyoneAction (OpenDoorAction newPos)
             | (None, _) -> CompleteAnyoneAction (MoveAction  (oldPos, newPos))
 
-    let private resolveMoveCommand gameState direction =
-        changeAction gameState (parseMoveCommand gameState direction)
+    let private resolveMoveCommand worldState direction =
+        changeAction worldState (parseMoveCommand worldState direction)
 
-    let private resolveOpenToCommand gameState direction =
-        let pos = gameState.Actors.Head.Position
-        let map = gameState.Map
+    let private resolveOpenToCommand worldState direction =
+        let pos = worldState.Actors.Head.Position
+        let map = worldState.Map
         let toPos = neighbour pos direction
         let newAction =
             if not (posIsOnMap toPos map)
@@ -43,11 +42,11 @@ module CommandParser =
                 match targetTileType with
                 | ClosedDoorTile -> CompleteAnyoneAction (OpenDoorAction toPos)
                 | _ -> BlockedAction OpenToActionBlockedByInvalidTile
-        changeAction gameState newAction
+        changeAction worldState newAction
 
-    let private resolveCloseToCommand gameState direction =
-        let pos = gameState.Actors.Head.Position
-        let map = gameState.Map
+    let private resolveCloseToCommand worldState direction =
+        let pos = worldState.Actors.Head.Position
+        let map = worldState.Map
         let toPos = neighbour pos direction
         let newAction =
             if not (posIsOnMap toPos map)
@@ -57,19 +56,19 @@ module CommandParser =
                 match targetTileType with
                 | OpenDoorTile -> CompleteAnyoneAction (CloseDoorAction toPos)
                 | _ -> BlockedAction CloseToActionBlockedByInvalidTile
-        changeAction gameState newAction
+        changeAction worldState newAction
 
-    let resolveCommand gameState command =
+    let resolveCommand worldState command =
         match command with
-        | CompleteCommand (Move direction) -> resolveMoveCommand gameState direction
-        | CompleteCommand (OpenTo direction) -> resolveOpenToCommand gameState direction
-        | CompleteCommand (CloseTo direction) -> resolveCloseToCommand gameState direction
-        | CompleteCommand Wait -> changeAction gameState (CompleteAnyoneAction WaitAction)
-        | CompleteCommand Help -> changeAction gameState (CompletePlayerAction HelpAction)
-        | CompleteCommand Quit -> changeAction gameState (CompletePlayerAction QuitAction)
-        | CompleteCommand Cancel -> changeAction gameState (CompletePlayerAction CancelAction)
-        | CompleteCommand SaveGameCommand -> changeAction gameState (CompletePlayerAction SaveGameAction)
-        | CompleteCommand ToggleTilesetCommand -> changeAction gameState (CompletePlayerAction ToggleTileSetAction)
-        | CompleteCommand UnknownCommand -> changeAction gameState (CompletePlayerAction UnknownAction)
-        | IncompleteCommand Open -> changeAction gameState (IncompleteAction OpenAction)
-        | IncompleteCommand Close -> changeAction gameState (IncompleteAction CloseAction)
+        | CompleteCommand (Move direction) -> resolveMoveCommand worldState direction
+        | CompleteCommand (OpenTo direction) -> resolveOpenToCommand worldState direction
+        | CompleteCommand (CloseTo direction) -> resolveCloseToCommand worldState direction
+        | CompleteCommand Wait -> changeAction worldState (CompleteAnyoneAction WaitAction)
+        | CompleteCommand Help -> changeAction worldState (CompletePlayerAction HelpAction)
+        | CompleteCommand Quit -> changeAction worldState (CompletePlayerAction QuitAction)
+        | CompleteCommand Cancel -> changeAction worldState (CompletePlayerAction CancelAction)
+        | CompleteCommand SaveGameCommand -> changeAction worldState (CompletePlayerAction SaveGameAction)
+        | CompleteCommand ToggleTilesetCommand -> changeAction worldState (CompletePlayerAction ToggleTileSetAction)
+        | CompleteCommand UnknownCommand -> changeAction worldState (CompletePlayerAction UnknownAction)
+        | IncompleteCommand Open -> changeAction worldState (IncompleteAction OpenAction)
+        | IncompleteCommand Close -> changeAction worldState (IncompleteAction CloseAction)

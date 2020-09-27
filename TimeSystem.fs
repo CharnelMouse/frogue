@@ -2,11 +2,10 @@ namespace Frogue
 module TimeSystem =
     open Types
 
-    let private rotateActors gameState = {
-        gameState with Actors = gameState.Actors.Tail @ [gameState.Actors.Head]
-    }
+    let private rotate (actors: 'T list) =
+        actors.Tail @ [actors.Head]
 
-    let updateTime gameState = 
-        match gameState.Action with
-            | CompleteAnyoneAction _ -> rotateActors gameState
-            | _ -> gameState
+    let updateTime worldState = 
+        match worldState.Action with
+            | CompleteAnyoneAction _ -> {worldState with Actors = rotate worldState.Actors}
+            | _ -> worldState

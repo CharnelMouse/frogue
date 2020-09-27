@@ -4,9 +4,12 @@ module ActionGenerator =
     open Input
     open CommandParser
     open Script
-    let generateAction gameState =
-        match gameState.Actors.Head.Controller with
+    let generateAction worldState =
+        match worldState.Actors.Head.Controller with
         | Player ->
-            getCommand gameState.Action
-            |> resolveCommand gameState
-        | AIController -> {gameState with Action = CompleteAnyoneAction (decideAction gameState)}
+            getCommand worldState.Action
+            |> resolveCommand worldState
+        | AIController ->
+            {worldState with
+                Action = CompleteAnyoneAction (decideAction worldState)
+            }
