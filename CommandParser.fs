@@ -2,6 +2,7 @@ namespace Frogue
 module CommandParser =
     open Types
     open Frogue.Map
+    open Command
     let private changeAction gameState action = {
         gameState with Action = action
     }

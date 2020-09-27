@@ -2,6 +2,7 @@ namespace Frogue
 module Input =
     open System
     open Types
+    open Command
 
     let private getNonUnicodeCommand (input: ConsoleKeyInfo) =
         match input.Key with

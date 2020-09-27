@@ -2,6 +2,8 @@ namespace Frogue
 module Tilesets =
     open Types
     
+    type private TilesetParser = InternalTile -> char
+
     let (defaultTilesetParser: TilesetParser) = fun tile ->
         match tile with
         | EmptyTile -> ' '
