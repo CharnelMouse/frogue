@@ -103,6 +103,7 @@ module Output =
             drawTileAt origin gameState.Map gameState.Tileset
             writeAt destination (getOutputActorTile gameState.Tileset gameState.Actors.Head.Tile)
             gameState
+        | BlockedAction MoveActionBlockedByAlly -> pushStatus "There's an ally there!" gameState
         | BlockedAction MoveActionBlockedByVoid -> pushStatus "There's nothing there!" gameState
         | BlockedAction MoveActionBlockedByWall -> pushStatus "You bump up against the wall." gameState
         | CompleteAnyoneAction (AttackAction _) -> pushStatusByController "You miss!" "misses!" gameState

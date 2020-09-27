@@ -76,6 +76,7 @@ module Types =
         | WaitAction
 
     type BlockedAction =
+        | MoveActionBlockedByAlly
         | MoveActionBlockedByWall
         | MoveActionBlockedByVoid
         | OpenToActionBlockedByVoid

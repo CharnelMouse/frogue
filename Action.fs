@@ -33,6 +33,7 @@ module Action =
         | CompleteAnyoneAction (MoveAction (_, newPos)) -> changePlayerPosition gameState newPos
         | CompleteAnyoneAction (AttackAction _) -> gameState
         | CompletePlayerAction ToggleTileSetAction -> changeTileset gameState
+        | BlockedAction MoveActionBlockedByAlly
         | BlockedAction MoveActionBlockedByVoid
         | BlockedAction MoveActionBlockedByWall
         | BlockedAction OpenToActionBlockedByVoid

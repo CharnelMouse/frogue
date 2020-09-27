@@ -36,9 +36,16 @@ module Main =
                 Name = "orc"
                 Script = DumbHunt
             }
+            {
+                Position = {X = 8; Y = 5}
+                Tile = OrcTile
+                Controller = AIController
+                Name = "other orc"
+                Script = DumbHunt
+            }
         ]
         Map = levelMap
-        StatusBar = {Start = {X = 0; Y = levelMap.Height + 1}; Length = 50}
+        StatusBar = {Start = {X = 0; Y = levelMap.Height + 1}; Length = 70}
         StatusBuffer = {Receiver = Player; Stream = ""}
         Action = CompletePlayerAction StartSession
         Tileset = DefaultTileset

@@ -13,11 +13,16 @@ module CommandParser =
         let {X = oldX; Y = oldY} = oldPos
         let newPos = neighbour oldPos direction
         let actor = List.tryFind (fun x -> x.Position = newPos) gameState.Actors
+        let controller =
+            match actor with
+                | Some act -> Some act.Controller
+                | None -> None
         if not (posIsOnMap newPos map)
             then BlockedAction MoveActionBlockedByVoid
         else
             let targetTileType = getTileAt newPos map
-            match (actor, targetTileType) with
+            match (controller, targetTileType) with
+            | (Some cont, _) when cont = gameState.Actors.Head.Controller -> BlockedAction MoveActionBlockedByAlly
             | (Some _, _) -> CompleteAnyoneAction (AttackAction newPos)
             | (None, WallTile) -> BlockedAction MoveActionBlockedByWall
             | (None, ClosedDoorTile) -> CompleteAnyoneAction (OpenDoorAction newPos)
