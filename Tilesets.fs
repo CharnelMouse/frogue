@@ -2,40 +2,60 @@ namespace Frogue
 module Tilesets =
     open Types
     
-    type private TilesetParser = InternalTile -> char
+    type private ActorParser = ActorTile -> char
+    type private MapParser = MapTile -> char
 
-    let (defaultTilesetParser: TilesetParser) = fun tile ->
-        match tile with
-        | EmptyTile -> ' '
-        | OpenDoorTile -> '-'
-        | ClosedDoorTile -> '+'
-        | WallTile -> '#'
-        | PlayerTile -> '@'
-        | OrcTile -> 'o'
-        | UnknownTile -> failwith "tile not found in tileset"
+    type TilesetParser = {
+        ActorParser: ActorParser
+        MapParser: MapParser
+    }
 
-    let (dottedTilesetParser: TilesetParser) = fun tile ->
-        match tile with
-        | EmptyTile -> '.'
-        | OpenDoorTile -> '-'
-        | ClosedDoorTile -> '+'
-        | WallTile -> '#'
-        | PlayerTile -> '@'
-        | OrcTile -> 'o'
-        | UnknownTile -> failwith "tile not found in tileset"
+    let (defaultTilesetParser: TilesetParser) = {
+        ActorParser = fun tile ->
+            match tile with
+            | PlayerTile -> '@'
+            | OrcTile -> 'o'
+            | UnknownActorTile -> failwith "actor tile not found in tileset"
+        MapParser = fun tile ->
+            match tile with
+            | EmptyTile -> ' '
+            | OpenDoorTile -> '-'
+            | ClosedDoorTile -> '+'
+            | WallTile -> '#'
+            | UnknownMapTile -> failwith "map tile not found in tileset"
+    }
 
-    let convertInternalTilesToTiles (parser: TilesetParser) tiles =
+    let (dottedTilesetParser: TilesetParser) = {
+        ActorParser = fun tile ->
+            match tile with
+            | PlayerTile -> '@'
+            | OrcTile -> 'o'
+            | UnknownActorTile -> failwith "actor tile not found in tileset"
+        MapParser = fun tile ->
+            match tile with
+            | EmptyTile -> '.'
+            | OpenDoorTile -> '-'
+            | ClosedDoorTile -> '+'
+            | WallTile -> '#'
+            | UnknownMapTile -> failwith "map tile not found in tileset"
+    }
+
+    let convertMapTilesToString (parser: MapParser) (tiles: MapTile list) =
         tiles
         |> List.map (parser >> string)
         |> List.toSeq
         |> String.concat "" 
 
-    let getInternalTileType internalTile =
-        match internalTile with
+    let getActorTile char =
+        match char with
+        | '@' -> PlayerTile
+        | 'o' -> OrcTile
+        | _ -> UnknownActorTile
+
+    let getMapTile char =
+        match char with
         | ' ' -> EmptyTile
         | '-' -> OpenDoorTile
         | '+' -> ClosedDoorTile
         | '#' -> WallTile
-        | '@' -> PlayerTile
-        | 'o' -> OrcTile
-        | _ -> UnknownTile
+        | _ -> UnknownMapTile

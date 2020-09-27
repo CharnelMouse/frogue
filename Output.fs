@@ -20,7 +20,7 @@ module Output =
         Console.Clear()
         for row in map.Tiles do
             row
-            |> convertInternalTilesToTiles tilesetParser
+            |> convertMapTilesToString tilesetParser.MapParser
             |> Console.WriteLine
 
     let private writeAt pos (symb: char)  =
@@ -28,17 +28,22 @@ module Output =
         Console.Write(symb)
         resetCursor()
 
-    let private getOutputTile tileset x =
+    let private getOutputActorTile tileset x =
         match tileset with
-        | DefaultTileset -> defaultTilesetParser x
-        | DottedTileset -> dottedTilesetParser x
+        | DefaultTileset -> defaultTilesetParser.ActorParser x
+        | DottedTileset -> dottedTilesetParser.ActorParser x
+
+    let private getOutputMapTile tileset x =
+        match tileset with
+        | DefaultTileset -> defaultTilesetParser.MapParser x
+        | DottedTileset -> dottedTilesetParser.MapParser x
 
     let private printActors tileset actors =
-        List.iter (fun x -> writeAt x.Position (getOutputTile tileset x.Tile)) actors
+        List.iter (fun x -> writeAt x.Position (getOutputActorTile tileset x.Tile)) actors
 
     let private drawTileAt pos map tileset =
         getTileAt pos map
-        |> getOutputTile tileset
+        |> getOutputMapTile tileset
         |> writeAt pos
 
     let private clearBox box =
@@ -96,7 +101,7 @@ module Output =
             pushStatus "Save game contained unknown tileset, switching to default." gameState
         | CompleteAnyoneAction (MoveAction (origin, destination)) ->
             drawTileAt origin gameState.Map gameState.Tileset
-            writeAt destination (getOutputTile gameState.Tileset gameState.Actors.Head.Tile)
+            writeAt destination (getOutputActorTile gameState.Tileset gameState.Actors.Head.Tile)
             gameState
         | BlockedAction MoveActionBlockedByVoid -> pushStatus "There's nothing there!" gameState
         | BlockedAction MoveActionBlockedByWall -> pushStatus "You bump up against the wall." gameState

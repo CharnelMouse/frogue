@@ -4,15 +4,18 @@ module Types =
        X: int;
        Y: int;
     }
-    
-    type InternalTile =
+
+    type ActorTile =
+    | PlayerTile
+    | OrcTile
+    | UnknownActorTile
+
+    type MapTile =
     | EmptyTile
     | OpenDoorTile
     | ClosedDoorTile
     | WallTile
-    | PlayerTile
-    | OrcTile
-    | UnknownTile
+    | UnknownMapTile
 
     type Controller =
     | Player
@@ -27,7 +30,7 @@ module Types =
 
     type Actor = {
         Position: Position
-        Tile: InternalTile
+        Tile: ActorTile
         Controller: Controller
         Name: ActorName
         Script: AIScript
@@ -36,7 +39,7 @@ module Types =
     type Map = {
         Width: int
         Height: int
-        Tiles: InternalTile list list
+        Tiles: MapTile list list
     }
 
     type TextBox = {

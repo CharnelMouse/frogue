@@ -1,14 +1,13 @@
 namespace Frogue
 module Main =
     open Types
-    open Frogue.Map
     open Output
     open SaveSystem
     open Action
     open TimeSystem
     open ActionGenerator
 
-    let private levelMap = createMap 20 10 (importTiles [
+    let private levelMap = Map.create 20 10 (importMapTiles [
         "####################"
         "#              +    "
         "#              #   #"

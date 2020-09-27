@@ -2,7 +2,6 @@ namespace Frogue
 module SaveSystem =
     open System.IO
     open Types
-    open Frogue.Map
     open Tilesets
 
     let private exportActor actor =
@@ -17,7 +16,7 @@ module SaveSystem =
             | StandGround -> "standgroundAI"
             | DumbHunt -> "dumbhuntAI"
         let {X = x; Y = y} = actor.Position
-        [name; string (defaultTilesetParser actor.Tile); controller; script; string x; string y]
+        [name; string (defaultTilesetParser.ActorParser actor.Tile); controller; script; string x; string y]
         |> List.toSeq
         |> String.concat ";"
 
@@ -27,7 +26,7 @@ module SaveSystem =
         | [name; tile; controller; script; x; y]  ->
             {
                 Position = {X = int x; Y = int y}
-                Tile = getInternalTileType (char tile)
+                Tile = getActorTile (char tile)
                 Controller =
                     match controller with
                     | "player" -> Player
@@ -51,24 +50,24 @@ module SaveSystem =
         let nActors = int stream.[0]
         (List.map importActor stream.[1..nActors], stream.[(nActors + 1)..])
 
-    let private exportTiles tiles =
-        List.map (convertInternalTilesToTiles defaultTilesetParser) tiles
+    let private exportMapTiles tiles =
+        List.map (convertMapTilesToString defaultTilesetParser.MapParser) tiles
 
-    let importTiles (tiles: string list) =
-        List.map (function x -> List.map getInternalTileType (Seq.toList x))  tiles
+    let importMapTiles (tiles: string list) =
+        List.map (function x -> List.map getMapTile (Seq.toList x))  tiles
 
     let private pushMap map stream =
         stream @ [
             string map.Width
             string map.Height
         ]
-        @ exportTiles map.Tiles
+        @ exportMapTiles map.Tiles
 
     let private popMap (stream: string list) =
         let width = int stream.[0]
         let height = int stream.[1]
-        let tiles = importTiles stream.[2..(height + 1)]
-        let map = createMap width height tiles
+        let tiles = importMapTiles stream.[2..(height + 1)]
+        let map = Map.create width height tiles
         (map, stream.[(height + 2)..])
 
     let private pushRest statusBar tileset (stream: string list) =

@@ -1,14 +1,13 @@
 namespace Frogue
 module Action =
     open Types
-    open Frogue.Map
 
     let private replaceSingleElementFn index replacer list =
         List.mapi (fun i x -> if i = index then replacer x else x) list
 
     let private changeMapTile map pos tile =
         replaceSingleElementFn pos.Y (replaceSingleElementFn pos.X (fun x -> tile)) map.Tiles
-        |> createMap map.Width map.Height
+        |> Map.create map.Width map.Height
 
     let private changePlayerPosition gameState pos = {
         gameState with Actors = {gameState.Actors.Head with Position = pos} :: gameState.Actors.Tail
