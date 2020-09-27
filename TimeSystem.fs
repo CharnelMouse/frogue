@@ -8,9 +8,5 @@ module TimeSystem =
 
     let updateTime gameState = 
         match gameState.Action with
-            | CompleteAction (OpenDoorAction _)
-                | CompleteAction (CloseDoorAction _)
-                | CompleteAction (MoveAction _)
-                | CompleteAction (AttackAction _)
-                | CompleteAction WaitAction -> rotateActors gameState
+            | CompleteAnyoneAction _ -> rotateActors gameState
             | _ -> gameState

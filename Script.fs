@@ -7,7 +7,7 @@ module Script =
     let decideAction gameState =
         let actor = gameState.Actors.Head
         match actor.Script with
-        | WaitScript -> CompleteAction WaitAction
+        | WaitScript -> WaitAction
         | StandGround ->
             let pos = actor.Position
             let neighbourTiles = List.map (neighbour pos) [
@@ -18,13 +18,13 @@ module Script =
             ]
             let neighbour = List.tryFind (fun x -> List.contains x.Position neighbourTiles) gameState.Actors
             match neighbour with
-            | Some a -> CompleteAction (AttackAction a.Position)
-            | None -> CompleteAction WaitAction
+            | Some a -> AttackAction a.Position
+            | None -> WaitAction
         | DumbHunt ->
             let pos = actor.Position
             let nextPlayerIndex = List.tryFindIndex (fun x -> x.Controller = Player) gameState.Actors.Tail
             match nextPlayerIndex with
-            | None -> CompleteAction WaitAction
+            | None -> WaitAction
             | Some ind ->
                 let nextPlayerPos = gameState.Actors.Tail.[ind].Position
                 let direction =
@@ -39,16 +39,15 @@ module Script =
                     | {X = x; Y = y} when x > pos.X && y = pos.Y -> [East]
                     | {X = x; Y = y} when x > pos.X && y > pos.Y -> [East; South]
                     | _ -> failwith "AI script failure: couldn't process target's position" // impossible?
-                let isActiveAction action =
+                let getAnyAction action =
                     match action with
-                    | CompleteAction (MoveAction _)
-                    | CompleteAction (OpenDoorAction _)
-                    | CompleteAction (CloseDoorAction _)
-                    | CompleteAction (AttackAction _) -> true
-                    | _ -> false
+                    | CompleteAnyoneAction act -> Some act
+                    | _ -> None
                 let activeAction =
-                    List.map (parseMoveCommand gameState) direction
-                    |> List.tryFind isActiveAction
+                    direction
+                    |> List.map (parseMoveCommand gameState >> getAnyAction)
+                    |> List.tryFind (fun x -> x.IsSome)
                 match activeAction with
-                | Some action -> action
-                | None -> CompleteAction WaitAction
+                | Some (Some action) -> action
+                | Some None -> failwith "AI script failure: returned player-only action" // impossible?
+                | None -> WaitAction

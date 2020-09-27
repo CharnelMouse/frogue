@@ -9,4 +9,4 @@ module ActionGenerator =
         | Player ->
             getCommand gameState.Action
             |> resolveCommand gameState
-        | AIController -> {gameState with Action = decideAction gameState}
+        | AIController -> {gameState with Action = CompleteAnyoneAction (decideAction gameState)}

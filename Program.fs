@@ -41,7 +41,7 @@ module Main =
         Map = levelMap
         StatusBar = {Start = {X = 0; Y = levelMap.Height + 1}; Length = 50}
         StatusBuffer = {Receiver = Player; Stream = ""}
-        Action = CompleteAction StartSession
+        Action = CompletePlayerAction StartSession
         Tileset = DefaultTileset
     }
 
@@ -52,7 +52,7 @@ module Main =
             |> updateOutput
             |> updateTime
         match postTime.Action with
-        | CompleteAction QuitAction -> popStatus false postTime |> ignore
+        | CompletePlayerAction QuitAction -> popStatus false postTime |> ignore
         | _ -> popStatusIfPlayerTurn true postTime |> mainLoop
 
     [<EntryPoint>]

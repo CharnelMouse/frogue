@@ -55,20 +55,22 @@ module Types =
         | East
         | West
 
-    type CompleteAction =
+    type CompletePlayerAction =
         | StartSession
         | StartSessionWithUnknownTileset
-        | MoveAction of Position * Position
-        | OpenDoorAction of Position
-        | CloseDoorAction of Position
-        | AttackAction of Position
-        | WaitAction
         | HelpAction
         | QuitAction
         | CancelAction
         | SaveGameAction
         | ToggleTileSetAction
         | UnknownAction
+
+    type CompleteAnyoneAction =
+        | MoveAction of Position * Position
+        | OpenDoorAction of Position
+        | CloseDoorAction of Position
+        | AttackAction of Position
+        | WaitAction
 
     type BlockedAction =
         | MoveActionBlockedByWall
@@ -83,7 +85,8 @@ module Types =
         | CloseAction
 
     type Action =
-        | CompleteAction of CompleteAction
+        | CompletePlayerAction of CompletePlayerAction
+        | CompleteAnyoneAction of CompleteAnyoneAction
         | BlockedAction of BlockedAction
         | IncompleteAction of IncompleteAction
 

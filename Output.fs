@@ -86,41 +86,41 @@ module Output =
 
     let updateOutput gameState =
         match gameState.Action with
-        | CompleteAction StartSession ->
+        | CompletePlayerAction StartSession ->
             printMap gameState.Tileset gameState.Map
             printActors gameState.Tileset gameState.Actors
             pushStatus "Ready." gameState
-        | CompleteAction StartSessionWithUnknownTileset ->
+        | CompletePlayerAction StartSessionWithUnknownTileset ->
             printMap gameState.Tileset gameState.Map
             printActors gameState.Tileset gameState.Actors
             pushStatus "Save game contained unknown tileset, switching to default." gameState
-        | CompleteAction (MoveAction (origin, destination)) ->
+        | CompleteAnyoneAction (MoveAction (origin, destination)) ->
             drawTileAt origin gameState.Map gameState.Tileset
             writeAt destination (getOutputTile gameState.Tileset gameState.Actors.Head.Tile)
             gameState
         | BlockedAction MoveActionBlockedByVoid -> pushStatus "There's nothing there!" gameState
         | BlockedAction MoveActionBlockedByWall -> pushStatus "You bump up against the wall." gameState
-        | CompleteAction (AttackAction _) -> pushStatusByController "You miss!" "misses!" gameState
-        | CompleteAction (OpenDoorAction pos) ->
+        | CompleteAnyoneAction (AttackAction _) -> pushStatusByController "You miss!" "misses!" gameState
+        | CompleteAnyoneAction (OpenDoorAction pos) ->
             drawTileAt pos gameState.Map gameState.Tileset
             pushStatusByController "You open the door." "opens the door." gameState
         | BlockedAction OpenToActionBlockedByVoid -> pushStatus "There's nothing there!" gameState
         | BlockedAction OpenToActionBlockedByInvalidTile -> pushStatus "There's nothing there to open!" gameState
         | IncompleteAction OpenAction -> pushStatus "Open in which direction?" gameState
-        | CompleteAction (CloseDoorAction pos) ->
+        | CompleteAnyoneAction (CloseDoorAction pos) ->
             drawTileAt pos gameState.Map gameState.Tileset
             pushStatusByController "You close the door." "closes the door." gameState
         | BlockedAction CloseToActionBlockedByVoid -> pushStatus "There's nothing there!" gameState
         | BlockedAction CloseToActionBlockedByInvalidTile -> pushStatus "There's nothing there to close!" gameState
         | IncompleteAction CloseAction -> pushStatus "Close in which direction?" gameState
-        | CompleteAction WaitAction -> pushStatusByController "Waiting..." "waits." gameState
-        | CompleteAction HelpAction -> pushStatus "Move: arrow keys Open: o Close: c Wait: . Quit: q" gameState
-        | CompleteAction QuitAction -> pushStatus "Bye." gameState // assumes status bar is last line
-        | CompleteAction CancelAction -> pushStatus "OK." gameState
-        | CompleteAction SaveGameAction ->
+        | CompleteAnyoneAction WaitAction -> pushStatusByController "Waiting..." "waits." gameState
+        | CompletePlayerAction HelpAction -> pushStatus "Move: arrow keys Open: o Close: c Wait: . Quit: q" gameState
+        | CompletePlayerAction QuitAction -> pushStatus "Bye." gameState // assumes status bar is last line
+        | CompletePlayerAction CancelAction -> pushStatus "OK." gameState
+        | CompletePlayerAction SaveGameAction ->
             saveGame "save.sav" gameState
             pushStatus "Game saved." gameState
-        | CompleteAction ToggleTileSetAction ->
+        | CompletePlayerAction ToggleTileSetAction ->
             printMap gameState.Tileset gameState.Map
             printActors gameState.Tileset gameState.Actors
             pushStatus (
@@ -130,4 +130,4 @@ module Output =
                 | DottedTileset -> "dots"
                 + "."
                 ) gameState
-        | CompleteAction UnknownAction -> pushStatus "Unknown command, type ? for help." gameState
+        | CompletePlayerAction UnknownAction -> pushStatus "Unknown command, type ? for help." gameState

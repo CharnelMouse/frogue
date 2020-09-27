@@ -99,9 +99,9 @@ module SaveSystem =
             StatusBuffer = {Receiver = Player; Stream = ""}
             Action =
                 match rest.[3] with
-                | "DefaultTileset" -> CompleteAction StartSession
-                | "DottedTileset" -> CompleteAction StartSession
-                | _ -> CompleteAction StartSessionWithUnknownTileset
+                | "DefaultTileset" -> CompletePlayerAction StartSession
+                | "DottedTileset" -> CompletePlayerAction StartSession
+                | _ -> CompletePlayerAction StartSessionWithUnknownTileset
             Tileset =
                 match rest.[3] with
                 | "DefaultTileset" -> DefaultTileset

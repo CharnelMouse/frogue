@@ -18,10 +18,10 @@ module CommandParser =
         else
             let targetTileType = getTileAt newPos map
             match (actor, targetTileType) with
-            | (Some _, _) -> CompleteAction (AttackAction newPos)
+            | (Some _, _) -> CompleteAnyoneAction (AttackAction newPos)
             | (None, WallTile) -> BlockedAction MoveActionBlockedByWall
-            | (None, ClosedDoorTile) -> CompleteAction (OpenDoorAction newPos)
-            | (None, _) -> CompleteAction (MoveAction  (oldPos, newPos))
+            | (None, ClosedDoorTile) -> CompleteAnyoneAction (OpenDoorAction newPos)
+            | (None, _) -> CompleteAnyoneAction (MoveAction  (oldPos, newPos))
 
     let private resolveMoveCommand gameState direction =
         changeAction gameState (parseMoveCommand gameState direction)
@@ -36,7 +36,7 @@ module CommandParser =
             else
                 let targetTileType = getTileAt toPos map
                 match targetTileType with
-                | ClosedDoorTile -> CompleteAction (OpenDoorAction toPos)
+                | ClosedDoorTile -> CompleteAnyoneAction (OpenDoorAction toPos)
                 | _ -> BlockedAction OpenToActionBlockedByInvalidTile
         changeAction gameState newAction
 
@@ -50,7 +50,7 @@ module CommandParser =
             else
                 let targetTileType = getTileAt toPos map
                 match targetTileType with
-                | OpenDoorTile -> CompleteAction (CloseDoorAction toPos)
+                | OpenDoorTile -> CompleteAnyoneAction (CloseDoorAction toPos)
                 | _ -> BlockedAction CloseToActionBlockedByInvalidTile
         changeAction gameState newAction
 
@@ -59,12 +59,12 @@ module CommandParser =
         | CompleteCommand (Move direction) -> resolveMoveCommand gameState direction
         | CompleteCommand (OpenTo direction) -> resolveOpenToCommand gameState direction
         | CompleteCommand (CloseTo direction) -> resolveCloseToCommand gameState direction
-        | CompleteCommand Wait -> changeAction gameState (CompleteAction WaitAction)
-        | CompleteCommand Help -> changeAction gameState (CompleteAction HelpAction)
-        | CompleteCommand Quit -> changeAction gameState (CompleteAction QuitAction)
-        | CompleteCommand Cancel -> changeAction gameState (CompleteAction CancelAction)
-        | CompleteCommand SaveGameCommand -> changeAction gameState (CompleteAction SaveGameAction)
-        | CompleteCommand ToggleTilesetCommand -> changeAction gameState (CompleteAction ToggleTileSetAction)
-        | CompleteCommand UnknownCommand -> changeAction gameState (CompleteAction UnknownAction)
+        | CompleteCommand Wait -> changeAction gameState (CompleteAnyoneAction WaitAction)
+        | CompleteCommand Help -> changeAction gameState (CompletePlayerAction HelpAction)
+        | CompleteCommand Quit -> changeAction gameState (CompletePlayerAction QuitAction)
+        | CompleteCommand Cancel -> changeAction gameState (CompletePlayerAction CancelAction)
+        | CompleteCommand SaveGameCommand -> changeAction gameState (CompletePlayerAction SaveGameAction)
+        | CompleteCommand ToggleTilesetCommand -> changeAction gameState (CompletePlayerAction ToggleTileSetAction)
+        | CompleteCommand UnknownCommand -> changeAction gameState (CompletePlayerAction UnknownAction)
         | IncompleteCommand Open -> changeAction gameState (IncompleteAction OpenAction)
         | IncompleteCommand Close -> changeAction gameState (IncompleteAction CloseAction)

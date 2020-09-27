@@ -29,24 +29,24 @@ module Action =
 
     let executeAction gameState =
         match gameState.Action with
-        | CompleteAction (OpenDoorAction toPos) -> executeOpenDoorAction gameState toPos
-        | CompleteAction (CloseDoorAction toPos) -> executeCloseDoorAction gameState toPos
-        | CompleteAction (MoveAction (_, newPos)) -> changePlayerPosition gameState newPos
-        | CompleteAction (AttackAction _) -> gameState
-        | CompleteAction ToggleTileSetAction -> changeTileset gameState
+        | CompleteAnyoneAction (OpenDoorAction toPos) -> executeOpenDoorAction gameState toPos
+        | CompleteAnyoneAction (CloseDoorAction toPos) -> executeCloseDoorAction gameState toPos
+        | CompleteAnyoneAction (MoveAction (_, newPos)) -> changePlayerPosition gameState newPos
+        | CompleteAnyoneAction (AttackAction _) -> gameState
+        | CompletePlayerAction ToggleTileSetAction -> changeTileset gameState
         | BlockedAction MoveActionBlockedByVoid
         | BlockedAction MoveActionBlockedByWall
         | BlockedAction OpenToActionBlockedByVoid
         | BlockedAction OpenToActionBlockedByInvalidTile
         | BlockedAction CloseToActionBlockedByVoid
         | BlockedAction CloseToActionBlockedByInvalidTile
-        | CompleteAction StartSession
-        | CompleteAction StartSessionWithUnknownTileset
-        | CompleteAction WaitAction
-        | CompleteAction HelpAction
-        | CompleteAction QuitAction
-        | CompleteAction CancelAction
-        | CompleteAction SaveGameAction
-        | CompleteAction UnknownAction
+        | CompletePlayerAction StartSession
+        | CompletePlayerAction StartSessionWithUnknownTileset
+        | CompleteAnyoneAction WaitAction
+        | CompletePlayerAction HelpAction
+        | CompletePlayerAction QuitAction
+        | CompletePlayerAction CancelAction
+        | CompletePlayerAction SaveGameAction
+        | CompletePlayerAction UnknownAction
         | IncompleteAction OpenAction
         | IncompleteAction CloseAction -> gameState
