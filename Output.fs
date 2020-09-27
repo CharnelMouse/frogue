@@ -84,10 +84,10 @@ module Output =
         writeBox gameState.StatusBuffer.Stream gameState.StatusBar reset
         {gameState with StatusBuffer = {gameState.StatusBuffer with Stream = ""}}
 
-    let popStatusIfPlayerTurn reset gameState =
-        match gameState.Actors.Head.Controller with
-        | Player -> popStatus reset gameState
-        | AIController -> gameState
+    let popStatusIfReceiverTurn reset gameState =
+        if gameState.StatusBuffer.Receiver = gameState.Actors.Head.Controller
+            then popStatus reset gameState
+            else gameState
 
     let updateOutput gameState =
         match gameState.Action with

@@ -59,7 +59,7 @@ module Main =
             |> updateTime
         match postTime.Action with
         | CompletePlayerAction QuitAction -> popStatus false postTime |> ignore
-        | _ -> popStatusIfPlayerTurn true postTime |> mainLoop
+        | _ -> popStatusIfReceiverTurn true postTime |> mainLoop
 
     [<EntryPoint>]
     let private main argv =
