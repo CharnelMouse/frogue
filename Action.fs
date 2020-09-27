@@ -17,10 +17,10 @@ module Action =
 
     let private changeTileset gameState = 
         let newTileset = 
-            match gameState.Tileset with
+            match gameState.OutputState.Tileset with
             | DefaultTileset -> DottedTileset
             | DottedTileset -> DefaultTileset
-        {gameState with Tileset = newTileset}
+        {gameState with OutputState = {gameState.OutputState with Tileset = newTileset}}
 
     let private executeOpenDoorAction worldState pos =
         {worldState with

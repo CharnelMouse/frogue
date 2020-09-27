@@ -80,9 +80,14 @@ module SaveSystem =
 
     let private exportGameState gameState =
         let {
-            WorldState = {Map = map; Actors = actors}
-            StatusBar = statusBar
-            Tileset = tileset
+            WorldState = {
+                Map = map
+                Actors = actors
+            }
+            OutputState = {
+                StatusBar = statusBar
+                Tileset = tileset
+            }
             } = gameState
         pushActors actors []
         |> pushMap map
@@ -101,13 +106,15 @@ module SaveSystem =
                     | "DottedTileset" -> CompletePlayerAction StartSession
                     | _ -> CompletePlayerAction StartSessionWithUnknownTileset
             }
-            StatusBar = {Start = {X = int rest.[0]; Y = int rest.[1]}; Length = int rest.[2]}
-            StatusBuffer = {Receiver = Player; Stream = ""}
-            Tileset =
-                match rest.[3] with
-                | "DefaultTileset" -> DefaultTileset
-                | "DottedTileset" -> DottedTileset
-                | _ -> DefaultTileset
+            OutputState = {
+                StatusBar = {Start = {X = int rest.[0]; Y = int rest.[1]}; Length = int rest.[2]}
+                StatusBuffer = {Receiver = Player; Stream = ""}
+                Tileset =
+                    match rest.[3] with
+                    | "DefaultTileset" -> DefaultTileset
+                    | "DottedTileset" -> DottedTileset
+                    | _ -> DefaultTileset
+            }
         }
 
     let saveGameExists path =

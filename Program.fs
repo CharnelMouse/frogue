@@ -48,21 +48,23 @@ module Main =
             Map = levelMap
             Action = CompletePlayerAction StartSession
         }
-        StatusBar = {Start = {X = 0; Y = levelMap.Height + 1}; Length = 70}
-        StatusBuffer = {Receiver = Player; Stream = ""}
-        Tileset = DefaultTileset
+        OutputState = {
+            StatusBar = {Start = {X = 0; Y = levelMap.Height + 1}; Length = 70}
+            StatusBuffer = {Receiver = Player; Stream = ""}
+            Tileset = DefaultTileset
+        }
     }
 
     let rec private mainLoop gameState =
         let postAction = {gameState with WorldState = generateAction gameState.WorldState}
-        let postOutput =
+        let postExecute =
             postAction
             |> executeAction
-            |> updateOutput
+        let postOutput = {postExecute with OutputState = updateOutput postExecute}
         let postTime = {postOutput with WorldState = updateTime postOutput.WorldState}
         match postTime.WorldState.Action with
-        | CompletePlayerAction QuitAction -> popStatus false postTime |> ignore
-        | _ -> popStatusIfReceiverTurn true postTime |> mainLoop
+        | CompletePlayerAction QuitAction -> popStatus false postTime.OutputState |> ignore
+        | _ -> {postTime with OutputState = popStatusIfReceiverTurn true postTime} |> mainLoop
 
     [<EntryPoint>]
     let private main argv =
@@ -70,7 +72,11 @@ module Main =
             if saveGameExists "save.sav"
                 then loadGame "save.sav"
                 else startingGameState
-        updateOutput gameState
-        |> popStatus true
-        |> mainLoop
+        let startState =
+            {gameState with
+                OutputState =
+                    updateOutput gameState
+                    |> popStatus true
+            }
+        mainLoop startState
         0 // return an integer exit code

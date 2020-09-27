@@ -104,9 +104,13 @@ module Types =
         Action: Action
     }
 
-    type GameState = {
-        WorldState: WorldState
+    type OutputState = {
         StatusBar: TextBox
         StatusBuffer: StatusBuffer
         Tileset: Tileset
+    }
+
+    type GameState = {
+        WorldState: WorldState
+        OutputState: OutputState
     }

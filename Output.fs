@@ -61,13 +61,13 @@ module Output =
         writeFrom box.Start str
         if reset then resetCursor()
 
-    let private pushStatus text gameState =
+    let private pushStatus text outputState =
         let newStream =
-            match gameState.StatusBuffer.Stream with
+            match outputState.StatusBuffer.Stream with
             | "" -> text
             | a -> a + " " + text
-        {gameState with
-            StatusBuffer = {gameState.StatusBuffer with Stream = newStream}
+        {outputState with
+            StatusBuffer = {outputState.StatusBuffer with Stream = newStream}
         }
 
     let private statusByController selfStatus otherSuffix currentActor receiver =
@@ -77,63 +77,63 @@ module Output =
         | _ -> "The " + actorName + " " + otherSuffix
 
     let private pushStatusByController selfStatus otherSuffix gameState =
-        let text = statusByController selfStatus otherSuffix gameState.WorldState.Actors.Head gameState.StatusBuffer.Receiver
-        pushStatus text gameState
+        let text = statusByController selfStatus otherSuffix gameState.WorldState.Actors.Head gameState.OutputState.StatusBuffer.Receiver
+        pushStatus text gameState.OutputState
 
-    let popStatus reset gameState =
-        writeBox gameState.StatusBuffer.Stream gameState.StatusBar reset
-        {gameState with StatusBuffer = {gameState.StatusBuffer with Stream = ""}}
+    let popStatus reset outputState =
+        writeBox outputState.StatusBuffer.Stream outputState.StatusBar reset
+        {outputState with StatusBuffer = {outputState.StatusBuffer with Stream = ""}}
 
     let popStatusIfReceiverTurn reset gameState =
-        if gameState.StatusBuffer.Receiver = gameState.WorldState.Actors.Head.Controller
-            then popStatus reset gameState
-            else gameState
+        if gameState.OutputState.StatusBuffer.Receiver = gameState.WorldState.Actors.Head.Controller
+            then popStatus reset gameState.OutputState
+            else gameState.OutputState
 
     let updateOutput gameState =
         match gameState.WorldState.Action with
         | CompletePlayerAction StartSession ->
-            printMap gameState.Tileset gameState.WorldState.Map
-            printActors gameState.Tileset gameState.WorldState.Actors
-            pushStatus "Ready." gameState
+            printMap gameState.OutputState.Tileset gameState.WorldState.Map
+            printActors gameState.OutputState.Tileset gameState.WorldState.Actors
+            pushStatus "Ready." gameState.OutputState
         | CompletePlayerAction StartSessionWithUnknownTileset ->
-            printMap gameState.Tileset gameState.WorldState.Map
-            printActors gameState.Tileset gameState.WorldState.Actors
-            pushStatus "Save game contained unknown tileset, switching to default." gameState
+            printMap gameState.OutputState.Tileset gameState.WorldState.Map
+            printActors gameState.OutputState.Tileset gameState.WorldState.Actors
+            pushStatus "Save game contained unknown tileset, switching to default." gameState.OutputState
         | CompleteAnyoneAction (MoveAction (origin, destination)) ->
-            drawTileAt origin gameState.WorldState.Map gameState.Tileset
-            writeAt destination (getOutputActorTile gameState.Tileset gameState.WorldState.Actors.Head.Tile)
-            gameState
-        | BlockedAction MoveActionBlockedByAlly -> pushStatus "There's an ally there!" gameState
-        | BlockedAction MoveActionBlockedByVoid -> pushStatus "There's nothing there!" gameState
-        | BlockedAction MoveActionBlockedByWall -> pushStatus "You bump up against the wall." gameState
+            drawTileAt origin gameState.WorldState.Map gameState.OutputState.Tileset
+            writeAt destination (getOutputActorTile gameState.OutputState.Tileset gameState.WorldState.Actors.Head.Tile)
+            gameState.OutputState
+        | BlockedAction MoveActionBlockedByAlly -> pushStatus "There's an ally there!" gameState.OutputState
+        | BlockedAction MoveActionBlockedByVoid -> pushStatus "There's nothing there!" gameState.OutputState
+        | BlockedAction MoveActionBlockedByWall -> pushStatus "You bump up against the wall." gameState.OutputState
         | CompleteAnyoneAction (AttackAction _) -> pushStatusByController "You miss!" "misses!" gameState
         | CompleteAnyoneAction (OpenDoorAction pos) ->
-            drawTileAt pos gameState.WorldState.Map gameState.Tileset
+            drawTileAt pos gameState.WorldState.Map gameState.OutputState.Tileset
             pushStatusByController "You open the door." "opens the door." gameState
-        | BlockedAction OpenToActionBlockedByVoid -> pushStatus "There's nothing there!" gameState
-        | BlockedAction OpenToActionBlockedByInvalidTile -> pushStatus "There's nothing there to open!" gameState
-        | IncompleteAction OpenAction -> pushStatus "Open in which direction?" gameState
+        | BlockedAction OpenToActionBlockedByVoid -> pushStatus "There's nothing there!" gameState.OutputState
+        | BlockedAction OpenToActionBlockedByInvalidTile -> pushStatus "There's nothing there to open!" gameState.OutputState
+        | IncompleteAction OpenAction -> pushStatus "Open in which direction?" gameState.OutputState
         | CompleteAnyoneAction (CloseDoorAction pos) ->
-            drawTileAt pos gameState.WorldState.Map gameState.Tileset
+            drawTileAt pos gameState.WorldState.Map gameState.OutputState.Tileset
             pushStatusByController "You close the door." "closes the door." gameState
-        | BlockedAction CloseToActionBlockedByVoid -> pushStatus "There's nothing there!" gameState
-        | BlockedAction CloseToActionBlockedByInvalidTile -> pushStatus "There's nothing there to close!" gameState
-        | IncompleteAction CloseAction -> pushStatus "Close in which direction?" gameState
+        | BlockedAction CloseToActionBlockedByVoid -> pushStatus "There's nothing there!" gameState.OutputState
+        | BlockedAction CloseToActionBlockedByInvalidTile -> pushStatus "There's nothing there to close!" gameState.OutputState
+        | IncompleteAction CloseAction -> pushStatus "Close in which direction?" gameState.OutputState
         | CompleteAnyoneAction WaitAction -> pushStatusByController "Waiting..." "waits." gameState
-        | CompletePlayerAction HelpAction -> pushStatus "Move: arrow keys Open: o Close: c Wait: . Quit: q" gameState
-        | CompletePlayerAction QuitAction -> pushStatus "Bye." gameState // assumes status bar is last line
-        | CompletePlayerAction CancelAction -> pushStatus "OK." gameState
+        | CompletePlayerAction HelpAction -> pushStatus "Move: arrow keys Open: o Close: c Wait: . Quit: q" gameState.OutputState
+        | CompletePlayerAction QuitAction -> pushStatus "Bye." gameState.OutputState // assumes status bar is last line
+        | CompletePlayerAction CancelAction -> pushStatus "OK." gameState.OutputState
         | CompletePlayerAction SaveGameAction ->
             saveGame "save.sav" gameState
-            pushStatus "Game saved." gameState
+            pushStatus "Game saved." gameState.OutputState
         | CompletePlayerAction ToggleTileSetAction ->
-            printMap gameState.Tileset gameState.WorldState.Map
-            printActors gameState.Tileset gameState.WorldState.Actors
+            printMap gameState.OutputState.Tileset gameState.WorldState.Map
+            printActors gameState.OutputState.Tileset gameState.WorldState.Actors
             pushStatus (
                 "Tileset changed to " +
-                match gameState.Tileset with
+                match gameState.OutputState.Tileset with
                 | DefaultTileset -> "default"
                 | DottedTileset -> "dots"
                 + "."
-                ) gameState
-        | CompletePlayerAction UnknownAction -> pushStatus "Unknown command, type ? for help." gameState
+                ) gameState.OutputState
+        | CompletePlayerAction UnknownAction -> pushStatus "Unknown command, type ? for help." gameState.OutputState
