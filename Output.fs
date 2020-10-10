@@ -70,14 +70,24 @@ module Output =
             StatusBuffer = {outputState.StatusBuffer with Stream = newStream}
         }
 
-    let private statusByController selfStatus otherSuffix currentActor receiver =
-        let actorName = currentActor.Name
-        match currentActor.Controller with
-        | a when a = receiver -> selfStatus
-        | _ -> "The " + actorName + " " + otherSuffix
+    let private subjectByController subject receiver =
+        match subject.Controller with
+        | a when a = receiver -> "You"
+        | _ -> "The " + subject.Name
 
-    let private pushStatusByController selfStatus otherSuffix gameState =
-        let text = statusByController selfStatus otherSuffix gameState.WorldState.Actors.Head gameState.OutputState.StatusBuffer.Receiver
+    let private statusByController selfStatus otherSuffix endMark currentActor object receiver =
+        let subject = subjectByController currentActor receiver
+        let suffix =
+            match currentActor.Controller with
+            | a when a = receiver -> selfStatus
+            | _ -> otherSuffix
+        subject + " " + suffix +
+        match object with
+        | None -> endMark
+        | Some a -> " the " + a.Name + endMark
+
+    let private pushStatusByController selfStatus otherSuffix object endMark gameState =
+        let text = statusByController selfStatus otherSuffix endMark gameState.WorldState.Actors.Head object gameState.OutputState.StatusBuffer.Receiver
         pushStatus text gameState.OutputState
 
     let popStatus reset outputState =
@@ -88,6 +98,15 @@ module Output =
         if gameState.OutputState.StatusBuffer.Receiver = gameState.WorldState.Actors.Head.Controller
             then popStatus reset gameState.OutputState
             else gameState.OutputState
+
+    let fakeDoorActor = {
+        Name = "door"
+        Position = {X = 0; Y = 0}
+        Tile = UnknownActorTile
+        Controller = AIController
+        Script = WaitScript
+        }
+
 
     let updateOutput gameState =
         match gameState.WorldState.Action with
@@ -106,20 +125,20 @@ module Output =
         | BlockedAction MoveActionBlockedByAlly -> pushStatus "There's an ally there!" gameState.OutputState
         | BlockedAction MoveActionBlockedByVoid -> pushStatus "There's nothing there!" gameState.OutputState
         | BlockedAction MoveActionBlockedByWall -> pushStatus "You bump up against the wall." gameState.OutputState
-        | CompleteAnyoneAction (AttackAction _) -> pushStatusByController "You miss!" "misses!" gameState
+        | CompleteAnyoneAction (AttackAction _) -> pushStatusByController "miss" "misses" None "!" gameState
         | CompleteAnyoneAction (OpenDoorAction pos) ->
             drawTileAt pos gameState.WorldState.Map gameState.OutputState.Tileset
-            pushStatusByController "You open the door." "opens the door." gameState
+            pushStatusByController "open" "opens" (Some fakeDoorActor) "." gameState
         | BlockedAction OpenToActionBlockedByVoid -> pushStatus "There's nothing there!" gameState.OutputState
         | BlockedAction OpenToActionBlockedByInvalidTile -> pushStatus "There's nothing there to open!" gameState.OutputState
         | IncompleteAction OpenAction -> pushStatus "Open in which direction?" gameState.OutputState
         | CompleteAnyoneAction (CloseDoorAction pos) ->
             drawTileAt pos gameState.WorldState.Map gameState.OutputState.Tileset
-            pushStatusByController "You close the door." "closes the door." gameState
+            pushStatusByController "close" "closes" (Some fakeDoorActor) "." gameState
         | BlockedAction CloseToActionBlockedByVoid -> pushStatus "There's nothing there!" gameState.OutputState
         | BlockedAction CloseToActionBlockedByInvalidTile -> pushStatus "There's nothing there to close!" gameState.OutputState
         | IncompleteAction CloseAction -> pushStatus "Close in which direction?" gameState.OutputState
-        | CompleteAnyoneAction WaitAction -> pushStatusByController "Waiting..." "waits." gameState
+        | CompleteAnyoneAction WaitAction -> pushStatusByController "wait" "waits" None "." gameState
         | CompletePlayerAction HelpAction -> pushStatus "Move: arrow keys Open: o Close: c Wait: . Quit: q" gameState.OutputState
         | CompletePlayerAction QuitAction -> pushStatus "Bye." gameState.OutputState // assumes status bar is last line
         | CompletePlayerAction CancelAction -> pushStatus "OK." gameState.OutputState
