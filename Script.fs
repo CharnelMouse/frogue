@@ -16,9 +16,9 @@ module Script =
                 East
                 West
             ]
-            let neighbour = List.tryFind (fun x -> List.contains x.Position neighbourTiles) worldState.Actors
-            match neighbour with
-            | Some a -> AttackAction a.Position
+            let neighbourIndex = List.tryFindIndex (fun x -> List.contains x.Position neighbourTiles) worldState.Actors
+            match neighbourIndex with
+            | Some ind -> AttackAction ind
             | None -> WaitAction
         | DumbHunt ->
             let pos = actor.Position

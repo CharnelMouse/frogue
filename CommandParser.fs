@@ -11,10 +11,10 @@ module CommandParser =
         let oldPos = worldState.Actors.Head.Position
         let map = worldState.Map
         let newPos = neighbour oldPos direction
-        let actor = List.tryFind (fun x -> x.Position = newPos) worldState.Actors
+        let actorIndex = List.tryFindIndex (fun x -> x.Position = newPos) worldState.Actors
         let controller =
-            match actor with
-                | Some act -> Some act.Controller
+            match actorIndex with
+                | Some ind -> Some worldState.Actors.[ind].Controller
                 | None -> None
         if not (posIsOnMap newPos map)
             then BlockedAction MoveActionBlockedByVoid
@@ -22,7 +22,7 @@ module CommandParser =
             let targetTileType = getTileAt newPos map
             match (controller, targetTileType) with
             | (Some cont, _) when cont = worldState.Actors.Head.Controller -> BlockedAction MoveActionBlockedByAlly
-            | (Some _, _) -> CompleteAnyoneAction (AttackAction newPos)
+            | (Some _, _) -> CompleteAnyoneAction (AttackAction actorIndex.Value)
             | (None, WallTile) -> BlockedAction MoveActionBlockedByWall
             | (None, ClosedDoorTile) -> CompleteAnyoneAction (OpenDoorAction newPos)
             | (None, _) -> CompleteAnyoneAction (MoveAction  (oldPos, newPos))

@@ -84,6 +84,7 @@ module Output =
         subject + " " + suffix +
         match object with
         | None -> endMark
+        | Some a when a.Controller = receiver -> " you" + endMark
         | Some a -> " the " + a.Name + endMark
 
     let private pushStatusByController selfStatus otherSuffix object endMark gameState =
@@ -107,7 +108,6 @@ module Output =
         Script = WaitScript
         }
 
-
     let updateOutput gameState =
         match gameState.WorldState.Action with
         | CompletePlayerAction StartSession ->
@@ -125,7 +125,9 @@ module Output =
         | BlockedAction MoveActionBlockedByAlly -> pushStatus "There's an ally there!" gameState.OutputState
         | BlockedAction MoveActionBlockedByVoid -> pushStatus "There's nothing there!" gameState.OutputState
         | BlockedAction MoveActionBlockedByWall -> pushStatus "You bump up against the wall." gameState.OutputState
-        | CompleteAnyoneAction (AttackAction _) -> pushStatusByController "miss" "misses" None "!" gameState
+        | CompleteAnyoneAction (AttackAction ind) ->
+            let object = gameState.WorldState.Actors.[ind]
+            pushStatusByController "miss" "misses" (Some object) "!" gameState
         | CompleteAnyoneAction (OpenDoorAction pos) ->
             drawTileAt pos gameState.WorldState.Map gameState.OutputState.Tileset
             pushStatusByController "open" "opens" (Some fakeDoorActor) "." gameState

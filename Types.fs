@@ -72,7 +72,7 @@ module Types =
         | MoveAction of Position * Position
         | OpenDoorAction of Position
         | CloseDoorAction of Position
-        | AttackAction of Position
+        | AttackAction of int
         | WaitAction
 
     type BlockedAction =
