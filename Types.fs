@@ -83,6 +83,7 @@ module Types =
         | OpenToActionBlockedByInvalidTile
         | CloseToActionBlockedByVoid
         | CloseToActionBlockedByInvalidTile
+        | CloseToActionBlockedByActor
 
     type IncompleteAction =
         | OpenAction

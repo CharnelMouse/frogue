@@ -49,6 +49,7 @@ module Action =
         | BlockedAction OpenToActionBlockedByInvalidTile
         | BlockedAction CloseToActionBlockedByVoid
         | BlockedAction CloseToActionBlockedByInvalidTile
+        | BlockedAction CloseToActionBlockedByActor
         | CompletePlayerAction StartSession
         | CompletePlayerAction StartSessionWithUnknownTileset
         | CompleteAnyoneAction WaitAction

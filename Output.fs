@@ -137,6 +137,7 @@ module Output =
             pushStatusByController "close" "closes" (Some fakeDoorActor) "." gameState
         | BlockedAction CloseToActionBlockedByVoid -> pushStatus "There's nothing there!" gameState.OutputState
         | BlockedAction CloseToActionBlockedByInvalidTile -> pushStatus "There's nothing there to close!" gameState.OutputState
+        | BlockedAction CloseToActionBlockedByActor -> pushStatus "There's something in the way!" gameState.OutputState
         | IncompleteAction CloseAction -> pushStatus "Close in which direction?" gameState.OutputState
         | CompleteAnyoneAction WaitAction -> pushStatusByController "wait" "waits" None "." gameState
         | CompletePlayerAction HelpAction -> pushStatus "Move: arrow keys Open: o Close: c Wait: . Quit: q" gameState.OutputState

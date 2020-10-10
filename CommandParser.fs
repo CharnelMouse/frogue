@@ -48,14 +48,18 @@ module CommandParser =
         let pos = worldState.Actors.Head.Position
         let map = worldState.Map
         let toPos = neighbour pos direction
+        let blockingActor = List.tryFind (fun x -> x.Position = neighbour pos direction) worldState.Actors
         let newAction =
             if not (posIsOnMap toPos map)
                 then BlockedAction CloseToActionBlockedByVoid
             else
                 let targetTileType = getTileAt toPos map
-                match targetTileType with
-                | OpenDoorTile -> CompleteAnyoneAction (CloseDoorAction toPos)
-                | _ -> BlockedAction CloseToActionBlockedByInvalidTile
+                match blockingActor with
+                | Some _ -> BlockedAction CloseToActionBlockedByActor
+                | None ->
+                    match targetTileType with
+                    | OpenDoorTile -> CompleteAnyoneAction (CloseDoorAction toPos)
+                    | _ -> BlockedAction CloseToActionBlockedByInvalidTile
         changeAction worldState newAction
 
     let resolveCommand worldState command =
