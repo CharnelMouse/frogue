@@ -4,6 +4,8 @@ A small roguelike I'm making to learn F#.
 
 Current to-dos:
 
+- Let status messages carry over several lines (key prompt to continue)
+- ? Store status messages received/shown in log
 - Add controller information in status subjects/objects if several actors controlled by current player, or several players
 - Add NPC behaviour script that can pathfind
 - Add some more interesting tilesets
