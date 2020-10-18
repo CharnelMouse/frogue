@@ -62,11 +62,29 @@ module CommandParser =
                     | _ -> BlockedAction CloseToActionBlockedByInvalidTile
         changeAction worldState newAction
 
+    let private resolveMindSwapToCommand worldState direction =
+        let actor = worldState.Actors.Head
+        let pos = actor.Position
+        let map = worldState.Map
+        let toPos = neighbour pos direction
+        let targetActorIndex = List.tryFindIndex (fun x -> x.Position = toPos) worldState.Actors
+        let targetActor = List.tryFind (fun x -> x.Position = toPos) worldState.Actors
+        let newAction =
+            if not (posIsOnMap toPos map)
+                then BlockedAction MindSwapToActionBlockedByVoid
+            else
+                match targetActorIndex with
+                | None -> BlockedAction MindSwapToActionBlockedByNoActor
+                | Some a when worldState.Actors.[a].Controller = actor.Controller -> BlockedAction MindSwapToActionOnControlledActor
+                | Some a -> CompleteAnyoneAction (MindSwapActorAction (a, actor.Controller))
+        changeAction worldState newAction
+
     let resolveCommand worldState command =
         match command with
         | CompleteCommand (Move direction) -> resolveMoveCommand worldState direction
         | CompleteCommand (OpenTo direction) -> resolveOpenToCommand worldState direction
         | CompleteCommand (CloseTo direction) -> resolveCloseToCommand worldState direction
+        | CompleteCommand (MindSwapTo direction) -> resolveMindSwapToCommand worldState direction
         | CompleteCommand Wait -> changeAction worldState (CompleteAnyoneAction WaitAction)
         | CompleteCommand Help -> changeAction worldState (CompletePlayerAction HelpAction)
         | CompleteCommand Quit -> changeAction worldState (CompletePlayerAction QuitAction)
@@ -76,3 +94,4 @@ module CommandParser =
         | CompleteCommand UnknownCommand -> changeAction worldState (CompletePlayerAction UnknownAction)
         | IncompleteCommand Open -> changeAction worldState (IncompleteAction OpenAction)
         | IncompleteCommand Close -> changeAction worldState (IncompleteAction CloseAction)
+        | IncompleteCommand MindSwap -> changeAction worldState (IncompleteAction MindSwapAction)

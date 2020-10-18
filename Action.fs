@@ -15,6 +15,17 @@ module Action =
                 Actors = {worldState.Actors.Head with Position = pos} :: worldState.Actors.Tail
         }
 
+    let private changeActorController worldState index controller =
+        {
+            worldState with
+                Actors = List.mapi (fun i x ->
+                    match i with
+                    | a when a = 0 -> {x with Controller = worldState.Actors.[index].Controller}
+                    | a when a = index -> {x with Controller = controller}
+                    | _ -> x)
+                    worldState.Actors
+        }
+
     let private changeTileset gameState = 
         let newTileset = 
             match gameState.OutputState.Tileset with
@@ -40,6 +51,8 @@ module Action =
             {gameState with WorldState = executeCloseDoorAction gameState.WorldState toPos}
         | CompleteAnyoneAction (MoveAction (_, newPos)) ->
             {gameState with WorldState = changePlayerPosition gameState.WorldState newPos}
+        | CompleteAnyoneAction (MindSwapActorAction (index, controller)) ->
+            {gameState with WorldState = changeActorController gameState.WorldState index controller}
         | CompletePlayerAction ToggleTileSetAction -> changeTileset gameState
         | CompleteAnyoneAction (AttackAction _)
         | BlockedAction MoveActionBlockedByAlly
@@ -50,6 +63,9 @@ module Action =
         | BlockedAction CloseToActionBlockedByVoid
         | BlockedAction CloseToActionBlockedByInvalidTile
         | BlockedAction CloseToActionBlockedByActor
+        | BlockedAction MindSwapToActionBlockedByVoid
+        | BlockedAction MindSwapToActionBlockedByNoActor
+        | BlockedAction MindSwapToActionOnControlledActor
         | CompletePlayerAction StartSession
         | CompletePlayerAction StartSessionWithUnknownTileset
         | CompleteAnyoneAction WaitAction
@@ -59,4 +75,5 @@ module Action =
         | CompletePlayerAction SaveGameAction
         | CompletePlayerAction UnknownAction
         | IncompleteAction OpenAction
-        | IncompleteAction CloseAction -> gameState
+        | IncompleteAction CloseAction
+        | IncompleteAction MindSwapAction -> gameState

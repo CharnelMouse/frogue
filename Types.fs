@@ -72,6 +72,7 @@ module Types =
         | MoveAction of Position * Position
         | OpenDoorAction of Position
         | CloseDoorAction of Position
+        | MindSwapActorAction of int * Controller
         | AttackAction of int
         | WaitAction
 
@@ -84,10 +85,14 @@ module Types =
         | CloseToActionBlockedByVoid
         | CloseToActionBlockedByInvalidTile
         | CloseToActionBlockedByActor
+        | MindSwapToActionBlockedByVoid
+        | MindSwapToActionBlockedByNoActor
+        | MindSwapToActionOnControlledActor
 
     type IncompleteAction =
         | OpenAction
         | CloseAction
+        | MindSwapAction
 
     type Action =
         | CompletePlayerAction of CompletePlayerAction

@@ -19,6 +19,7 @@ module Input =
             match input.KeyChar with
             | 'o' -> IncompleteCommand Open
             | 'c' -> IncompleteCommand Close
+            | 'm' -> IncompleteCommand MindSwap
             | '.' -> CompleteCommand Wait
             | '?' -> CompleteCommand Help
             | 'q' -> CompleteCommand Quit
@@ -40,5 +41,13 @@ module Input =
             | ConsoleKey.RightArrow -> CompleteCommand (CloseTo East)
             | ConsoleKey.UpArrow -> CompleteCommand (CloseTo North)
             | ConsoleKey.DownArrow -> CompleteCommand (CloseTo South)
+            | ConsoleKey.Escape -> CompleteCommand (Cancel)
+            | _ -> getCommand action
+        | IncompleteAction MindSwapAction ->
+            match input.Key with
+            | ConsoleKey.LeftArrow -> CompleteCommand (MindSwapTo West)
+            | ConsoleKey.RightArrow -> CompleteCommand (MindSwapTo East)
+            | ConsoleKey.UpArrow -> CompleteCommand (MindSwapTo North)
+            | ConsoleKey.DownArrow -> CompleteCommand (MindSwapTo South)
             | ConsoleKey.Escape -> CompleteCommand (Cancel)
             | _ -> getCommand action

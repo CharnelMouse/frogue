@@ -141,8 +141,13 @@ module Output =
         | BlockedAction CloseToActionBlockedByInvalidTile -> pushStatus "There's nothing there to close!" gameState.OutputState
         | BlockedAction CloseToActionBlockedByActor -> pushStatus "There's something in the way!" gameState.OutputState
         | IncompleteAction CloseAction -> pushStatus "Close in which direction?" gameState.OutputState
+        | BlockedAction MindSwapToActionBlockedByVoid -> pushStatus "There's nothing there!" gameState.OutputState
+        | BlockedAction MindSwapToActionBlockedByNoActor -> pushStatus "There's no one there!" gameState.OutputState
+        | BlockedAction MindSwapToActionOnControlledActor -> pushStatus "You already control that!" gameState.OutputState
+        | IncompleteAction MindSwapAction -> pushStatus "Mind swap in which direction?" gameState.OutputState
+        | CompleteAnyoneAction (MindSwapActorAction _) -> pushStatus "Done." gameState.OutputState
         | CompleteAnyoneAction WaitAction -> pushStatusByController "wait" "waits" None "." gameState
-        | CompletePlayerAction HelpAction -> pushStatus "Move: arrow keys Open: o Close: c Wait: . Quit: q" gameState.OutputState
+        | CompletePlayerAction HelpAction -> pushStatus "Move: arrow keys Open: o Close: c Mind swap: m Wait: . Quit: q" gameState.OutputState
         | CompletePlayerAction QuitAction -> pushStatus "Bye." gameState.OutputState // assumes status bar is last line
         | CompletePlayerAction CancelAction -> pushStatus "OK." gameState.OutputState
         | CompletePlayerAction SaveGameAction ->
