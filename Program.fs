@@ -49,7 +49,7 @@ module Main =
             Action = CompletePlayerAction StartSession
         }
         OutputState = {
-            StatusBar = {Start = {X = 0; Y = levelMap.Height + 1}; Length = 80}
+            StatusBar = {Start = {X = 0; Y = levelMap.Height + 1}; Length = 40}
             StatusBuffer = {Receiver = Player; Stream = ""}
             Tileset = DefaultTileset
         }

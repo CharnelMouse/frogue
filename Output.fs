@@ -91,9 +91,32 @@ module Output =
         let text = statusByController selfStatus otherSuffix endMark gameState.WorldState.Actors.Head object gameState.OutputState.StatusBuffer.Receiver
         pushStatus text gameState.OutputState
 
-    let popStatus reset outputState =
-        writeBox outputState.StatusBuffer.Stream outputState.StatusBar reset
-        {outputState with StatusBuffer = {outputState.StatusBuffer with Stream = ""}}
+    let rec popStatus reset outputState =
+        let buffer = outputState.StatusBuffer
+        let stream = buffer.Stream
+        let boxLength = outputState.StatusBar.Length
+        if stream.Length > boxLength
+            then
+                let space = (char " ")
+                let continueString = "<cont.>"
+                let stopIndex = boxLength - 2 - continueString.Length
+                let stopString = stream.[0..stopIndex]
+                let (usedString, usedLength) =
+                    match stopString.[stopIndex] with
+                    | a when a = space ->
+                        let usedString = stopString.TrimEnd space
+                        (usedString, usedString.Length)
+                    | _ ->
+                        let lastSpaceIndex = stopString.LastIndexOf " "
+                        let usedString = stopString.[0..lastSpaceIndex].TrimEnd space
+                        (usedString, usedString.Length)
+                writeBox (usedString + " " + continueString) outputState.StatusBar reset
+                Console.ReadKey(true) |> ignore
+                let remainingBuffer = {outputState.StatusBuffer with Stream = stream.[usedLength..].TrimStart space}
+                popStatus reset {outputState with StatusBuffer = remainingBuffer}
+            else
+                writeBox stream outputState.StatusBar reset
+                {outputState with StatusBuffer = {outputState.StatusBuffer with Stream = ""}}
 
     let popStatusIfReceiverTurn reset gameState =
         if gameState.OutputState.StatusBuffer.Receiver = gameState.WorldState.Actors.Head.Controller

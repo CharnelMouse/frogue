@@ -4,7 +4,7 @@ A small roguelike I'm making to learn F#.
 
 Current to-dos:
 
-- Let status messages carry over several lines (key prompt to continue)
+- If can print full status line, do so even if not receiver's turn
 - ? Store status messages received/shown in log
 - Add controller information in status subjects/objects if several actors controlled by current player, or several players
 - Add NPC behaviour script that can pathfind
@@ -13,3 +13,4 @@ Current to-dos:
     - Consolas supports "pipe" walls (U+2580 to U+256c), so can do Rogue-style walls and directional door chars
   - Anything else is best delayed until I'm using pixels
 - Add key configuration
+- ? Move output (i.e. status messages and map updates) into async buffer / event system (e.g. so engine can keep running turns while waiting for receiver key input)
