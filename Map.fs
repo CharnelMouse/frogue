@@ -29,3 +29,6 @@ module Map =
         | South -> {X = x; Y = y + 1}
         | East -> {X = x + 1; Y = y}
         | West -> {X = x - 1; Y = y}
+
+    let allNeighbours pos =
+        List.map (fun x -> neighbour pos x) [North; South; East; West]

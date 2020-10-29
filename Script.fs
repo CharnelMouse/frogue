@@ -10,44 +10,46 @@ module Script =
         | WaitScript -> WaitAction
         | StandGround ->
             let pos = actor.Position
-            let neighbourTiles = List.map (neighbour pos) [
-                North
-                South
-                East
-                West
-            ]
+            let neighbourTiles = allNeighbours pos
             let neighbourIndex = List.tryFindIndex (fun x -> List.contains x.Position neighbourTiles) worldState.Actors
             match neighbourIndex with
             | Some ind -> AttackAction ind
             | None -> WaitAction
         | DumbHunt ->
             let pos = actor.Position
-            let nextPlayerIndex = List.tryFindIndex (fun x -> x.Controller = Player) worldState.Actors.Tail
-            match nextPlayerIndex with
-            | None -> WaitAction
-            | Some ind ->
-                let nextPlayerPos = worldState.Actors.Tail.[ind].Position
-                let direction =
-                    match nextPlayerPos with
-                    | {X = x; Y = y} when x < pos.X && y < pos.Y -> [West; North]
-                    | {X = x; Y = y} when x < pos.X && y = pos.Y -> [West]
-                    | {X = x; Y = y} when x < pos.X && y > pos.Y -> [West; South]
-                    | {X = x; Y = y} when x = pos.X && y < pos.Y -> [North]
-                    | {X = x; Y = y} when x = pos.X && y = pos.Y -> []
-                    | {X = x; Y = y} when x = pos.X && y > pos.Y -> [South]
-                    | {X = x; Y = y} when x > pos.X && y < pos.Y -> [East; North]
-                    | {X = x; Y = y} when x > pos.X && y = pos.Y -> [East]
-                    | {X = x; Y = y} when x > pos.X && y > pos.Y -> [East; South]
-                    | _ -> failwith "AI script failure: couldn't process target's position" // impossible?
-                let getAnyAction action =
-                    match action with
-                    | CompleteAnyoneAction act -> Some act
-                    | _ -> None
-                let activeAction =
-                    direction
-                    |> List.map (parseMoveCommand worldState >> getAnyAction)
-                    |> List.tryFind (fun x -> x.IsSome)
-                match activeAction with
-                | Some (Some action) -> action
-                | Some None -> failwith "AI script failure: returned player-only action" // impossible?
-                | None -> WaitAction
+            let playerPositions =
+                worldState.Actors.Tail
+                |> List.filter (fun x -> x.Controller = Player)
+                |> List.map (fun x -> x.Position)
+            let playerMap = Dijkstra.fill playerPositions [EmptyTile; OpenDoorTile; ClosedDoorTile] worldState.Map
+            if List.isEmpty playerMap ||
+                not (List.contains pos (List.map (fun (x: DijkstraTypes.PositionCost) -> x.Position) playerMap))
+                then WaitAction
+            else
+                let currentPosCost =
+                    playerMap
+                    |> List.find (fun x -> x.Position = pos)
+                let allDirections = [East; West; North; South]
+                let downhillNeighbours =
+                    allDirections
+                    |> List.map (fun x -> playerMap |> List.tryFind (fun y -> neighbour pos x = y.Position))
+                    |> List.zip allDirections
+                    |> List.filter (fun (_, x) -> x.IsSome)
+                    |> List.map (fun (x, y) -> (x, y.Value))
+                    |> List.filter (fun (_, x) -> x.Cost < currentPosCost.Cost)
+                    |> List.sortBy (fun (_, x) -> x.Cost)
+                if List.isEmpty downhillNeighbours
+                    then WaitAction
+                else
+                    let (direction, _) = downhillNeighbours.Head
+                    let getAnyAction action =
+                        match action with
+                        | CompleteAnyoneAction act -> Some act
+                        | _ -> None
+                    let activeAction =
+                        direction
+                        |> parseMoveCommand worldState
+                        |> getAnyAction
+                    match activeAction with
+                    | Some action -> action
+                    | None -> WaitAction
