@@ -4,7 +4,7 @@ module Dijkstra =
     open DijkstraTypes
     open Frogue.Map
 
-    let rec private fillAcc (finalised: PositionCost list) (queue: PositionCost list) legalPositions =
+    let rec private fillAcc finalised queue legalPositions =
         if List.isEmpty queue
             then finalised
         else
@@ -17,12 +17,24 @@ module Dijkstra =
             let neighbours =
                 allNeighbours next.Position
                 |> List.filter (fun x -> List.contains x legalPositions)
-                |> List.filter (fun x -> not (List.contains x (List.map (fun y -> y.Position) finalised)))
-            let neighbourEntries = List.map (fun x -> {Position = x; Cost = next.Cost + 1}) neighbours
-            let queueWithoutNextAndNeighbours = List.filter (fun x -> not (List.contains x.Position (next.Position :: neighbours))) queue
-            let allNeighbourAppearances = List.map (fun x -> List.filter (fun y -> y.Position = x) (queue @ neighbourEntries)) neighbours
-            let minCostNeighbourAppearances = List.map (fun x -> List.minBy (fun y -> y.Cost) x) allNeighbourAppearances
-            fillAcc (next :: finalised) (queueWithoutNextAndNeighbours @ minCostNeighbourAppearances) legalPositions
+                |> List.filter (fun x ->
+                    finalised
+                    |> List.map (fun y -> y.Position)
+                    |> List.contains x
+                    |> not)
+            let queueWithoutNextAndNeighbours =
+                queue
+                |> List.filter (fun x -> not (List.contains x.Position (next.Position :: neighbours)))
+            let neighbourEntries =
+                neighbours
+                |> List.map (fun x -> {Position = x; Cost = next.Cost + 1})
+            let minCostNeighbourAppearances =
+                neighbours
+                |> List.map (fun x ->
+                    List.filter (fun y -> y.Position = x) (queue @ neighbourEntries)
+                    |> List.minBy (fun y -> y.Cost))
+            legalPositions
+            |> fillAcc (next :: finalised) (queueWithoutNextAndNeighbours @ minCostNeighbourAppearances)
 
     let fill starts tiles map =
         let startsOnMap = List.fold (fun x y -> x && posIsOnMap y map) true starts

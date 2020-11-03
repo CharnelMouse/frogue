@@ -11,7 +11,9 @@ module Script =
         | StandGround ->
             let pos = actor.Position
             let neighbourTiles = allNeighbours pos
-            let neighbourIndex = List.tryFindIndex (fun x -> List.contains x.Position neighbourTiles) worldState.Actors
+            let neighbourIndex =
+                worldState.Actors
+                |> List.tryFindIndex (fun x -> List.contains x.Position neighbourTiles)
             match neighbourIndex with
             | Some ind -> AttackAction ind
             | None -> WaitAction
@@ -21,9 +23,14 @@ module Script =
                 worldState.Actors.Tail
                 |> List.filter (fun x -> x.Controller = Player)
                 |> List.map (fun x -> x.Position)
-            let playerMap = Dijkstra.fill playerPositions [EmptyTile; OpenDoorTile; ClosedDoorTile] worldState.Map
+            let playerMap =
+                worldState.Map
+                |> Dijkstra.fill playerPositions [EmptyTile; OpenDoorTile; ClosedDoorTile]
             if List.isEmpty playerMap ||
-                not (List.contains pos (List.map (fun (x: DijkstraTypes.PositionCost) -> x.Position) playerMap))
+                playerMap
+                |> List.map (fun (x: DijkstraTypes.PositionCost) -> x.Position)
+                |> List.contains pos
+                |> not
                 then WaitAction
             else
                 let currentPosCost =
@@ -32,7 +39,9 @@ module Script =
                 let allDirections = [East; West; North; South]
                 let downhillNeighbours =
                     allDirections
-                    |> List.map (fun x -> playerMap |> List.tryFind (fun y -> neighbour pos x = y.Position))
+                    |> List.map (fun x ->
+                        playerMap
+                        |> List.tryFind (fun y -> neighbour pos x = y.Position))
                     |> List.zip allDirections
                     |> List.filter (fun (_, x) -> x.IsSome)
                     |> List.map (fun (x, y) -> (x, y.Value))
