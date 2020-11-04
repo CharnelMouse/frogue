@@ -28,14 +28,14 @@ module Dijkstra =
             |> fillAcc (next :: finalised) (queueWithoutNextAndNeighbours @ minCostNeighbourAppearances)
 
     let fill starts tiles map =
-        let startsOnMap = List.fold (fun x y -> x && posIsOnMap y map) true starts
-        if not startsOnMap
+        let startsOnMap = List.filter (fun x -> posIsOnMap x map) starts
+        if List.isEmpty startsOnMap
             then []
         else
             let positions =
                 List.allPairs [0..(map.Width - 1)] [0..(map.Height - 1)]
                 |> List.map (fun (x, y) -> {X = x; Y = y})
                 |> List.filter (fun pos -> List.contains (getTileAt pos map) tiles)
-                |> List.filter (fun pos -> not (List.contains pos starts))
-            let startCosts = List.map (fun pos -> (pos, 0)) starts
+                |> List.filter (fun pos -> not (List.contains pos startsOnMap))
+            let startCosts = List.map (fun pos -> (pos, 0)) startsOnMap
             fillAcc [] startCosts positions
