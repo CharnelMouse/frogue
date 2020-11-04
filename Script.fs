@@ -28,29 +28,30 @@ module Script =
                 |> Dijkstra.fill playerPositions [EmptyTile; OpenDoorTile; ClosedDoorTile]
             if List.isEmpty playerMap ||
                 playerMap
-                |> List.map (fun (x: DijkstraTypes.PositionCost) -> x.Position)
-                |> List.contains pos
-                |> not
+                |> List.forall (fun (elPos, _) -> elPos <> pos)
                 then WaitAction
             else
                 let currentPosCost =
                     playerMap
-                    |> List.find (fun x -> x.Position = pos)
+                    |> List.find (fun (x, _) -> x = pos)
+                let (_, currentCost) = currentPosCost
                 let allDirections = [East; West; North; South]
                 let downhillNeighbours =
                     allDirections
                     |> List.map (fun x ->
-                        playerMap
-                        |> List.tryFind (fun y -> neighbour pos x = y.Position))
-                    |> List.zip allDirections
+                        (x,
+                         playerMap
+                         |> List.tryFind (fun (y, _) -> neighbour pos x = y)))
                     |> List.filter (fun (_, x) -> x.IsSome)
-                    |> List.map (fun (x, y) -> (x, y.Value))
-                    |> List.filter (fun (_, x) -> x.Cost < currentPosCost.Cost)
-                    |> List.sortBy (fun (_, x) -> x.Cost)
+                    |> List.map (fun (x, y) ->
+                        let (u, v) = y.Value
+                        (x, u, v))
+                    |> List.filter (fun (_, _, cost) -> cost < currentCost)
+                    |> List.sortBy (fun (_, _, cost) -> cost)
                 if List.isEmpty downhillNeighbours
                     then WaitAction
                 else
-                    let (direction, _) = downhillNeighbours.Head
+                    let (direction, _, _) = downhillNeighbours.Head
                     let getAnyAction action =
                         match action with
                         | CompleteAnyoneAction act -> Some act

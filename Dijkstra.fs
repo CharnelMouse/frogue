@@ -1,38 +1,29 @@
 namespace Frogue
 module Dijkstra =
     open Types
-    open DijkstraTypes
     open Frogue.Map
 
     let rec private fillAcc finalised queue legalPositions =
         if List.isEmpty queue
             then finalised
         else
-            let minCost =
-               List.map (fun x -> x.Cost) queue
-               |> List.min
-            let nextIndex = 
-                List.findIndex (fun x -> x.Cost = minCost) queue
-            let next = queue.[nextIndex]
+            let next = List.minBy (fun (_, x) -> x) queue
+            let (nextPos, nextCost) = next
             let neighbours =
-                allNeighbours next.Position
+                allNeighbours nextPos
                 |> List.filter (fun x -> List.contains x legalPositions)
-                |> List.filter (fun x ->
-                    finalised
-                    |> List.map (fun y -> y.Position)
-                    |> List.contains x
-                    |> not)
+                |> List.filter (fun x -> List.forall (fun (y, _) -> y <> x) finalised)
             let queueWithoutNextAndNeighbours =
                 queue
-                |> List.filter (fun x -> not (List.contains x.Position (next.Position :: neighbours)))
+                |> List.filter (fun (x, _) -> not (List.contains x (nextPos :: neighbours)))
             let neighbourEntries =
                 neighbours
-                |> List.map (fun x -> {Position = x; Cost = next.Cost + 1})
+                |> List.map (fun x -> (x, nextCost + 1))
             let minCostNeighbourAppearances =
                 neighbours
                 |> List.map (fun x ->
-                    List.filter (fun y -> y.Position = x) (queue @ neighbourEntries)
-                    |> List.minBy (fun y -> y.Cost))
+                    List.filter (fun (y, _) -> y = x) (queue @ neighbourEntries)
+                    |> List.minBy (fun (_, y) -> y))
             legalPositions
             |> fillAcc (next :: finalised) (queueWithoutNextAndNeighbours @ minCostNeighbourAppearances)
 
@@ -42,13 +33,9 @@ module Dijkstra =
             then []
         else
             let positions =
-                seq {
-                    for x in [0..(map.Width - 1)] do
-                        for y in [0..(map.Height - 1)] do
-                            if (List.contains (getTileAt {X = x; Y = y} map) tiles
-                                && not (List.contains {X = x; Y = y} starts))
-                                then yield  {X = x; Y = y}
-                }
-                |> Seq.toList
-            let startCosts = List.map (fun pos -> {Position = pos; Cost = 0}) starts
+                List.allPairs [0..(map.Width - 1)] [0..(map.Height - 1)]
+                |> List.map (fun (x, y) -> {X = x; Y = y})
+                |> List.filter (fun pos -> List.contains (getTileAt pos map) tiles)
+                |> List.filter (fun pos -> not (List.contains pos starts))
+            let startCosts = List.map (fun pos -> (pos, 0)) starts
             fillAcc [] startCosts positions
