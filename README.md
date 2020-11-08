@@ -7,7 +7,7 @@ Current to-dos:
 - If can print full status line, do so even if not receiver's turn
 - ? Store status messages received/shown in log
 - Add controller information in status subjects/objects if several actors controlled by current player, or several players
-- Add NPC behaviour script that can pathfind
+- ? Add pathfinding route around stationary actors
 - Add some more interesting tilesets
   - Let tile char depend on tile's neighbours, e.g. doors/walls depend on nearby doors/walls
     - Consolas supports "pipe" walls (U+2580 to U+256c), so can do Rogue-style walls and directional door chars
