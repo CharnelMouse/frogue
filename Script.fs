@@ -51,15 +51,22 @@ module Script =
                 if List.isEmpty downhillNeighbours
                     then WaitAction
                 else
-                    let (direction, _, _) = downhillNeighbours.Head
                     let getAnyAction action =
                         match action with
                         | CompleteAnyoneAction act -> Some act
                         | _ -> None
-                    let activeAction =
-                        direction
-                        |> parseMoveCommand worldState
-                        |> getAnyAction
-                    match activeAction with
-                    | Some action -> action
-                    | None -> WaitAction
+                    let nonWaitActions =
+                        downhillNeighbours
+                        |> List.map ((fun (direction, _, _) -> direction)
+                                      >> parseMoveCommand worldState
+                                      >> getAnyAction)
+                        |> List.filter Option.isSome
+                        |> List.map (fun x -> x.Value)
+                        |> List.filter (fun act ->
+                            match act with
+                            | WaitAction -> false
+                            | _ -> true)
+                    if List.isEmpty nonWaitActions
+                        then WaitAction
+                    else
+                        nonWaitActions.Head
