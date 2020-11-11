@@ -94,9 +94,13 @@ module Output =
     let rec popStatus reset fullLinesOnly outputState =
         let buffer = outputState.StatusBuffer
         let stream = buffer.Stream
-        let boxLength = outputState.StatusBar.Length
-        if stream.Length > boxLength
+        let bar = outputState.StatusBar
+        let boxLength = bar.Length
+        if stream.Length <= boxLength
             then
+                writeBox stream outputState.StatusBar reset
+                {outputState with StatusBuffer = {buffer with Stream = ""}}
+            else
                 let space = (char " ")
                 let continueString = "<cont.>"
                 let stopIndex = boxLength - 2 - continueString.Length
@@ -110,9 +114,9 @@ module Output =
                         let lastSpaceIndex = stopString.LastIndexOf " "
                         let usedString = stopString.[0..lastSpaceIndex].TrimEnd space
                         (usedString, usedString.Length)
-                writeBox (usedString + " " + continueString) outputState.StatusBar reset
+                writeBox (usedString + " " + continueString) bar reset
                 Console.ReadKey(true) |> ignore
-                let remainingBuffer = {outputState.StatusBuffer with Stream = stream.[usedLength..].TrimStart space}
+                let remainingBuffer = {buffer with Stream = stream.[usedLength..].TrimStart space}
                 // if == boxLength then last line only partially shows
                 // after next pushing non-receiver action shown on map,
                 // doesn't seem right but best I can do without
@@ -120,17 +124,16 @@ module Output =
                 if fullLinesOnly && remainingBuffer.Stream.Length <= boxLength
                     then {outputState with StatusBuffer = remainingBuffer}
                     else popStatus reset fullLinesOnly {outputState with StatusBuffer = remainingBuffer}
-            else
-                writeBox stream outputState.StatusBar reset
-                {outputState with StatusBuffer = {outputState.StatusBuffer with Stream = ""}}
 
     let popStatusIfReceiverTurnOrFullLineInBuffer reset gameState =
-        if gameState.OutputState.StatusBuffer.Receiver = gameState.WorldState.Actors.Head.Controller
-            then popStatus reset false gameState.OutputState
+        let outputState = gameState.OutputState
+        let buffer = outputState.StatusBuffer
+        if buffer.Receiver = gameState.WorldState.Actors.Head.Controller
+            then popStatus reset false outputState
             else
-                if gameState.OutputState.StatusBuffer.Stream.Length > gameState.OutputState.StatusBar.Length
-                    then popStatus reset true gameState.OutputState
-                    else gameState.OutputState
+                if buffer.Stream.Length > outputState.StatusBar.Length
+                    then popStatus reset true outputState
+                    else outputState
 
     let fakeDoorActor = {
         Name = "door"
