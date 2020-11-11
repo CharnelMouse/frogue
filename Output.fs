@@ -91,7 +91,7 @@ module Output =
         let text = statusByController selfStatus otherSuffix endMark gameState.WorldState.Actors.Head object gameState.OutputState.StatusBuffer.Receiver
         pushStatus text gameState.OutputState
 
-    let rec popStatus reset outputState =
+    let rec popStatus reset fullLinesOnly outputState =
         let buffer = outputState.StatusBuffer
         let stream = buffer.Stream
         let boxLength = outputState.StatusBar.Length
@@ -113,15 +113,24 @@ module Output =
                 writeBox (usedString + " " + continueString) outputState.StatusBar reset
                 Console.ReadKey(true) |> ignore
                 let remainingBuffer = {outputState.StatusBuffer with Stream = stream.[usedLength..].TrimStart space}
-                popStatus reset {outputState with StatusBuffer = remainingBuffer}
+                // if == boxLength then last line only partially shows
+                // after next pushing non-receiver action shown on map,
+                // doesn't seem right but best I can do without
+                // looking into actions future
+                if fullLinesOnly && remainingBuffer.Stream.Length <= boxLength
+                    then {outputState with StatusBuffer = remainingBuffer}
+                    else popStatus reset fullLinesOnly {outputState with StatusBuffer = remainingBuffer}
             else
                 writeBox stream outputState.StatusBar reset
                 {outputState with StatusBuffer = {outputState.StatusBuffer with Stream = ""}}
 
-    let popStatusIfReceiverTurn reset gameState =
+    let popStatusIfReceiverTurnOrFullLineInBuffer reset gameState =
         if gameState.OutputState.StatusBuffer.Receiver = gameState.WorldState.Actors.Head.Controller
-            then popStatus reset gameState.OutputState
-            else gameState.OutputState
+            then popStatus reset false gameState.OutputState
+            else
+                if gameState.OutputState.StatusBuffer.Stream.Length > gameState.OutputState.StatusBar.Length
+                    then popStatus reset true gameState.OutputState
+                    else gameState.OutputState
 
     let fakeDoorActor = {
         Name = "door"

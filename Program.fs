@@ -41,7 +41,21 @@ module Main =
                     Position = {X = 8; Y = 5}
                     Tile = OrcTile
                     Controller = AIController
-                    Name = "other orc"
+                    Name = "orc"
+                    Script = DumbHunt
+                }
+                {
+                    Position = {X = 17; Y = 7}
+                    Tile = OrcTile
+                    Controller = AIController
+                    Name = "orc"
+                    Script = DumbHunt
+                }
+                {
+                    Position = {X = 16; Y = 8}
+                    Tile = OrcTile
+                    Controller = AIController
+                    Name = "orc"
                     Script = DumbHunt
                 }
             ]
@@ -63,8 +77,8 @@ module Main =
         let postOutput = {postExecute with OutputState = updateOutput postExecute}
         let postTime = {postOutput with WorldState = updateTime postOutput.WorldState}
         match postTime.WorldState.Action with
-        | CompletePlayerAction QuitAction -> popStatus false postTime.OutputState |> ignore
-        | _ -> {postTime with OutputState = popStatusIfReceiverTurn true postTime} |> mainLoop
+        | CompletePlayerAction QuitAction -> popStatus false true postTime.OutputState |> ignore
+        | _ -> {postTime with OutputState = popStatusIfReceiverTurnOrFullLineInBuffer true postTime} |> mainLoop
 
     [<EntryPoint>]
     let private main argv =
@@ -76,7 +90,7 @@ module Main =
             {gameState with
                 OutputState =
                     updateOutput gameState
-                    |> popStatus true
+                    |> popStatus true true
             }
         mainLoop startState
         0 // return an integer exit code
