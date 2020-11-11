@@ -4,7 +4,6 @@ A small roguelike I'm making to learn F#.
 
 Current to-dos:
 
-- If can print full status line, do so even if not receiver's turn
 - ? Store status messages received/shown in log
 - Add controller information in status subjects/objects if several actors controlled by current player, or several players
 - ? Add pathfinding route around stationary actors
