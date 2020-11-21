@@ -7,35 +7,39 @@ module Dijkstra =
         if List.isEmpty queue
             then finalised
         else
-            let next = List.minBy (fun (_, x) -> x) queue
-            let (nextPos, nextCost) = next
+            let next = List.minBy (fun (_, _, dist) -> dist) queue
+            let (nextPos, nextCost, nextDist) = next
             let neighbours =
-                allNeighbours nextPos
-                |> List.filter (fun x -> List.contains x legalPositions)
-                |> List.filter (fun x -> List.forall (fun (y, _) -> y <> x) finalised)
+                legalPositions
+                |> List.filter (fun (x, _) -> List.contains x (allNeighbours nextPos))
+                |> List.filter (fun (x, _) -> List.forall (fun (y, _) -> y <> x) finalised)
             let queueWithoutNextAndNeighbours =
                 queue
-                |> List.filter (fun (x, _) -> not (List.contains x (nextPos :: neighbours)))
+                |> List.filter (fun (x, _, _) -> not (List.contains x (nextPos :: (List.map (fun (pos, _) -> pos) neighbours))))
             let neighbourEntries =
                 neighbours
-                |> List.map (fun x -> (x, nextCost + 1))
+                |> List.map (fun (pos, cost) -> (pos, cost, nextDist + nextCost))
             let minCostNeighbourAppearances =
                 neighbours
-                |> List.map (fun x ->
-                    List.filter (fun (y, _) -> y = x) (queue @ neighbourEntries)
-                    |> List.minBy (fun (_, y) -> y))
+                |> List.map (fun (pos, _) ->
+                    List.filter (fun (y, _, _) -> y = pos) (queue @ neighbourEntries)
+                    |> List.minBy (fun (_, _, y) -> y))
             legalPositions
-            |> fillAcc (next :: finalised) (queueWithoutNextAndNeighbours @ minCostNeighbourAppearances)
+            |> fillAcc ((nextPos, nextDist) :: finalised) (queueWithoutNextAndNeighbours @ minCostNeighbourAppearances)
 
     let fill starts tiles map =
-        let startsOnMap = List.filter (fun x -> posIsOnMap x map) starts
-        if List.isEmpty startsOnMap
+        let validPositions =
+            List.allPairs [0..(map.Width - 1)] [0..(map.Height - 1)]
+            |> List.map (fun (x, y) -> {X = x; Y = y})
+            |> List.choose (fun pos ->
+                let currentTile = getTileAt pos map
+                match List.tryFind (fun (tile, cost) -> currentTile = tile) tiles with
+                | Some (tile, cost) -> Some (pos, cost)
+                | None -> None
+                )
+        let (starts, nonStarts) = List.partition (fun (pos, _) -> List.contains pos starts) validPositions
+        if List.isEmpty starts
             then []
         else
-            let positions =
-                List.allPairs [0..(map.Width - 1)] [0..(map.Height - 1)]
-                |> List.map (fun (x, y) -> {X = x; Y = y})
-                |> List.filter (fun pos -> List.contains (getTileAt pos map) tiles)
-                |> List.filter (fun pos -> not (List.contains pos startsOnMap))
-            let startCosts = List.map (fun pos -> (pos, 0)) startsOnMap
-            fillAcc [] startCosts positions
+            let startingQueue = List.map (function (pos, cost) -> (pos, cost, 0)) starts
+            fillAcc [] startingQueue nonStarts

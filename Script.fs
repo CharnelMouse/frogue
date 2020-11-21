@@ -31,7 +31,7 @@ module Script =
                     | _ -> None)
             let playerMap =
                 worldState.Map
-                |> Dijkstra.fill playerPositions [EmptyTile; OpenDoorTile; ClosedDoorTile]
+                |> Dijkstra.fill playerPositions [(EmptyTile, 1); (OpenDoorTile, 1); (ClosedDoorTile, 2)]
             match List.tryFind (fun (x, _) -> x = pos) playerMap with
             | None -> WaitAction
             | Some (_, currentCost) ->
