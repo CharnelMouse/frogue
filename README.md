@@ -4,7 +4,6 @@ A small roguelike I'm making to learn F#.
 
 Current to-dos:
 
-- Let pathfinding take non-unit movement costs, e.g. 2 turns to move through closed door
 - Basic combat, one-hit kills (start with player invulnerable, so I can delay handling player death)
 - Add controller information in status subjects/objects if several actors controlled by current player, or several players
 - Add some more interesting tilesets
