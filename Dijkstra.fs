@@ -3,29 +3,52 @@ module Dijkstra =
     open Types
     open Frogue.Map
 
+    type NodeTypeInfo = {
+        Tile: MapTile
+        Cost: int
+    }
+
+    type NodeInfo = {
+        Pos: Position
+        Cost: int
+    }
+
+    type QueueNode = {
+        ItemPosition: Position
+        ItemCost: int
+        CurrentDistance: int
+    }
+
+    type FinalNode = {
+        Position: Position
+        Distance: int
+    }
+
     let rec private fillAcc finalised queue legalPositions =
         if List.isEmpty queue
             then finalised
         else
-            let next = List.minBy (fun (_, _, dist) -> dist) queue
-            let (nextPos, nextCost, nextDist) = next
+            let next = List.minBy (fun {CurrentDistance = dist} -> dist) queue
+            let {ItemPosition = nextPos; ItemCost = nextCost; CurrentDistance = nextDist} = next
             let neighbours =
                 legalPositions
-                |> List.filter (fun (x, _) -> List.contains x (allNeighbours nextPos))
-                |> List.filter (fun (x, _) -> List.forall (fun (y, _) -> y <> x) finalised)
+                |> List.filter (fun {Pos = curr} -> List.contains curr (allNeighbours nextPos))
+                |> List.filter (fun {Pos = curr} -> List.forall (fun fin -> fin.Position <> curr) finalised)
             let queueWithoutNextAndNeighbours =
                 queue
-                |> List.filter (fun (x, _, _) -> not (List.contains x (nextPos :: (List.map (fun (pos, _) -> pos) neighbours))))
+                |> List.filter
+                    (fun {ItemPosition = itemPos} ->
+                        not (List.contains itemPos (nextPos :: (List.map (fun {Pos = neighbourPos} -> neighbourPos) neighbours))))
             let neighbourEntries =
                 neighbours
-                |> List.map (fun (pos, cost) -> (pos, cost, nextDist + nextCost))
+                |> List.map (fun {Pos = pos; Cost = cost} -> {ItemPosition = pos; ItemCost = cost; CurrentDistance = nextDist + nextCost})
             let minCostNeighbourAppearances =
                 neighbours
-                |> List.map (fun (pos, _) ->
-                    List.filter (fun (y, _, _) -> y = pos) (queue @ neighbourEntries)
-                    |> List.minBy (fun (_, _, y) -> y))
+                |> List.map (fun {Pos = pos} ->
+                    List.filter (fun {ItemPosition = y} -> y = pos) (queue @ neighbourEntries)
+                    |> List.minBy (fun {CurrentDistance = dist} -> dist))
             legalPositions
-            |> fillAcc ((nextPos, nextDist) :: finalised) (queueWithoutNextAndNeighbours @ minCostNeighbourAppearances)
+            |> fillAcc ({Position = nextPos; Distance = nextDist} :: finalised) (queueWithoutNextAndNeighbours @ minCostNeighbourAppearances)
 
     let fill starts tiles map =
         let validPositions =
@@ -33,13 +56,17 @@ module Dijkstra =
             |> List.map (fun (x, y) -> {X = x; Y = y})
             |> List.choose (fun pos ->
                 let currentTile = getTileAt pos map
-                match List.tryFind (fun (tile, cost) -> currentTile = tile) tiles with
-                | Some (tile, cost) -> Some (pos, cost)
+                match List.tryFind (fun t -> currentTile = t.Tile) tiles with
+                | Some {Cost = cost} -> Some {Pos = pos; Cost = cost}
                 | None -> None
                 )
-        let (starts, nonStarts) = List.partition (fun (pos, _) -> List.contains pos starts) validPositions
-        if List.isEmpty starts
+        let (startPosCosts, nonStartPosCosts) =
+            validPositions
+            |> List.partition (fun {Pos = pos} -> List.contains pos starts)
+        if List.isEmpty startPosCosts
             then []
         else
-            let startingQueue = List.map (function (pos, cost) -> (pos, cost, 0)) starts
-            fillAcc [] startingQueue nonStarts
+            let startingQueue =
+                startPosCosts
+                |> List.map (function x -> {ItemPosition = x.Pos; ItemCost = x.Cost; CurrentDistance = 0})
+            fillAcc [] startingQueue nonStartPosCosts

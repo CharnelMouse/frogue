@@ -31,20 +31,27 @@ module Script =
                     | _ -> None)
             let playerMap =
                 worldState.Map
-                |> Dijkstra.fill playerPositions [(EmptyTile, 1); (OpenDoorTile, 1); (ClosedDoorTile, 2)]
-            match List.tryFind (fun (x, _) -> x = pos) playerMap with
+                |> Dijkstra.fill playerPositions [
+                    {Tile = EmptyTile; Cost = 1}
+                    {Tile = OpenDoorTile; Cost = 1}
+                    {Tile = ClosedDoorTile; Cost = 2}
+                    ]
+            let currentNode =
+                playerMap
+                |> List.tryFind (fun {Position = x} -> x = pos)
+            match currentNode with
             | None -> WaitAction
-            | Some (_, currentCost) ->
+            | Some {Distance = currentDistance} ->
                 let downhillNeighbours =
                     allDirections
-                    |> List.choose (fun x ->
+                    |> List.choose (fun dir ->
                         let posInt =
                             playerMap
-                            |> List.tryFind (fun (y, _) -> neighbour pos x = y)
+                            |> List.tryFind (fun {Position = y} -> neighbour pos dir = y)
                         match posInt with
                         | None -> None
-                        | Some (_, int) when int >= currentCost -> None
-                        | Some (pos, int) -> Some (x, pos, int))
+                        | Some {Distance = dist} when dist >= currentDistance -> None
+                        | Some {Position = pos; Distance = dist} -> Some (dir, pos, dist))
                     |> List.sortBy (fun (_, _, cost) -> cost)
                 let nonWaitDownhillActions =
                     downhillNeighbours
