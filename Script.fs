@@ -32,9 +32,9 @@ module Script =
             let playerMap =
                 worldState.Map
                 |> Dijkstra.fill playerPositions [
-                    {Tile = EmptyTile; Cost = 1}
-                    {Tile = OpenDoorTile; Cost = 1}
-                    {Tile = ClosedDoorTile; Cost = 2}
+                    {Type = EmptyTile; Cost = 1}
+                    {Type = OpenDoorTile; Cost = 1}
+                    {Type = ClosedDoorTile; Cost = 2}
                     ]
             let currentNode =
                 playerMap
