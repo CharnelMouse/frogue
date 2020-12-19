@@ -22,7 +22,7 @@ module CommandParser =
             let targetTileType = getTileAt newPos map
             match (controller, targetTileType) with
             | (Some cont, _) when cont = worldState.Actors.Head.Controller -> BlockedAction MoveActionBlockedByAlly
-            | (Some _, _) -> CompleteAnyoneAction (AttackAction actorIndex.Value)
+            | (Some _, _) -> CompleteAnyoneAction (AttackAction (actorIndex.Value, worldState.Actors.[actorIndex.Value]))
             | (None, WallTile) -> BlockedAction MoveActionBlockedByWall
             | (None, ClosedDoorTile) -> CompleteAnyoneAction (OpenDoorAction newPos)
             | (None, _) -> CompleteAnyoneAction (MoveAction  (oldPos, newPos))

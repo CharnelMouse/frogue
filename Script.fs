@@ -20,7 +20,7 @@ module Script =
                 worldState.Actors
                 |> List.tryFindIndex (fun x -> List.contains x.Position neighbourTiles)
             match neighbourIndex with
-            | Some ind -> AttackAction ind
+            | Some ind -> AttackAction (ind, worldState.Actors.[ind])
             | None -> WaitAction
         | DumbHunt ->
             let playerPositions =

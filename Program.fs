@@ -76,8 +76,10 @@ module Main =
             |> executeAction
         let postOutput = {postExecute with OutputState = updateOutput postExecute}
         let postTime = {postOutput with WorldState = updateTime postOutput.WorldState}
-        match postTime.WorldState.Action with
-        | CompletePlayerAction QuitAction -> popStatus false true postTime.OutputState |> ignore
+        let anyPlayerPresent = List.tryFind (fun a -> a.Controller = Player) postTime.WorldState.Actors
+        match (anyPlayerPresent, postTime.WorldState.Action) with
+        | (None, _) -> postTime.OutputState |> pushDieMessage |> popStatus false false |> ignore
+        | (Some _, CompletePlayerAction QuitAction) -> popStatus false true postTime.OutputState |> ignore
         | _ -> {postTime with OutputState = popStatusIfReceiverTurnOrFullLineInBuffer true postTime} |> mainLoop
 
     [<EntryPoint>]
@@ -93,4 +95,5 @@ module Main =
                     |> popStatus true true
             }
         mainLoop startState
+        System.Console.ReadLine() |> ignore
         0 // return an integer exit code

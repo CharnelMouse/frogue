@@ -43,6 +43,21 @@ module Action =
             Map = changeMapTile worldState.Map pos ClosedDoorTile
         }
 
+    let private removeActor gameState index =
+        {gameState with
+            WorldState = {
+            gameState.WorldState with
+                Actors = gameState.WorldState.Actors
+                |> List.indexed
+                |> List.choose (
+                    fun (i, a) ->
+                        match (i, a) with
+                        | (j, _) when j = index -> None
+                        | (_, a) -> Some a
+                )
+            }
+        }
+
     let executeAction gameState =
         match gameState.WorldState.Action with
         | CompleteAnyoneAction (OpenDoorAction toPos) ->
@@ -54,7 +69,7 @@ module Action =
         | CompleteAnyoneAction (MindSwapActorAction (index, controller)) ->
             {gameState with WorldState = changeActorController gameState.WorldState index controller}
         | CompletePlayerAction ToggleTileSetAction -> changeTileset gameState
-        | CompleteAnyoneAction (AttackAction _)
+        | CompleteAnyoneAction (AttackAction (index, _)) -> removeActor gameState index
         | BlockedAction MoveActionBlockedByAlly
         | BlockedAction MoveActionBlockedByVoid
         | BlockedAction MoveActionBlockedByWall

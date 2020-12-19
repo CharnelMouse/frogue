@@ -4,7 +4,7 @@ A small roguelike I'm making to learn F#.
 
 Current to-dos:
 
-- Basic combat, one-hit kills (start with player invulnerable, so I can delay handling player death)
+- Don't show input when waiting for enter on exit
 - Add controller information in status subjects/objects if several actors controlled by current player, or several players
 - Add some more interesting tilesets
   - Let tile char depend on tile's neighbours, e.g. doors/walls depend on nearby doors/walls

@@ -61,7 +61,7 @@ module Output =
         writeFrom box.Start str
         if reset then resetCursor()
 
-    let private pushStatus text outputState =
+    let pushStatus text outputState =
         let newStream =
             match outputState.StatusBuffer.Stream with
             | "" -> text
@@ -69,6 +69,9 @@ module Output =
         {outputState with
             StatusBuffer = {outputState.StatusBuffer with Stream = newStream}
         }
+
+    let pushDieMessage outputState =
+        pushStatus "You die! Press enter to exit." outputState
 
     let private subjectByController subject receiver =
         match subject.Controller with
@@ -160,9 +163,9 @@ module Output =
         | BlockedAction MoveActionBlockedByAlly -> pushStatus "There's an ally there!" gameState.OutputState
         | BlockedAction MoveActionBlockedByVoid -> pushStatus "There's nothing there!" gameState.OutputState
         | BlockedAction MoveActionBlockedByWall -> pushStatus "You bump up against the wall." gameState.OutputState
-        | CompleteAnyoneAction (AttackAction ind) ->
-            let object = gameState.WorldState.Actors.[ind]
-            pushStatusByController "miss" "misses" (Some object) "!" gameState
+        | CompleteAnyoneAction (AttackAction (_, object)) ->
+            drawTileAt object.Position gameState.WorldState.Map gameState.OutputState.Tileset
+            pushStatusByController "kill" "kills" (Some object) "!" gameState
         | CompleteAnyoneAction (OpenDoorAction pos) ->
             drawTileAt pos gameState.WorldState.Map gameState.OutputState.Tileset
             pushStatusByController "open" "opens" (Some fakeDoorActor) "." gameState
@@ -183,7 +186,7 @@ module Output =
         | CompleteAnyoneAction (MindSwapActorAction _) -> pushStatus "Done." gameState.OutputState
         | CompleteAnyoneAction WaitAction -> pushStatusByController "wait" "waits" None "." gameState
         | CompletePlayerAction HelpAction -> pushStatus "Move: arrow keys Open: o Close: c Mind swap: m Wait: . Quit: q" gameState.OutputState
-        | CompletePlayerAction QuitAction -> pushStatus "Bye." gameState.OutputState // assumes status bar is last line
+        | CompletePlayerAction QuitAction -> pushStatus "Bye! Press enter to exit." gameState.OutputState // assumes status bar is last line
         | CompletePlayerAction CancelAction -> pushStatus "OK." gameState.OutputState
         | CompletePlayerAction SaveGameAction ->
             saveGame "save.sav" gameState

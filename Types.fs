@@ -73,7 +73,7 @@ module Types =
         | OpenDoorAction of Position
         | CloseDoorAction of Position
         | MindSwapActorAction of int * Controller
-        | AttackAction of int
+        | AttackAction of int * Actor
         | WaitAction
 
     type BlockedAction =
