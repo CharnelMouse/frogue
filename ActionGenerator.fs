@@ -8,7 +8,7 @@ module ActionGenerator =
         match worldState.Actors.Head.Controller with
         | Player ->
             getCommand worldState.Action
-            |> resolveCommand worldState
+            |> updateAction worldState
         | AIController ->
             {worldState with
                 Action = CompleteAnyoneAction (decideAction worldState)

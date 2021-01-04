@@ -56,7 +56,7 @@ module Script =
                 let nonWaitDownhillActions =
                     downhillNeighbours
                     |> List.choose ((fun (direction, _, _) -> direction)
-                                    >> parseMoveCommand worldState
+                                    >> resolveMoveCommand worldState
                                     >> getAnyoneAction)
                     |> List.filter (fun act -> act <> WaitAction)
                 match nonWaitDownhillActions with
