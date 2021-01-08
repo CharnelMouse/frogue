@@ -26,13 +26,6 @@ module Action =
                     worldState.Actors
         }
 
-    let private changeTileset gameState = 
-        let newTileset = 
-            match gameState.OutputState.Tileset with
-            | DefaultTileset -> DottedTileset
-            | DottedTileset -> DefaultTileset
-        {gameState with OutputState = {gameState.OutputState with Tileset = newTileset}}
-
     let private executeOpenDoorAction worldState pos =
         {worldState with
             Map = changeMapTile worldState.Map pos OpenDoorTile
@@ -43,11 +36,10 @@ module Action =
             Map = changeMapTile worldState.Map pos ClosedDoorTile
         }
 
-    let private removeActor gameState index =
-        {gameState with
-            WorldState = {
-            gameState.WorldState with
-                Actors = gameState.WorldState.Actors
+    let private removeActor worldState index =
+        {worldState with
+            Actors =
+                worldState.Actors
                 |> List.indexed
                 |> List.choose (
                     fun (i, a) ->
@@ -55,21 +47,20 @@ module Action =
                         | (j, _) when j = index -> None
                         | (_, a) -> Some a
                 )
-            }
         }
 
-    let executeAction gameState =
-        match gameState.WorldState.Action with
+    let executeAction worldState =
+        match worldState.Action with
         | CompleteAnyoneAction (OpenDoorAction toPos) ->
-            {gameState with WorldState = executeOpenDoorAction gameState.WorldState toPos}
+            executeOpenDoorAction worldState toPos
         | CompleteAnyoneAction (CloseDoorAction toPos) ->
-            {gameState with WorldState = executeCloseDoorAction gameState.WorldState toPos}
+            executeCloseDoorAction worldState toPos
         | CompleteAnyoneAction (MoveAction (_, newPos)) ->
-            {gameState with WorldState = changePlayerPosition gameState.WorldState newPos}
+            changePlayerPosition worldState newPos
         | CompleteAnyoneAction (MindSwapActorAction (index, controller)) ->
-            {gameState with WorldState = changeActorController gameState.WorldState index controller}
-        | CompletePlayerAction ToggleTileSetAction -> changeTileset gameState
-        | CompleteAnyoneAction (AttackAction (index, _)) -> removeActor gameState index
+            changeActorController worldState index controller
+        | CompletePlayerAction ToggleTileSetAction -> worldState
+        | CompleteAnyoneAction (AttackAction (index, _)) -> removeActor worldState index
         | BlockedAction MoveActionBlockedByAlly
         | BlockedAction MoveActionBlockedByVoid
         | BlockedAction MoveActionBlockedByWall
@@ -91,4 +82,4 @@ module Action =
         | CompletePlayerAction UnknownAction
         | IncompleteAction OpenAction
         | IncompleteAction CloseAction
-        | IncompleteAction MindSwapAction -> gameState
+        | IncompleteAction MindSwapAction -> worldState

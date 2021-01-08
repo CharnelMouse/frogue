@@ -78,17 +78,9 @@ module SaveSystem =
             string tileset
         ]
 
-    let private exportGameState gameState =
-        let {
-            WorldState = {
-                Map = map
-                Actors = actors
-            }
-            OutputState = {
-                StatusBar = statusBar
-                Tileset = tileset
-            }
-            } = gameState
+    let private exportGameState worldState outputState =
+        let {Map = map; Actors = actors} = worldState
+        let {StatusBar = statusBar; Tileset = tileset} = outputState
         pushActors actors []
         |> pushMap map
         |> pushRest statusBar tileset
@@ -96,32 +88,31 @@ module SaveSystem =
     let private importGameState (stream: string list) =
         let (actors, mapFirst) = popActors stream
         let (map, rest) = popMap mapFirst
-        {
-            WorldState = {
-                Actors = actors
-                Map = map
-                Action =
-                    match rest.[3] with
-                    | "DefaultTileset" -> CompletePlayerAction StartSession
-                    | "DottedTileset" -> CompletePlayerAction StartSession
-                    | _ -> CompletePlayerAction StartSessionWithUnknownTileset
-            }
-            OutputState = {
-                StatusBar = {Start = {X = int rest.[0]; Y = int rest.[1]}; Length = int rest.[2]}
-                StatusBuffer = {Receiver = Player; Stream = ""}
-                Tileset =
-                    match rest.[3] with
-                    | "DefaultTileset" -> DefaultTileset
-                    | "DottedTileset" -> DottedTileset
-                    | _ -> DefaultTileset
-            }
+        let worldState = {
+            Actors = actors
+            Map = map
+            Action =
+                match rest.[3] with
+                | "DefaultTileset" -> CompletePlayerAction StartSession
+                | "DottedTileset" -> CompletePlayerAction StartSession
+                | _ -> CompletePlayerAction StartSessionWithUnknownTileset
         }
+        let outputState = {
+            StatusBar = {Start = {X = int rest.[0]; Y = int rest.[1]}; Length = int rest.[2]}
+            StatusBuffer = {Receiver = Player; Stream = ""}
+            Tileset =
+                match rest.[3] with
+                | "DefaultTileset" -> DefaultTileset
+                | "DottedTileset" -> DottedTileset
+                | _ -> DefaultTileset
+        }
+        worldState, outputState
 
     let saveGameExists path =
         File.Exists path
 
-    let saveGame path gameState =
-        File.WriteAllLines (path, exportGameState gameState)
+    let saveGame path worldState outputState =
+        File.WriteAllLines (path, exportGameState worldState outputState)
 
     let loadGame path =
         File.ReadAllLines path

@@ -115,8 +115,3 @@ module Types =
         StatusBuffer: StatusBuffer
         Tileset: Tileset
     }
-
-    type GameState = {
-        WorldState: WorldState
-        OutputState: OutputState
-    }

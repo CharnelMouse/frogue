@@ -20,80 +20,78 @@ module Main =
         "####################"
     ])
 
-    let private startingGameState = {
-        WorldState = {
-            Actors = [
-                {
-                    Position = {X = 1; Y = 1}
-                    Tile = PlayerTile
-                    Controller = Player
-                    Name = "adventurer"
-                    Script = WaitScript
-                }
-                {
-                    Position = {X = 7; Y = 6}
-                    Tile = OrcTile
-                    Controller = AIController
-                    Name = "orc"
-                    Script = DumbHunt
-                }
-                {
-                    Position = {X = 8; Y = 5}
-                    Tile = OrcTile
-                    Controller = AIController
-                    Name = "orc"
-                    Script = DumbHunt
-                }
-                {
-                    Position = {X = 17; Y = 7}
-                    Tile = OrcTile
-                    Controller = AIController
-                    Name = "orc"
-                    Script = DumbHunt
-                }
-                {
-                    Position = {X = 16; Y = 8}
-                    Tile = OrcTile
-                    Controller = AIController
-                    Name = "orc"
-                    Script = DumbHunt
-                }
-            ]
-            Map = levelMap
-            Action = CompletePlayerAction StartSession
-        }
-        OutputState = {
-            StatusBar = {Start = {X = 0; Y = levelMap.Height + 1}; Length = 40}
-            StatusBuffer = {Receiver = Player; Stream = ""}
-            Tileset = DefaultTileset
-        }
+    let private startingWorldState = {
+        Actors = [
+            {
+                Position = {X = 1; Y = 1}
+                Tile = PlayerTile
+                Controller = Player
+                Name = "adventurer"
+                Script = WaitScript
+            }
+            {
+                Position = {X = 7; Y = 6}
+                Tile = OrcTile
+                Controller = AIController
+                Name = "orc"
+                Script = DumbHunt
+            }
+            {
+                Position = {X = 8; Y = 5}
+                Tile = OrcTile
+                Controller = AIController
+                Name = "orc"
+                Script = DumbHunt
+            }
+            {
+                Position = {X = 17; Y = 7}
+                Tile = OrcTile
+                Controller = AIController
+                Name = "orc"
+                Script = DumbHunt
+            }
+            {
+                Position = {X = 16; Y = 8}
+                Tile = OrcTile
+                Controller = AIController
+                Name = "orc"
+                Script = DumbHunt
+            }
+        ]
+        Map = levelMap
+        Action = CompletePlayerAction StartSession
     }
 
-    let rec private mainLoop gameState =
-        let postAction = {gameState with WorldState = generateAction gameState.WorldState}
-        let postExecute =
-            postAction
-            |> executeAction
-        let postOutput = {postExecute with OutputState = updateOutput postExecute}
-        let postTime = {postOutput with WorldState = updateTime postOutput.WorldState}
-        let anyPlayerPresent = List.tryFind (fun a -> a.Controller = Player) postTime.WorldState.Actors
-        match (anyPlayerPresent, postTime.WorldState.Action) with
-        | (None, _) -> postTime.OutputState |> pushDieMessage |> popStatus false false |> ignore
-        | (Some _, CompletePlayerAction QuitAction) -> popStatus false true postTime.OutputState |> ignore
-        | _ -> {postTime with OutputState = popStatusIfReceiverTurnOrFullLineInBuffer true postTime} |> mainLoop
+    let startingOutputState = {
+        StatusBar = {Start = {X = 0; Y = levelMap.Height + 1}; Length = 40}
+        StatusBuffer = {Receiver = Player; Stream = ""}
+        Tileset = DefaultTileset
+    }
+        
+    let rec private mainLoop worldState outputState =
+        let postActionWorld = generateAction worldState
+        let postExecuteWorld = executeAction postActionWorld
+        let postOutputOutput = updateOutput postExecuteWorld outputState
+        let postTimeWorld = updateTime postExecuteWorld
+        let anyPlayerPresent = List.tryFind (fun a -> a.Controller = Player) postTimeWorld.Actors
+        match anyPlayerPresent, postTimeWorld.Action with
+        | None, _ -> postOutputOutput |> pushDieMessage |> popStatus false false |> ignore
+        | Some _, CompletePlayerAction QuitAction -> popStatus false true postOutputOutput |> ignore
+        | _ ->
+            postOutputOutput
+            |> popStatusIfReceiverTurnOrFullLineInBuffer true postTimeWorld
+            |> mainLoop postTimeWorld
 
     [<EntryPoint>]
     let private main argv =
-        let gameState =
+        let worldState, outputState =
             if saveGameExists "save.sav"
                 then loadGame "save.sav"
-                else startingGameState
-        let startState =
-            {gameState with
-                OutputState =
-                    updateOutput gameState
-                    |> popStatus true true
-            }
-        mainLoop startState
+                else startingWorldState, startingOutputState
+        let startOutput =
+            outputState
+            |> updateOutput worldState
+            |> popStatus true true
+        mainLoop worldState startOutput
         System.Console.ReadLine() |> ignore
         0 // return an integer exit code
