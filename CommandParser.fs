@@ -4,10 +4,6 @@ module CommandParser =
     open Frogue.Map
     open Command
 
-    let private changeAction worldState action = {
-        worldState with Action = action
-    }
-
     let resolveMoveCommand worldState direction =
         let oldPos = worldState.Actors.Head.Position
         let map = worldState.Map
@@ -71,7 +67,7 @@ module CommandParser =
             | Some a when worldState.Actors.[a].Controller = actor.Controller -> BlockedAction MindSwapToActionOnControlledActor
             | Some a -> CompleteAnyoneAction (MindSwapActorAction (a, actor.Controller))
 
-    let private resolveCommand worldState command =
+    let resolveCommand worldState command =
         match command with
         | CompleteCommand (Move direction) -> resolveMoveCommand worldState direction
         | CompleteCommand (OpenTo direction) -> resolveOpenToCommand worldState direction
@@ -87,7 +83,3 @@ module CommandParser =
         | IncompleteCommand Open -> IncompleteAction OpenAction
         | IncompleteCommand Close -> IncompleteAction CloseAction
         | IncompleteCommand MindSwap -> IncompleteAction MindSwapAction
-
-    let updateAction worldState command =
-        resolveCommand worldState command
-        |> changeAction worldState

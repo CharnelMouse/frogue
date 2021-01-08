@@ -152,8 +152,8 @@ module Output =
         Script = WaitScript
         }
 
-    let updateOutput worldState outputState =
-        match worldState.Action with
+    let updateOutput worldState outputState action =
+        match action with
         | CompletePlayerAction StartSession ->
             printMap outputState.Tileset worldState.Map
             printActors outputState.Tileset worldState.Actors

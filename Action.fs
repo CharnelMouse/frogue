@@ -49,8 +49,8 @@ module Action =
                 )
         }
 
-    let executeAction worldState =
-        match worldState.Action with
+    let executeAction worldState action =
+        match action with
         | CompleteAnyoneAction (OpenDoorAction toPos) ->
             executeOpenDoorAction worldState toPos
         | CompleteAnyoneAction (CloseDoorAction toPos) ->

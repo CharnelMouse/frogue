@@ -91,11 +91,6 @@ module SaveSystem =
         let worldState = {
             Actors = actors
             Map = map
-            Action =
-                match rest.[3] with
-                | "DefaultTileset" -> CompletePlayerAction StartSession
-                | "DottedTileset" -> CompletePlayerAction StartSession
-                | _ -> CompletePlayerAction StartSessionWithUnknownTileset
         }
         let outputState = {
             StatusBar = {Start = {X = int rest.[0]; Y = int rest.[1]}; Length = int rest.[2]}
@@ -106,7 +101,12 @@ module SaveSystem =
                 | "DottedTileset" -> DottedTileset
                 | _ -> DefaultTileset
         }
-        worldState, outputState
+        let action =
+            match rest.[3] with
+            | "DefaultTileset" -> CompletePlayerAction StartSession
+            | "DottedTileset" -> CompletePlayerAction StartSession
+            | _ -> CompletePlayerAction StartSessionWithUnknownTileset
+        worldState, outputState, action
 
     let saveGameExists path =
         File.Exists path

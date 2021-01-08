@@ -59,7 +59,6 @@ module Main =
             }
         ]
         Map = levelMap
-        Action = CompletePlayerAction StartSession
     }
 
     let private startingOutputState = {
@@ -67,31 +66,33 @@ module Main =
         StatusBuffer = {Receiver = Player; Stream = ""}
         Tileset = DefaultTileset
     }
-        
-    let rec private mainLoop worldState outputState =
-        let postActionWorld = generateAction worldState
-        let postExecuteWorld = executeAction postActionWorld
-        let postOutputOutput = updateOutput postExecuteWorld outputState
-        let postTimeWorld = updateTime postExecuteWorld
+
+    let private startingAction = CompletePlayerAction StartSession
+
+    let rec private mainLoop worldState outputState action =
+        let newAction = generateAction worldState action
+        let postExecuteWorld = executeAction worldState newAction
+        let postOutputOutput = updateOutput postExecuteWorld outputState newAction
+        let postTimeWorld = updateTime postExecuteWorld newAction
         let anyPlayerPresent = List.tryFind (fun a -> a.Controller = Player) postTimeWorld.Actors
-        match anyPlayerPresent, postTimeWorld.Action with
+        match anyPlayerPresent, newAction with
         | None, _ -> postOutputOutput |> pushDieMessage |> popStatus false false |> ignore
         | Some _, CompletePlayerAction QuitAction -> popStatus false true postOutputOutput |> ignore
         | _ ->
-            postOutputOutput
-            |> popStatusIfReceiverTurnOrFullLineInBuffer true postTimeWorld
-            |> mainLoop postTimeWorld
+            let newOutput =
+                postOutputOutput
+                |> popStatusIfReceiverTurnOrFullLineInBuffer true postTimeWorld
+            mainLoop postTimeWorld newOutput newAction
 
     [<EntryPoint>]
     let private main argv =
-        let worldState, outputState =
+        let worldState, outputState, action =
             if saveGameExists "save.sav"
                 then loadGame "save.sav"
-                else startingWorldState, startingOutputState
+                else startingWorldState, startingOutputState, startingAction
         let startOutput =
-            outputState
-            |> updateOutput worldState
+            updateOutput worldState outputState action
             |> popStatus true true
-        mainLoop worldState startOutput
+        mainLoop worldState startOutput action
         System.Console.ReadLine() |> ignore
         0 // return an integer exit code

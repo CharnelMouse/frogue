@@ -107,7 +107,6 @@ module Types =
     type WorldState = {
         Actors: Actor list
         Map: Map
-        Action: Action
     }
 
     type OutputState = {
