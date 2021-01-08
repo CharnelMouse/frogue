@@ -69,20 +69,19 @@ module Main =
 
     let private startingAction = CompletePlayerAction StartSession
 
-    let rec private mainLoop worldState outputState action =
+    let rec private mainLoop worldState action outputState =
         let newAction = generateAction worldState action
         let postExecuteWorld = executeAction worldState newAction
-        let postOutputOutput = updateOutput postExecuteWorld outputState newAction
-        let postTimeWorld = updateTime postExecuteWorld newAction
-        let anyPlayerPresent = List.tryFind (fun a -> a.Controller = Player) postTimeWorld.Actors
-        match anyPlayerPresent, newAction with
-        | None, _ -> postOutputOutput |> pushDieMessage |> popStatus false false |> ignore
-        | Some _, CompletePlayerAction QuitAction -> popStatus false true postOutputOutput |> ignore
+        let prePostOutput = updateOutput postExecuteWorld outputState newAction
+        let newWorld = updateTime postExecuteWorld newAction
+        let anyPlayerActor = List.tryFind (fun a -> a.Controller = Player) newWorld.Actors
+        match anyPlayerActor, newAction with
+        | None, _ -> prePostOutput |> pushDieMessage |> popStatus false false |> ignore
+        | Some _, CompletePlayerAction QuitAction -> popStatus false true prePostOutput |> ignore
         | _ ->
-            let newOutput =
-                postOutputOutput
-                |> popStatusIfReceiverTurnOrFullLineInBuffer true postTimeWorld
-            mainLoop postTimeWorld newOutput newAction
+            prePostOutput
+            |> popStatusIfReceiverTurnOrFullLineInBuffer true newWorld
+            |> mainLoop newWorld newAction
 
     [<EntryPoint>]
     let private main argv =
@@ -90,9 +89,8 @@ module Main =
             if saveGameExists "save.sav"
                 then loadGame "save.sav"
                 else startingWorldState, startingOutputState, startingAction
-        let startOutput =
-            updateOutput worldState outputState action
-            |> popStatus true true
-        mainLoop worldState startOutput action
+        updateOutput worldState outputState action
+        |> popStatus true true
+        |> mainLoop worldState action
         System.Console.ReadLine() |> ignore
         0 // return an integer exit code
