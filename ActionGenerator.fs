@@ -4,6 +4,7 @@ module ActionGenerator =
     open Input
     open CommandParser
     open Script
+
     let generateAction worldState =
         match worldState.Actors.Head.Controller with
         | Player ->

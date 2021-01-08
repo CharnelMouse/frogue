@@ -61,7 +61,7 @@ module Output =
         writeFrom box.Start str
         if reset then resetCursor()
 
-    let pushStatus text outputState =
+    let private pushStatus text outputState =
         let newStream =
             match outputState.StatusBuffer.Stream with
             | "" -> text
@@ -144,7 +144,7 @@ module Output =
             | DottedTileset -> DefaultTileset
         {outputState with Tileset = newTileset}
 
-    let fakeDoorActor = {
+    let private fakeDoorActor = {
         Name = "door"
         Position = {X = 0; Y = 0}
         Tile = UnknownActorTile

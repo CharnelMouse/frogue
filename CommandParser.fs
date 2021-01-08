@@ -71,7 +71,7 @@ module CommandParser =
             | Some a when worldState.Actors.[a].Controller = actor.Controller -> BlockedAction MindSwapToActionOnControlledActor
             | Some a -> CompleteAnyoneAction (MindSwapActorAction (a, actor.Controller))
 
-    let resolveCommand worldState command =
+    let private resolveCommand worldState command =
         match command with
         | CompleteCommand (Move direction) -> resolveMoveCommand worldState direction
         | CompleteCommand (OpenTo direction) -> resolveOpenToCommand worldState direction

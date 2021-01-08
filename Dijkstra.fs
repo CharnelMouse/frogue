@@ -8,12 +8,12 @@ module Dijkstra =
         Cost: int
     }
 
-    type NodeInfo = {
+    type private NodeInfo = {
         Pos: Position
         Cost: int
     }
 
-    type UnvisitedNode = {
+    type private UnvisitedNode = {
         ItemPosition: Position
         ItemCost: int
         CurrentDistance: int
