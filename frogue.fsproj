@@ -15,6 +15,7 @@
     <Compile Include="SaveSystem.fs" />
     <Compile Include="ScreenWriter.fs" />
     <Compile Include="Status.fs" />
+    <Compile Include="MapWriter.fs" />
     <Compile Include="Output.fs" />
     <Compile Include="Action.fs" />
     <Compile Include="TimeSystem.fs" />
