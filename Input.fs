@@ -4,10 +4,20 @@ module Input =
     open Types
     open Command
 
-    let rec getCommand action =
-        let input = Console.ReadKey(true);
+    let rec private getCommandDirection command =
+        let input = Console.ReadKey(true)
+        match input.Key with
+        | ConsoleKey.LeftArrow  -> CompleteCommand (command West)
+        | ConsoleKey.RightArrow -> CompleteCommand (command East)
+        | ConsoleKey.UpArrow    -> CompleteCommand (command North)
+        | ConsoleKey.DownArrow  -> CompleteCommand (command South)
+        | ConsoleKey.Escape     -> CompleteCommand Cancel
+        | _                     -> getCommandDirection command
+
+    let getCommand action =
         match action with
         | CompletePlayerAction _ | CompleteAnyoneAction _ | BlockedAction _ ->
+            let input = Console.ReadKey(true)
             match
               input.KeyChar, input.Key,              int input.Modifiers with
             | 'o'          , _                     , _ -> IncompleteCommand Open
@@ -23,27 +33,6 @@ module Input =
             | '\u0000'     , ConsoleKey.UpArrow    , 0 -> CompleteCommand (Move North)
             | '\u0000'     , ConsoleKey.DownArrow  , 0 -> CompleteCommand (Move South)
             | _                                        -> CompleteCommand UnknownCommand
-        | IncompleteAction OpenAction ->
-            match input.Key with
-            | ConsoleKey.LeftArrow  -> CompleteCommand (OpenTo West)
-            | ConsoleKey.RightArrow -> CompleteCommand (OpenTo East)
-            | ConsoleKey.UpArrow    -> CompleteCommand (OpenTo North)
-            | ConsoleKey.DownArrow  -> CompleteCommand (OpenTo South)
-            | ConsoleKey.Escape     -> CompleteCommand (Cancel)
-            | _                     -> getCommand action
-        | IncompleteAction CloseAction ->
-            match input.Key with
-            | ConsoleKey.LeftArrow  -> CompleteCommand (CloseTo West)
-            | ConsoleKey.RightArrow -> CompleteCommand (CloseTo East)
-            | ConsoleKey.UpArrow    -> CompleteCommand (CloseTo North)
-            | ConsoleKey.DownArrow  -> CompleteCommand (CloseTo South)
-            | ConsoleKey.Escape     -> CompleteCommand (Cancel)
-            | _                     -> getCommand action
-        | IncompleteAction MindSwapAction ->
-            match input.Key with
-            | ConsoleKey.LeftArrow  -> CompleteCommand (MindSwapTo West)
-            | ConsoleKey.RightArrow -> CompleteCommand (MindSwapTo East)
-            | ConsoleKey.UpArrow    -> CompleteCommand (MindSwapTo North)
-            | ConsoleKey.DownArrow  -> CompleteCommand (MindSwapTo South)
-            | ConsoleKey.Escape     -> CompleteCommand (Cancel)
-            | _                     -> getCommand action
+        | IncompleteAction OpenAction -> getCommandDirection OpenTo
+        | IncompleteAction CloseAction -> getCommandDirection CloseTo
+        | IncompleteAction MindSwapAction -> getCommandDirection MindSwapTo
