@@ -3,6 +3,7 @@ module Main =
     open Types
     open Output
     open SaveSystem
+    open Status
     open Action
     open TimeSystem
     open ActionGenerator

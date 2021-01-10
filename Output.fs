@@ -5,12 +5,8 @@ module Output =
     open Frogue.Map
     open Tilesets
     open SaveSystem
-
-    let private cursorTo pos =
-        Console.SetCursorPosition(pos.X, pos.Y)
-
-    let private resetCursor() =
-        cursorTo {X = 0; Y = 0}
+    open ScreenWriter
+    open Status
 
     let private printMap tileset map =
         let tilesetParser =
@@ -22,11 +18,6 @@ module Output =
             row
             |> convertMapTilesToString tilesetParser.MapParser
             |> Console.WriteLine
-
-    let private writeAt pos (symb: char)  =
-        cursorTo pos
-        Console.Write(symb)
-        resetCursor()
 
     let private getOutputActorTile tileset x =
         match tileset with
@@ -45,97 +36,6 @@ module Output =
         getTileAt pos map
         |> getOutputMapTile tileset
         |> writeAt pos
-
-    let private clearBox box =
-        cursorTo box.Start
-        String.replicate box.Length " "
-        |> Console.Write
-
-    let private writeFrom startPos str =
-        cursorTo startPos
-        Console.Write(str: string)
-
-    let private writeBox str box reset =
-        if String.length(str) > box.Length then failwith "String larger than box length"
-        clearBox box
-        writeFrom box.Start str
-        if reset then resetCursor()
-
-    let private pushStatus text outputState =
-        let newStream =
-            match outputState.StatusBuffer.Stream with
-            | "" -> text
-            | a -> a + " " + text
-        {outputState with
-            StatusBuffer = {outputState.StatusBuffer with Stream = newStream}
-        }
-
-    let pushDieMessage outputState =
-        pushStatus "You die! Press enter to exit." outputState
-
-    let private subjectByController subject receiver =
-        match subject.Controller with
-        | a when a = receiver -> "You"
-        | _ -> "The " + subject.Name
-
-    let private statusByController selfStatus otherSuffix endMark currentActor object receiver =
-        let subject = subjectByController currentActor receiver
-        let suffix =
-            match currentActor.Controller with
-            | a when a = receiver -> selfStatus
-            | _ -> otherSuffix
-        subject + " " + suffix +
-        match object with
-        | None -> endMark
-        | Some a when a.Controller = receiver -> " you" + endMark
-        | Some a -> " the " + a.Name + endMark
-
-    let private pushStatusByController selfStatus otherSuffix object endMark worldState outputState =
-        let text = statusByController selfStatus otherSuffix endMark worldState.Actors.Head object outputState.StatusBuffer.Receiver
-        pushStatus text outputState
-
-    let rec popStatus reset fullLinesOnly outputState =
-        let buffer = outputState.StatusBuffer
-        let stream = buffer.Stream
-        let bar = outputState.StatusBar
-        let boxLength = bar.Length
-        if stream.Length <= boxLength
-            then
-                writeBox stream outputState.StatusBar reset
-                {outputState with StatusBuffer = {buffer with Stream = ""}}
-            else
-                let space = (char " ")
-                let continueString = "<cont.>"
-                let stopIndex = boxLength - 2 - continueString.Length
-                let stopString = stream.[0..stopIndex]
-                let (usedString, usedLength) =
-                    match stopString.[stopIndex] with
-                    | a when a = space ->
-                        let usedString = stopString.TrimEnd space
-                        (usedString, usedString.Length)
-                    | _ ->
-                        let lastSpaceIndex = stopString.LastIndexOf " "
-                        let usedString = stopString.[0..lastSpaceIndex].TrimEnd space
-                        (usedString, usedString.Length)
-                writeBox (usedString + " " + continueString) bar reset
-                Console.ReadKey(true) |> ignore
-                let remainingBuffer = {buffer with Stream = stream.[usedLength..].TrimStart space}
-                // if == boxLength then last line only partially shows
-                // after next pushing non-receiver action shown on map,
-                // doesn't seem right but best I can do without
-                // looking into actions future
-                if fullLinesOnly && remainingBuffer.Stream.Length <= boxLength
-                    then {outputState with StatusBuffer = remainingBuffer}
-                    else popStatus reset fullLinesOnly {outputState with StatusBuffer = remainingBuffer}
-
-    let popStatusIfReceiverTurnOrFullLineInBuffer reset worldState outputState =
-        let buffer = outputState.StatusBuffer
-        if buffer.Receiver = worldState.Actors.Head.Controller
-            then popStatus reset false outputState
-            else
-                if buffer.Stream.Length > outputState.StatusBar.Length
-                    then popStatus reset true outputState
-                    else outputState
 
     let private changeTileset outputState = 
         let newTileset = 
