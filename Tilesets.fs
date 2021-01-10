@@ -1,61 +1,61 @@
-namespace Frogue
-module Tilesets =
-    open Types
-    
-    type private ActorParser = ActorTile -> char
-    type private MapParser = MapTile -> char
+module Tilesets
+open Types
 
-    type TilesetParser = {
-        ActorParser: ActorParser
-        MapParser: MapParser
-    }
+type private ActorParser = ActorTile -> char
 
-    let (defaultTilesetParser: TilesetParser) = {
-        ActorParser = fun tile ->
-            match tile with
-            | PlayerTile -> '@'
-            | OrcTile -> 'o'
-            | UnknownActorTile -> failwith "actor tile not found in tileset"
-        MapParser = fun tile ->
-            match tile with
-            | EmptyTile -> ' '
-            | OpenDoorTile -> '-'
-            | ClosedDoorTile -> '+'
-            | WallTile -> '#'
-            | UnknownMapTile -> failwith "map tile not found in tileset"
-    }
+type private MapParser = MapTile -> char
 
-    let (dottedTilesetParser: TilesetParser) = {
-        ActorParser = fun tile ->
-            match tile with
-            | PlayerTile -> '@'
-            | OrcTile -> 'o'
-            | UnknownActorTile -> failwith "actor tile not found in tileset"
-        MapParser = fun tile ->
-            match tile with
-            | EmptyTile -> '.'
-            | OpenDoorTile -> '-'
-            | ClosedDoorTile -> '+'
-            | WallTile -> '#'
-            | UnknownMapTile -> failwith "map tile not found in tileset"
-    }
+type TilesetParser = {
+    ActorParser: ActorParser
+    MapParser: MapParser
+}
 
-    let convertMapTilesToString (parser: MapParser) (tiles: MapTile list) =
-        tiles
-        |> List.map (parser >> string)
-        |> List.toSeq
-        |> String.concat "" 
+let (defaultTilesetParser: TilesetParser) = {
+    ActorParser = fun tile ->
+        match tile with
+        | PlayerTile -> '@'
+        | OrcTile -> 'o'
+        | UnknownActorTile -> failwith "actor tile not found in tileset"
+    MapParser = fun tile ->
+        match tile with
+        | EmptyTile -> ' '
+        | OpenDoorTile -> '-'
+        | ClosedDoorTile -> '+'
+        | WallTile -> '#'
+        | UnknownMapTile -> failwith "map tile not found in tileset"
+}
 
-    let getActorTile char =
-        match char with
-        | '@' -> PlayerTile
-        | 'o' -> OrcTile
-        | _ -> UnknownActorTile
+let (dottedTilesetParser: TilesetParser) = {
+    ActorParser = fun tile ->
+        match tile with
+        | PlayerTile -> '@'
+        | OrcTile -> 'o'
+        | UnknownActorTile -> failwith "actor tile not found in tileset"
+    MapParser = fun tile ->
+        match tile with
+        | EmptyTile -> '.'
+        | OpenDoorTile -> '-'
+        | ClosedDoorTile -> '+'
+        | WallTile -> '#'
+        | UnknownMapTile -> failwith "map tile not found in tileset"
+}
 
-    let getMapTile char =
-        match char with
-        | ' ' -> EmptyTile
-        | '-' -> OpenDoorTile
-        | '+' -> ClosedDoorTile
-        | '#' -> WallTile
-        | _ -> UnknownMapTile
+let convertMapTilesToString (parser: MapParser) (tiles: MapTile list) =
+    tiles
+    |> List.map (parser >> string)
+    |> List.toSeq
+    |> String.concat "" 
+
+let getActorTile char =
+    match char with
+    | '@' -> PlayerTile
+    | 'o' -> OrcTile
+    | _ -> UnknownActorTile
+
+let getMapTile char =
+    match char with
+    | ' ' -> EmptyTile
+    | '-' -> OpenDoorTile
+    | '+' -> ClosedDoorTile
+    | '#' -> WallTile
+    | _ -> UnknownMapTile
