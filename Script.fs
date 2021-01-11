@@ -3,8 +3,6 @@ open Types
 open Frogue.Map
 open CommandParser
 
-let private allDirections = [East; West; North; South]
-
 let private getAnyoneAction = function
 | CompleteAnyoneAction act -> Some act
 | _ -> None

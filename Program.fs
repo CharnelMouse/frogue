@@ -82,6 +82,7 @@ let rec private mainLoop worldState action outputState =
         prePostOutput
         |> popStatusIfReceiverTurnOrFullLineInBuffer true newWorld
         |> mainLoop newWorld newAction
+
 [<EntryPoint>]
 let private main argv =
     let worldState, outputState, action =

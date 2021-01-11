@@ -30,5 +30,7 @@ module Map =
         | East -> {X = x + 1; Y = y}
         | West -> {X = x - 1; Y = y}
 
+    let allDirections = [East; West; North; South]
+
     let allNeighbours pos =
-        List.map (fun x -> neighbour pos x) [North; South; East; West]
+        List.map (neighbour pos) allDirections
