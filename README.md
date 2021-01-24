@@ -4,6 +4,9 @@ A small roguelike I'm making to learn F#.
 
 Current to-dos:
 
+- Switch to separate processes for ouput, AI, etc.
+  - Separate map screen updates from status box updates
+  - Make process to handle / output the status buffer
 - Don't show input when waiting for enter on exit
 - Add controller information in status subjects/objects if several actors controlled by current player, or several players
 - Add some more interesting tilesets
