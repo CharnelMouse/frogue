@@ -54,10 +54,10 @@ let private subjectByController subject receiver =
     | a when a = receiver -> "You"
     | _ -> "The " + subject.Name
 
-let private statusByController selfStatus otherSuffix endMark currentActor object receiver =
-    let subject = subjectByController currentActor receiver
+let private statusByController selfStatus otherSuffix endMark actor object receiver =
+    let subject = subjectByController actor receiver
     let suffix =
-        match currentActor.Controller with
+        match actor.Controller with
         | a when a = receiver -> selfStatus
         | _ -> otherSuffix
     subject + " " + suffix +
@@ -66,13 +66,13 @@ let private statusByController selfStatus otherSuffix endMark currentActor objec
     | Some a when a.Controller = receiver -> " you" + endMark
     | Some a -> " the " + a.Name + endMark
 
-let pushStatusByController selfStatus otherSuffix object endMark worldState outputState =
-    let text = statusByController selfStatus otherSuffix endMark worldState.Actors.Head object outputState.StatusBuffer.Receiver
+let pushStatusByController selfStatus otherSuffix object endMark currentActor outputState =
+    let text = statusByController selfStatus otherSuffix endMark currentActor object outputState.StatusBuffer.Receiver
     pushStatus text outputState
 
-let popStatusIfReceiverTurnOrFullLineInBuffer reset worldState outputState =
+let popStatusIfReceiverTurnOrFullLineInBuffer reset currentActor outputState =
     let buffer = outputState.StatusBuffer
-    if buffer.Receiver = worldState.Actors.Head.Controller
+    if buffer.Receiver = currentActor.Controller
         then popStatus reset false outputState
         else
             if buffer.Stream.Length > outputState.StatusBar.Length

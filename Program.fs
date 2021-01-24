@@ -80,7 +80,7 @@ let rec private mainLoop worldState action outputState =
     | Some _, CompletePlayerAction QuitAction -> popStatus false true prePostOutput |> ignore
     | _ ->
         prePostOutput
-        |> popStatusIfReceiverTurnOrFullLineInBuffer true newWorld
+        |> popStatusIfReceiverTurnOrFullLineInBuffer true newWorld.Actors.Head
         |> mainLoop newWorld newAction
 
 [<EntryPoint>]
