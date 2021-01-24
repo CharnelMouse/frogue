@@ -47,7 +47,7 @@ let rec popStatus reset fullLinesOnly outputState =
                 else popStatus reset fullLinesOnly {outputState with StatusBuffer = remainingBuffer}
 
 let pushDieMessage outputState =
-    pushStatus "You die! Press enter to exit." outputState
+    pushStatus "You die! Press any key to exit." outputState
 
 let private subjectByController subject receiver =
     match subject.Controller with

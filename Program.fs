@@ -92,5 +92,5 @@ let private main argv =
     updateOutput worldState outputState action
     |> popStatus true true
     |> mainLoop worldState action
-    System.Console.ReadLine() |> ignore
+    System.Console.ReadKey() |> ignore
     0 // return an integer exit code

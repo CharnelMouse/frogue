@@ -53,7 +53,7 @@ let updateOutput worldState outputState action =
     | CompleteAnyoneAction (MindSwapActorAction _) -> pushStatus "Done." outputState
     | CompleteAnyoneAction WaitAction -> pushStatusByController "wait" "waits" None "." worldState outputState
     | CompletePlayerAction HelpAction -> pushStatus "Move: arrow keys Open: o Close: c Mind swap: m Wait: . Quit: q" outputState
-    | CompletePlayerAction QuitAction -> pushStatus "Bye! Press enter to exit." outputState // assumes status bar is last line
+    | CompletePlayerAction QuitAction -> pushStatus "Bye! Press any key to exit." outputState // assumes status bar is last line
     | CompletePlayerAction CancelAction -> pushStatus "OK." outputState
     | CompletePlayerAction SaveGameAction ->
         saveGame "save.sav" worldState outputState
