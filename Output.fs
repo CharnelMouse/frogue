@@ -13,34 +13,54 @@ let private fakeDoorActor = {
     Script = WaitScript
     }
 
-let updateOutput worldState outputState action =
+let private updateMapOutputTileset tileset action =
+    match action with
+    | CompletePlayerAction ToggleTileSetAction -> cycleTileset tileset
+    | _ -> tileset
+
+let private updateMapScreen worldState tileset action =
+    match action with
+    | CompletePlayerAction StartSession
+    | CompletePlayerAction StartSessionWithUnknownTileset
+    | CompletePlayerAction ToggleTileSetAction ->
+        redrawMapScreen tileset worldState
+    | CompleteAnyoneAction (MoveAction (origin, destination)) ->
+        drawTileAt origin worldState.Map tileset
+        writeAt destination (getOutputActorTile tileset worldState.Actors.Head.Tile)
+    | CompleteAnyoneAction (AttackAction (_, object)) ->
+        drawTileAt object.Position worldState.Map tileset
+    | CompleteAnyoneAction (OpenDoorAction pos)
+    | CompleteAnyoneAction (CloseDoorAction pos) ->
+        drawTileAt pos worldState.Map tileset
+    | CompleteAnyoneAction (MindSwapActorAction _)
+    | CompleteAnyoneAction WaitAction
+    | CompletePlayerAction HelpAction
+    | CompletePlayerAction SaveGameAction
+    | CompletePlayerAction QuitAction
+    | CompletePlayerAction CancelAction
+    | CompletePlayerAction UnknownAction
+    | IncompleteAction _
+    | BlockedAction _ ->
+        ()
+
+let private pushActionStatus worldState outputState action =
     match action with
     | CompletePlayerAction StartSession ->
-        printMap outputState.Tileset worldState.Map
-        printActors outputState.Tileset worldState.Actors
         pushStatus "Ready." outputState
     | CompletePlayerAction StartSessionWithUnknownTileset ->
-        printMap outputState.Tileset worldState.Map
-        printActors outputState.Tileset worldState.Actors
         pushStatus "Save game contained unknown tileset, switching to default." outputState
-    | CompleteAnyoneAction (MoveAction (origin, destination)) ->
-        drawTileAt origin worldState.Map outputState.Tileset
-        writeAt destination (getOutputActorTile outputState.Tileset worldState.Actors.Head.Tile)
-        outputState
+    | CompleteAnyoneAction (MoveAction _) -> outputState
     | BlockedAction MoveActionBlockedByAlly -> pushStatus "There's an ally there!" outputState
     | BlockedAction MoveActionBlockedByVoid -> pushStatus "There's nothing there!" outputState
     | BlockedAction MoveActionBlockedByWall -> pushStatus "You bump up against the wall." outputState
     | CompleteAnyoneAction (AttackAction (_, object)) ->
-        drawTileAt object.Position worldState.Map outputState.Tileset
         pushStatusByController "kill" "kills" (Some object) "!" worldState outputState
-    | CompleteAnyoneAction (OpenDoorAction pos) ->
-        drawTileAt pos worldState.Map outputState.Tileset
+    | CompleteAnyoneAction (OpenDoorAction _) ->
         pushStatusByController "open" "opens" (Some fakeDoorActor) "." worldState outputState
     | BlockedAction OpenToActionBlockedByVoid -> pushStatus "There's nothing there!" outputState
     | BlockedAction OpenToActionBlockedByInvalidTile -> pushStatus "There's nothing there to open!" outputState
     | IncompleteAction OpenAction -> pushStatus "Open in which direction?" outputState
-    | CompleteAnyoneAction (CloseDoorAction pos) ->
-        drawTileAt pos worldState.Map outputState.Tileset
+    | CompleteAnyoneAction (CloseDoorAction _) ->
         pushStatusByController "close" "closes" (Some fakeDoorActor) "." worldState outputState
     | BlockedAction CloseToActionBlockedByVoid -> pushStatus "There's nothing there!" outputState
     | BlockedAction CloseToActionBlockedByInvalidTile -> pushStatus "There's nothing there to close!" outputState
@@ -55,18 +75,21 @@ let updateOutput worldState outputState action =
     | CompletePlayerAction HelpAction -> pushStatus "Move: arrow keys Open: o Close: c Mind swap: m Wait: . Quit: q" outputState
     | CompletePlayerAction QuitAction -> pushStatus "Bye! Press any key to exit." outputState // assumes status bar is last line
     | CompletePlayerAction CancelAction -> pushStatus "OK." outputState
-    | CompletePlayerAction SaveGameAction ->
-        saveGame "save.sav" worldState outputState
-        pushStatus "Game saved." outputState
+    | CompletePlayerAction SaveGameAction -> pushStatus "Game saved." outputState
     | CompletePlayerAction ToggleTileSetAction ->
-        let newOutput = changeTileset outputState
-        printMap newOutput.Tileset worldState.Map
-        printActors newOutput.Tileset worldState.Actors
         pushStatus (
             "Tileset changed to " +
-            match newOutput.Tileset with
+            match outputState.Tileset with
             | DefaultTileset -> "default"
             | DottedTileset -> "dots"
             + "."
-            ) newOutput
+            ) outputState
     | CompletePlayerAction UnknownAction -> pushStatus "Unknown command, type ? for help." outputState
+
+let updateOutput worldState outputState action =
+    let newOutputState = {outputState with Tileset = updateMapOutputTileset outputState.Tileset action}
+    updateMapScreen worldState newOutputState.Tileset action
+    match action with
+    | CompletePlayerAction SaveGameAction -> saveGame "save.sav" worldState newOutputState
+    | _ -> ()
+    pushActionStatus worldState newOutputState action

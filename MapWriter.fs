@@ -34,9 +34,11 @@ let drawTileAt pos map tileset =
     |> getOutputMapTile tileset
     |> writeAt pos
 
-let changeTileset outputState = 
-    let newTileset = 
-        match outputState.Tileset with
-        | DefaultTileset -> DottedTileset
-        | DottedTileset -> DefaultTileset
-    {outputState with Tileset = newTileset}
+let cycleTileset tileset = 
+    match tileset with
+    | DefaultTileset -> DottedTileset
+    | DottedTileset -> DefaultTileset
+
+let redrawMapScreen tileset worldState =
+    printMap tileset worldState.Map
+    printActors tileset worldState.Actors
