@@ -1,5 +1,6 @@
 open Types
 open Frogue
+open OutputActor
 open Output
 open SaveSystem
 open Status
@@ -69,19 +70,21 @@ let private startingOutputState = {
 
 let private startingAction = CompletePlayerAction StartSession
 
-let rec private mainLoop worldState action outputState =
+let rec private mainLoop outputActor worldState action =
     let newAction = generateAction worldState action
     let postExecuteWorld = executeAction worldState newAction
-    let prePostOutput = updateOutput postExecuteWorld outputState newAction
+    updateOutput outputActor postExecuteWorld newAction
     let newWorld = updateTime postExecuteWorld newAction
     let anyPlayerActor = List.tryFind (fun a -> a.Controller = Player) newWorld.Actors
     match anyPlayerActor, newAction with
-    | None, _ -> prePostOutput |> pushDieMessage |> popStatus false false |> ignore
-    | Some _, CompletePlayerAction QuitAction -> popStatus false true prePostOutput |> ignore
+    | None, _ ->
+        outputActor.Post (OutputMessage PushDie)
+        outputActor.Post (OutputMessage (PopStatus {Reset = false; FullLinesOnly = false}))
+    | Some _, CompletePlayerAction QuitAction ->
+        outputActor.Post (OutputMessage (PopStatus {Reset = false; FullLinesOnly = true}))
     | _ ->
-        prePostOutput
-        |> popStatusIfReceiverTurnOrFullLineInBuffer true newWorld.Actors.Head
-        |> mainLoop newWorld newAction
+        outputActor.Post (OutputMessage (PopStatusIfReceiverTurnOrFullLineInBuffer {Reset = true; CurrentActor = newWorld.Actors.Head}))
+        mainLoop outputActor newWorld newAction
 
 [<EntryPoint>]
 let private main argv =
@@ -89,8 +92,10 @@ let private main argv =
         if saveGameExists "save.sav"
             then loadGame "save.sav"
             else startingWorldState, startingOutputState, startingAction
-    updateOutput worldState outputState action
-    |> popStatus true true
-    |> mainLoop worldState action
+    let outputActor = startOutputAgent outputState
+    updateOutput outputActor worldState action
+    outputActor.Post (OutputMessage (PopStatus {Reset = true; FullLinesOnly = true}))
+    mainLoop outputActor worldState action
+    outputActor.PostAndReply ReplyWhenReady
     System.Console.ReadKey() |> ignore
     0 // return an integer exit code
