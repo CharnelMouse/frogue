@@ -88,8 +88,8 @@ let private pushActionStatus actor outputState action =
 
 let updateOutput worldState outputState action =
     let newOutputState = {outputState with Tileset = updateMapOutputTileset outputState.Tileset action}
-    updateMapScreen worldState newOutputState.Tileset action
     match action with
     | CompletePlayerAction SaveGameAction -> saveGame "save.sav" worldState newOutputState
     | _ -> ()
+    updateMapScreen worldState newOutputState.Tileset action
     pushActionStatus worldState.Actors.Head newOutputState action
