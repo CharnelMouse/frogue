@@ -3,7 +3,7 @@ open Frogue
 open OutputActor
 open Output
 open SaveSystem
-open Status
+open FileActor
 open Action
 open TimeSystem
 open ActionGenerator
@@ -70,10 +70,10 @@ let private startingOutputState = {
 
 let private startingAction = CompletePlayerAction StartSession
 
-let rec private mainLoop outputActor worldState action =
+let rec private mainLoop fileActor outputActor worldState action =
     let newAction = generateAction worldState action
     let postExecuteWorld = executeAction worldState newAction
-    updateOutput outputActor postExecuteWorld newAction
+    updateOutput fileActor outputActor postExecuteWorld newAction
     let newWorld = updateTime postExecuteWorld newAction
     let anyPlayerActor = List.tryFind (fun a -> a.Controller = Player) newWorld.Actors
     match anyPlayerActor, newAction with
@@ -84,18 +84,19 @@ let rec private mainLoop outputActor worldState action =
         outputActor.Post (OutputMessage (PopStatus {Reset = false; FullLinesOnly = true}))
     | _ ->
         outputActor.Post (OutputMessage (PopStatusIfReceiverTurnOrFullLineInBuffer {Reset = true; CurrentActor = newWorld.Actors.Head}))
-        mainLoop outputActor newWorld newAction
+        mainLoop fileActor outputActor newWorld newAction
 
 [<EntryPoint>]
 let private main argv =
+    let fileActor = startFileAgent "save.sav"
     let worldState, outputState, action =
-        if saveGameExists "save.sav"
-            then loadGame "save.sav"
-            else startingWorldState, startingOutputState, startingAction
+        match fileActor.PostAndReply LoadGameRequest with
+        | Some (ws, os, act) -> ws, os, act
+        | None -> startingWorldState, startingOutputState, startingAction
     let outputActor = startOutputAgent outputState
-    updateOutput outputActor worldState action
+    updateOutput fileActor outputActor worldState action
     outputActor.Post (OutputMessage (PopStatus {Reset = true; FullLinesOnly = true}))
-    mainLoop outputActor worldState action
+    mainLoop fileActor outputActor worldState action
     outputActor.PostAndReply ReplyWhenReady
     System.Console.ReadKey() |> ignore
     0 // return an integer exit code

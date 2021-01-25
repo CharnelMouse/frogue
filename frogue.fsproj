@@ -13,6 +13,7 @@
     <Compile Include="CommandParser.fs" />
     <Compile Include="Tilesets.fs" />
     <Compile Include="SaveSystem.fs" />
+    <Compile Include="FileActor.fs" />
     <Compile Include="ScreenWriter.fs" />
     <Compile Include="Status.fs" />
     <Compile Include="MapWriter.fs" />

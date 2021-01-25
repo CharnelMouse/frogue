@@ -1,12 +1,12 @@
 module Output
 open Types
-open SaveSystem
+open FileActor
 open OutputActor
 
-let updateOutput (outputActor: OutputActor) worldState action =
+let updateOutput (fileActor: FileActor) (outputActor: OutputActor) worldState action =
     outputActor.Post (OutputMessage (Update {Action = action; WorldState = worldState}))
     match action with
     | CompletePlayerAction SaveGameAction ->
-        let newOutputState = outputActor.PostAndReply OutputStateRequest
-        saveGame "save.sav" worldState newOutputState
+        let outputState = outputActor.PostAndReply OutputStateRequest
+        fileActor.Post (SaveGameMessage {WorldState = worldState; OutputState = outputState})
     | _ -> ()
