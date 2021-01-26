@@ -78,12 +78,12 @@ let rec private mainLoop fileActor outputActor worldState action =
     let anyPlayerActor = List.tryFind (fun a -> a.Controller = Player) newWorld.Actors
     match anyPlayerActor, newAction with
     | None, _ ->
-        outputActor.Post (OutputMessage PushDie)
-        outputActor.Post (OutputMessage (PopStatus {Reset = false; FullLinesOnly = false}))
+        outputActor.Post PushDie
+        outputActor.Post (PopStatus {Reset = false; FullLinesOnly = false})
     | Some _, CompletePlayerAction QuitAction ->
-        outputActor.Post (OutputMessage (PopStatus {Reset = false; FullLinesOnly = true}))
+        outputActor.Post (PopStatus {Reset = false; FullLinesOnly = true})
     | _ ->
-        outputActor.Post (OutputMessage (PopStatusIfReceiverTurnOrFullLineInBuffer {Reset = true; CurrentActor = newWorld.Actors.Head}))
+        outputActor.Post (PopStatusIfReceiverTurnOrFullLineInBuffer {Reset = true; CurrentActor = newWorld.Actors.Head})
         mainLoop fileActor outputActor newWorld newAction
 
 [<EntryPoint>]
@@ -95,7 +95,7 @@ let private main argv =
         | None -> startingWorldState, startingOutputState, startingAction
     let outputActor = startOutputAgent outputState
     updateOutput fileActor outputActor worldState action
-    outputActor.Post (OutputMessage (PopStatus {Reset = true; FullLinesOnly = true}))
+    outputActor.Post (PopStatus {Reset = true; FullLinesOnly = true})
     mainLoop fileActor outputActor worldState action
     outputActor.PostAndReply ReplyWhenReady
     System.Console.ReadKey() |> ignore

@@ -24,13 +24,10 @@ type OutputMessage =
 | PushDie
 | PopStatus of PopStatus
 | PopStatusIfReceiverTurnOrFullLineInBuffer of PopStatusIfReceiverTurnOrFullLineInBuffer
-
-type OutputPost =
-| OutputMessage of OutputMessage
 | OutputStateRequest of AsyncReplyChannel<OutputState>
 | ReplyWhenReady of AsyncReplyChannel<unit>
 
-type OutputActor = MailboxProcessor<OutputPost>
+type OutputActor = MailboxProcessor<OutputMessage>
 
 let private fakeDoorActor = {
     Name = "door"
@@ -113,21 +110,21 @@ let private pushActionStatus actor outputState action =
             ) outputState
     | CompletePlayerAction UnknownAction -> pushStatus "Unknown command, type ? for help." outputState
 
-let outputAgentBody (startingOutputState: OutputState) (inbox: MailboxProcessor<OutputPost>) =
+let outputAgentBody startingOutputState (inbox: MailboxProcessor<OutputMessage>) =
     let rec loop outputState = async {
         let! msg = inbox.Receive()
         match msg with
-        | OutputMessage (Update {Action = action; WorldState = worldState}) ->
+        | Update {Action = action; WorldState = worldState} ->
             let newOutputState = {outputState with Tileset = updateMapOutputTileset outputState.Tileset action}
             updateMapScreen worldState newOutputState.Tileset action
             let newerOutputState = pushActionStatus worldState.Actors.Head newOutputState action
             return! loop newerOutputState
-        | OutputMessage PushDie ->
+        | PushDie ->
             return! loop (pushDieMessage outputState)
-        | OutputMessage (PopStatus {Reset = reset; FullLinesOnly = fullLinesOnly}) ->
+        | PopStatus {Reset = reset; FullLinesOnly = fullLinesOnly} ->
             let newOutputState = popStatus reset fullLinesOnly outputState
             return! loop newOutputState
-        | OutputMessage (PopStatusIfReceiverTurnOrFullLineInBuffer {Reset = reset; CurrentActor = currentActor}) ->
+        | PopStatusIfReceiverTurnOrFullLineInBuffer {Reset = reset; CurrentActor = currentActor} ->
             let newOutputState = popStatusIfReceiverTurnOrFullLineInBuffer reset currentActor outputState
             return! loop newOutputState
         | OutputStateRequest replyChannel ->
