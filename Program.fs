@@ -1,7 +1,6 @@
 open Types
 open Frogue
 open OutputActor
-open Output
 open SaveSystem
 open FileActor
 open Action
@@ -70,10 +69,15 @@ let private startingOutputState = {
 
 let private startingAction = CompletePlayerAction StartSession
 
-let rec private mainLoop fileActor outputActor worldState action =
+let rec private mainLoop (fileActor: FileActor) (outputActor: OutputActor) worldState action =
     let newAction = generateAction worldState action
     let postExecuteWorld = executeAction worldState newAction
-    updateOutput fileActor outputActor postExecuteWorld newAction
+    outputActor.Post (Update {Action = newAction; WorldState = postExecuteWorld})
+    match newAction with
+    | CompletePlayerAction SaveGameAction ->
+        let outputState = outputActor.PostAndReply OutputStateRequest
+        fileActor.Post (SaveGameMessage {WorldState = postExecuteWorld; OutputState = outputState})
+    | _ -> ()
     let newWorld = updateTime postExecuteWorld newAction
     let anyPlayerActor = List.tryFind (fun a -> a.Controller = Player) newWorld.Actors
     match anyPlayerActor, newAction with
@@ -94,7 +98,7 @@ let private main argv =
         | Some (ws, os, act) -> ws, os, act
         | None -> startingWorldState, startingOutputState, startingAction
     let outputActor = startOutputAgent outputState
-    updateOutput fileActor outputActor worldState action
+    outputActor.Post (Update {Action = action; WorldState = worldState})
     outputActor.Post (PopStatus {Reset = true; FullLinesOnly = true})
     mainLoop fileActor outputActor worldState action
     outputActor.PostAndReply ReplyWhenReady

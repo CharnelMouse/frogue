@@ -18,7 +18,6 @@
     <Compile Include="Status.fs" />
     <Compile Include="MapWriter.fs" />
     <Compile Include="OutputActor.fs" />
-    <Compile Include="Output.fs" />
     <Compile Include="Action.fs" />
     <Compile Include="TimeSystem.fs" />
     <Compile Include="Script.fs" />
