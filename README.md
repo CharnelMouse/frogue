@@ -6,7 +6,7 @@ Current to-dos:
 
 - Switch to separate processes for ouput, AI, etc.
   - Separate map screen updates from status box updates
-  - Make process to handle / output the status buffer
+  - Make Dijkstra module independent of map tile information
 - Add controller information in status subjects/objects if several actors controlled by current player, or several players
 - Add some more interesting tilesets
   - Let tile char depend on tile's neighbours, e.g. doors/walls depend on nearby doors/walls
