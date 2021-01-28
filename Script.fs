@@ -1,6 +1,6 @@
 module Script
 open Types
-open Frogue.Map
+open CombatMap
 open CommandParser
 
 let private getAnyoneAction = function

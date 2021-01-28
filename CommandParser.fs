@@ -1,6 +1,6 @@
 module CommandParser
 open Types
-open Frogue.Map
+open CombatMap
 open Command
 
 let resolveMoveCommand worldState direction =

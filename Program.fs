@@ -1,13 +1,12 @@
 open Types
-open Frogue
 open OutputActor
-open SaveSystem
+open DataConverter
 open FileActor
 open Action
 open TimeSystem
 open ActionGenerator
 
-let private levelMap = Map.create 20 10 (importMapTiles [
+let private levelMap = CombatMap.create 20 10 (importMapTiles [
     "####################"
     "#              +    "
     "#              #   #"

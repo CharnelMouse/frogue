@@ -1,7 +1,7 @@
 module MapWriter
 open System
 open Types
-open Frogue.Map
+open CombatMap
 open Tilesets
 open ScreenWriter
 

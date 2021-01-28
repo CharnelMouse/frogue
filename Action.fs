@@ -1,13 +1,12 @@
 module Action
 open Types
-open Frogue
 
 let private replaceSingleElementFn index replacer list =
     List.mapi (fun i x -> if i = index then replacer x else x) list
 
 let private changeMapTile map pos tile =
     replaceSingleElementFn pos.Y (replaceSingleElementFn pos.X (fun x -> tile)) map.Tiles
-    |> Map.create map.Width map.Height
+    |> CombatMap.create map.Width map.Height
 
 let private changePlayerPosition worldState pos =
     {

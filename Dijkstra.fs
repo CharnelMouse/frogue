@@ -1,6 +1,6 @@
 module Dijkstra
 open Types
-open Frogue.Map
+open CombatMap
 
 type NodeTypeInfo = {
     Type: MapTile
