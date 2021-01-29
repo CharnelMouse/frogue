@@ -77,7 +77,7 @@ let private pushRest statusBar tileset (stream: string list) =
     ]
 
 let exportGameState worldState outputState =
-    let {Map = map; Actors = actors} = worldState
+    let {CombatMap = map; Actors = actors} = worldState
     let {StatusBar = statusBar; Tileset = tileset} = outputState
     pushActors actors []
     |> pushMap map
@@ -88,7 +88,7 @@ let importGameState (stream: string list) =
     let (map, rest) = popMap mapFirst
     let worldState = {
         Actors = actors
-        Map = map
+        CombatMap = map
     }
     let outputState = {
         StatusBar = {Start = {X = int rest.[0]; Y = int rest.[1]}; Length = int rest.[2]}

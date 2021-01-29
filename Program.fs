@@ -57,7 +57,7 @@ let private startingWorldState = {
             Script = DumbHunt
         }
     ]
-    Map = levelMap
+    CombatMap = levelMap
 }
 
 let private startingOutputState = {

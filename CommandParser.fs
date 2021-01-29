@@ -5,7 +5,7 @@ open Command
 
 let resolveMoveCommand worldState direction =
     let oldPos = worldState.Actors.Head.Position
-    let map = worldState.Map
+    let map = worldState.CombatMap
     let newPos = neighbour oldPos direction
     let actorIndex = List.tryFindIndex (fun x -> x.Position = newPos) worldState.Actors
     let controller =
@@ -25,7 +25,7 @@ let resolveMoveCommand worldState direction =
 
 let private resolveOpenToCommand worldState direction =
     let pos = worldState.Actors.Head.Position
-    let map = worldState.Map
+    let map = worldState.CombatMap
     let toPos = neighbour pos direction
     if not (posIsOnMap toPos map)
         then BlockedAction OpenToActionBlockedByVoid
@@ -37,7 +37,7 @@ let private resolveOpenToCommand worldState direction =
 
 let private resolveCloseToCommand worldState direction =
     let pos = worldState.Actors.Head.Position
-    let map = worldState.Map
+    let map = worldState.CombatMap
     let toPos = neighbour pos direction
     let blockingActor = List.tryFind (fun x -> x.Position = neighbour pos direction) worldState.Actors
     if not (posIsOnMap toPos map)
@@ -54,7 +54,7 @@ let private resolveCloseToCommand worldState direction =
 let private resolveMindSwapToCommand worldState direction =
     let actor = worldState.Actors.Head
     let pos = actor.Position
-    let map = worldState.Map
+    let map = worldState.CombatMap
     let toPos = neighbour pos direction
     let targetActorIndex = List.tryFindIndex (fun x -> x.Position = toPos) worldState.Actors
     let targetActor = List.tryFind (fun x -> x.Position = toPos) worldState.Actors

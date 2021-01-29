@@ -27,7 +27,7 @@ let decideAction worldState =
                 | Player -> Some position
                 | _ -> None)
         let playerMap =
-            worldState.Map
+            worldState.CombatMap
             |> Dijkstra.fill playerPositions [
                 {Type = EmptyTile; Cost = 1}
                 {Type = OpenDoorTile; Cost = 1}

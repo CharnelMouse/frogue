@@ -40,5 +40,5 @@ let cycleTileset tileset =
     | DottedTileset -> DefaultTileset
 
 let redrawMapScreen tileset worldState =
-    printMap tileset worldState.Map
+    printMap tileset worldState.CombatMap
     printActors tileset worldState.Actors

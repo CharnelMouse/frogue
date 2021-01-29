@@ -27,12 +27,12 @@ let private changeActorController worldState index controller =
 
 let private executeOpenDoorAction worldState pos =
     {worldState with
-        Map = changeMapTile worldState.Map pos OpenDoorTile
+        CombatMap = changeMapTile worldState.CombatMap pos OpenDoorTile
     }
 
 let private executeCloseDoorAction worldState pos =
     {worldState with
-        Map = changeMapTile worldState.Map pos ClosedDoorTile
+        CombatMap = changeMapTile worldState.CombatMap pos ClosedDoorTile
     }
 
 let private removeActor worldState index =

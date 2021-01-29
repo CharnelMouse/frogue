@@ -49,13 +49,13 @@ let private updateMapScreen worldState tileset action =
     | CompletePlayerAction ToggleTileSetAction ->
         redrawMapScreen tileset worldState
     | CompleteAnyoneAction (MoveAction (origin, destination)) ->
-        drawTileAt origin worldState.Map tileset
+        drawTileAt origin worldState.CombatMap tileset
         writeAt destination (getOutputActorTile tileset worldState.Actors.Head.Tile)
     | CompleteAnyoneAction (AttackAction (_, object)) ->
-        drawTileAt object.Position worldState.Map tileset
+        drawTileAt object.Position worldState.CombatMap tileset
     | CompleteAnyoneAction (OpenDoorAction pos)
     | CompleteAnyoneAction (CloseDoorAction pos) ->
-        drawTileAt pos worldState.Map tileset
+        drawTileAt pos worldState.CombatMap tileset
     | CompleteAnyoneAction (MindSwapActorAction _)
     | CompleteAnyoneAction WaitAction
     | CompletePlayerAction HelpAction

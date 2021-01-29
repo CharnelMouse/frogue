@@ -35,7 +35,7 @@ type Actor = {
     Script: AIScript
 }
 
-type Map = {
+type CombatMap = {
     Width: int
     Height: int
     Tiles: MapTile list list
@@ -105,7 +105,7 @@ type Tileset =
 
 type WorldState = {
     Actors: Actor list
-    Map: Map
+    CombatMap: CombatMap
 }
 
 type OutputState = {
