@@ -4,12 +4,13 @@ open SaveSystem
 
 type SaveGameMessage = {
     WorldState: WorldState
-    OutputState: OutputState
+    Tileset: Tileset
+    StatusState: StatusState
 }
 
 type FileMessage =
 | SaveGameMessage of SaveGameMessage
-| LoadGameRequest of AsyncReplyChannel<(WorldState * OutputState * Action) option>
+| LoadGameRequest of AsyncReplyChannel<(WorldState * Tileset * StatusState * Action) option>
 
 type FileActor = MailboxProcessor<FileMessage>
 
@@ -17,8 +18,8 @@ let fileAgentBody path (inbox: MailboxProcessor<FileMessage>) =
     let rec loop () = async {
         let! msg = inbox.Receive()
         match msg with
-        | SaveGameMessage {WorldState = worldState; OutputState = outputState} ->
-            saveGame path worldState outputState
+        | SaveGameMessage {WorldState = worldState; Tileset = tileset; StatusState = statusState} ->
+            saveGame path worldState tileset statusState
         | LoadGameRequest replyChannel ->
             if saveGameExists path then
                 replyChannel.Reply (Some (loadGame path))

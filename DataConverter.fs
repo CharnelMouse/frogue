@@ -76,9 +76,9 @@ let private pushRest statusBar tileset (stream: string list) =
         string tileset
     ]
 
-let exportGameState worldState outputState =
+let exportGameState worldState tileset statusState =
     let {Map = map; Actors = actors} = worldState
-    let {StatusBar = statusBar; Tileset = tileset} = outputState
+    let {StatusBar = statusBar} = statusState
     pushActors actors []
     |> pushMap map
     |> pushRest statusBar tileset
@@ -90,18 +90,18 @@ let importGameState (stream: string list) =
         Actors = actors
         Map = map
     }
-    let outputState = {
+    let statusState = {
         StatusBar = {Start = {X = int rest.[0]; Y = int rest.[1]}; Length = int rest.[2]}
         StatusBuffer = {Receiver = Player; Stream = ""}
-        Tileset =
-            match rest.[3] with
-            | "DefaultTileset" -> DefaultTileset
-            | "DottedTileset" -> DottedTileset
-            | _ -> DefaultTileset
     }
+    let tileset =
+        match rest.[3] with
+        | "DefaultTileset" -> DefaultTileset
+        | "DottedTileset" -> DottedTileset
+        | _ -> DefaultTileset
     let action =
         match rest.[3] with
         | "DefaultTileset" -> CompletePlayerAction StartSession
         | "DottedTileset" -> CompletePlayerAction StartSession
         | _ -> CompletePlayerAction StartSessionWithUnknownTileset
-    worldState, outputState, action
+    worldState, tileset, statusState, action

@@ -51,6 +51,11 @@ type StatusBuffer = {
     Stream: string
 }
 
+type StatusState = {
+    StatusBar: TextBox
+    StatusBuffer: StatusBuffer
+}
+
 type Direction =
 | North
 | South
@@ -106,10 +111,4 @@ type Tileset =
 type WorldState = {
     Actors: Actor list
     Map: Map
-}
-
-type OutputState = {
-    StatusBar: TextBox
-    StatusBuffer: StatusBuffer
-    Tileset: Tileset
 }
