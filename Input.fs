@@ -11,7 +11,7 @@ type private KeyboardInput =
 
 let private keyboardInput (info: ConsoleKeyInfo) =
     match info.KeyChar, info.Key with
-    | c, _ when Char.IsLetterOrDigit c || Char.IsSymbol c -> Character c
+    | c, _ when Char.IsLetterOrDigit c || Char.IsSymbol c || Char.IsPunctuation c -> Character c
     | _, key -> Special (key, int info.Modifiers)
 
 let private tryLookup table key =
