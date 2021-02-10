@@ -60,10 +60,11 @@ let private startingWorldState = {
     CombatMap = levelMap
 }
 
-let private startingOutputState = {
+let private startingTileset = DefaultTileset
+
+let private startingStatusState = {
     StatusBar = {Start = {X = 0; Y = levelMap.Height + 1}; Length = 40}
     StatusBuffer = {Receiver = Player; Stream = ""}
-    Tileset = DefaultTileset
 }
 
 let private startingAction = CompletePlayerAction StartSession
@@ -74,8 +75,8 @@ let rec private mainLoop (fileActor: FileActor) (outputActor: OutputActor) world
     outputActor.Post (Update {Action = newAction; WorldState = postExecuteWorld})
     match newAction with
     | CompletePlayerAction SaveGameAction ->
-        let outputState = outputActor.PostAndReply OutputStateRequest
-        fileActor.Post (SaveGameMessage {WorldState = postExecuteWorld; OutputState = outputState})
+        let tileset, statusState = outputActor.PostAndReply OutputStateRequest
+        fileActor.Post (SaveGameMessage {WorldState = postExecuteWorld; Tileset = tileset; StatusState = statusState})
     | _ -> ()
     let newWorld = updateTime postExecuteWorld newAction
     let anyPlayerActor = List.tryFind (fun a -> a.Controller = Player) newWorld.Actors
@@ -92,11 +93,11 @@ let rec private mainLoop (fileActor: FileActor) (outputActor: OutputActor) world
 [<EntryPoint>]
 let private main argv =
     let fileActor = startFileAgent "save.sav"
-    let worldState, outputState, action =
+    let worldState, tileset, statusState, action =
         match fileActor.PostAndReply LoadGameRequest with
-        | Some (ws, os, act) -> ws, os, act
-        | None -> startingWorldState, startingOutputState, startingAction
-    let outputActor = startOutputAgent outputState
+        | Some (ws, ts, ss, act) -> ws, ts, ss, act
+        | None -> startingWorldState, startingTileset, startingStatusState, startingAction
+    let outputActor = startOutputAgent tileset statusState
     outputActor.Post (Update {Action = action; WorldState = worldState})
     outputActor.Post (PopStatus {Reset = true; FullLinesOnly = true})
     mainLoop fileActor outputActor worldState action

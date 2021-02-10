@@ -24,7 +24,7 @@ type OutputMessage =
 | PushDie
 | PopStatus of PopStatus
 | PopStatusIfReceiverTurnOrFullLineInBuffer of PopStatusIfReceiverTurnOrFullLineInBuffer
-| OutputStateRequest of AsyncReplyChannel<OutputState>
+| OutputStateRequest of AsyncReplyChannel<Tileset * StatusState>
 | ReplyWhenReady of AsyncReplyChannel<unit>
 
 type OutputActor = MailboxProcessor<OutputMessage>
@@ -67,73 +67,75 @@ let private updateMapScreen worldState tileset action =
     | BlockedAction _ ->
         ()
 
-let private pushActionStatus actor outputState action =
+let private pushActionStatus actor tileset statusState action =
     match action with
     | CompletePlayerAction StartSession ->
-        pushStatus "Ready." outputState
+        pushStatus "Ready." statusState
     | CompletePlayerAction StartSessionWithUnknownTileset ->
-        pushStatus "Save game contained unknown tileset, switching to default." outputState
-    | CompleteAnyoneAction (MoveAction _) -> outputState
-    | BlockedAction MoveActionBlockedByAlly -> pushStatus "There's an ally there!" outputState
-    | BlockedAction MoveActionBlockedByVoid -> pushStatus "There's nothing there!" outputState
-    | BlockedAction MoveActionBlockedByWall -> pushStatus "You bump up against the wall." outputState
+        pushStatus "Save game contained unknown tileset, switching to default." statusState
+    | CompleteAnyoneAction (MoveAction _) -> statusState
+    | BlockedAction MoveActionBlockedByAlly -> pushStatus "There's an ally there!" statusState
+    | BlockedAction MoveActionBlockedByVoid -> pushStatus "There's nothing there!" statusState
+    | BlockedAction MoveActionBlockedByWall -> pushStatus "You bump up against the wall." statusState
     | CompleteAnyoneAction (AttackAction (_, object)) ->
-        pushStatusByController "kill" "kills" (Some object) "!" actor outputState
+        pushStatusByController "kill" "kills" (Some object) "!" actor statusState
     | CompleteAnyoneAction (OpenDoorAction _) ->
-        pushStatusByController "open" "opens" (Some fakeDoorActor) "." actor outputState
-    | BlockedAction OpenToActionBlockedByVoid -> pushStatus "There's nothing there!" outputState
-    | BlockedAction OpenToActionBlockedByInvalidTile -> pushStatus "There's nothing there to open!" outputState
-    | IncompleteAction OpenAction -> pushStatus "Open in which direction?" outputState
+        pushStatusByController "open" "opens" (Some fakeDoorActor) "." actor statusState
+    | BlockedAction OpenToActionBlockedByVoid -> pushStatus "There's nothing there!" statusState
+    | BlockedAction OpenToActionBlockedByInvalidTile -> pushStatus "There's nothing there to open!" statusState
+    | IncompleteAction OpenAction -> pushStatus "Open in which direction?" statusState
     | CompleteAnyoneAction (CloseDoorAction _) ->
-        pushStatusByController "close" "closes" (Some fakeDoorActor) "." actor outputState
-    | BlockedAction CloseToActionBlockedByVoid -> pushStatus "There's nothing there!" outputState
-    | BlockedAction CloseToActionBlockedByInvalidTile -> pushStatus "There's nothing there to close!" outputState
-    | BlockedAction CloseToActionBlockedByActor -> pushStatus "There's something in the way!" outputState
-    | IncompleteAction CloseAction -> pushStatus "Close in which direction?" outputState
-    | BlockedAction MindSwapToActionBlockedByVoid -> pushStatus "There's nothing there!" outputState
-    | BlockedAction MindSwapToActionBlockedByNoActor -> pushStatus "There's no one there!" outputState
-    | BlockedAction MindSwapToActionOnControlledActor -> pushStatus "You already control that!" outputState
-    | IncompleteAction MindSwapAction -> pushStatus "Mind swap in which direction?" outputState
-    | CompleteAnyoneAction (MindSwapActorAction _) -> pushStatus "Done." outputState
-    | CompleteAnyoneAction WaitAction -> pushStatusByController "wait" "waits" None "." actor outputState
-    | CompletePlayerAction HelpAction -> pushStatus "Move: arrow keys Open: o Close: c Mind swap: m Wait: . Quit: q" outputState
-    | CompletePlayerAction QuitAction -> pushStatus "Bye! Press any key to exit." outputState // assumes status bar is last line
-    | CompletePlayerAction CancelAction -> pushStatus "OK." outputState
-    | CompletePlayerAction SaveGameAction -> pushStatus "Game saved." outputState
+        pushStatusByController "close" "closes" (Some fakeDoorActor) "." actor statusState
+    | BlockedAction CloseToActionBlockedByVoid -> pushStatus "There's nothing there!" statusState
+    | BlockedAction CloseToActionBlockedByInvalidTile -> pushStatus "There's nothing there to close!" statusState
+    | BlockedAction CloseToActionBlockedByActor -> pushStatus "There's something in the way!" statusState
+    | IncompleteAction CloseAction -> pushStatus "Close in which direction?" statusState
+    | BlockedAction MindSwapToActionBlockedByVoid -> pushStatus "There's nothing there!" statusState
+    | BlockedAction MindSwapToActionBlockedByNoActor -> pushStatus "There's no one there!" statusState
+    | BlockedAction MindSwapToActionOnControlledActor -> pushStatus "You already control that!" statusState
+    | IncompleteAction MindSwapAction -> pushStatus "Mind swap in which direction?" statusState
+    | CompleteAnyoneAction (MindSwapActorAction _) -> pushStatus "Done." statusState
+    | CompleteAnyoneAction WaitAction -> pushStatusByController "wait" "waits" None "." actor statusState
+    | CompletePlayerAction HelpAction -> pushStatus "Move: arrow keys Open: o Close: c Mind swap: m Wait: . Quit: q" statusState
+    | CompletePlayerAction QuitAction -> pushStatus "Bye! Press any key to exit." statusState // assumes status bar is last line
+    | CompletePlayerAction CancelAction -> pushStatus "OK." statusState
+    | CompletePlayerAction SaveGameAction -> pushStatus "Game saved." statusState
     | CompletePlayerAction ToggleTileSetAction ->
         pushStatus (
             "Tileset changed to " +
-            match outputState.Tileset with
+            match tileset with
             | DefaultTileset -> "default"
             | DottedTileset -> "dots"
             + "."
-            ) outputState
-    | CompletePlayerAction UnknownAction -> pushStatus "Unknown command, type ? for help." outputState
+            ) statusState
+    | CompletePlayerAction UnknownAction -> pushStatus "Unknown command, type ? for help." statusState
 
-let outputAgentBody startingOutputState (inbox: MailboxProcessor<OutputMessage>) =
-    let rec loop outputState = async {
+let outputAgentBody startingTileset startingStatusState (inbox: MailboxProcessor<OutputMessage>) =
+    let rec loop tileset statusState = async {
         let! msg = inbox.Receive()
         match msg with
         | Update {Action = action; WorldState = worldState} ->
-            let newOutputState = {outputState with Tileset = updateMapOutputTileset outputState.Tileset action}
-            updateMapScreen worldState newOutputState.Tileset action
-            let newerOutputState = pushActionStatus worldState.Actors.Head newOutputState action
-            return! loop newerOutputState
+            let newTileset = updateMapOutputTileset tileset action
+            updateMapScreen worldState newTileset action
+            let newStatusState = pushActionStatus worldState.Actors.Head newTileset statusState action
+            return! loop newTileset newStatusState
         | PushDie ->
-            return! loop (pushDieMessage outputState)
+            return! loop tileset (pushDieMessage statusState)
         | PopStatus {Reset = reset; FullLinesOnly = fullLinesOnly} ->
-            let newOutputState = popStatus reset fullLinesOnly outputState
-            return! loop newOutputState
+            let newOutputState = popStatus reset fullLinesOnly statusState
+            return! loop tileset newOutputState
         | PopStatusIfReceiverTurnOrFullLineInBuffer {Reset = reset; CurrentActor = currentActor} ->
-            let newOutputState = popStatusIfReceiverTurnOrFullLineInBuffer reset currentActor outputState
-            return! loop newOutputState
+            let newOutputState = popStatusIfReceiverTurnOrFullLineInBuffer reset currentActor statusState
+            return! loop tileset newOutputState
         | OutputStateRequest replyChannel ->
-            replyChannel.Reply(outputState)
-            return! loop outputState
+            replyChannel.Reply(tileset, statusState)
+            return! loop tileset statusState
         | ReplyWhenReady replyChannel ->
             replyChannel.Reply()
-            return! loop outputState
+            return! loop tileset statusState
     }
-    loop startingOutputState
+    loop startingTileset startingStatusState
 
-let startOutputAgent = outputAgentBody >> MailboxProcessor.Start
+let startOutputAgent tileset statusState =
+    outputAgentBody tileset statusState
+    |> MailboxProcessor.Start

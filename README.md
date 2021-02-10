@@ -4,6 +4,7 @@ A small roguelike I'm making to learn F#.
 
 Current to-dos:
 
+- Add main menu as precursor to adding encounter scene
 - Switch to separate processes for ouput, AI, etc.
   - Separate map screen updates from status box updates
   - Make Dijkstra module independent of map tile information
