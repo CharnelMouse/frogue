@@ -70,45 +70,44 @@ let private updateMapScreen worldState tileset action =
 let private pushActionStatus actor tileset statusState action =
     match action with
     | CompletePlayerAction StartSession ->
-        pushStatus "Ready." statusState
+        pushStatus statusState "Ready."
     | CompletePlayerAction StartSessionWithUnknownTileset ->
-        pushStatus "Save game contained unknown tileset, switching to default." statusState
+        pushStatus statusState "Save game contained unknown tileset, switching to default."
     | CompleteAnyoneAction (MoveAction _) -> statusState
-    | BlockedAction MoveActionBlockedByAlly -> pushStatus "There's an ally there!" statusState
-    | BlockedAction MoveActionBlockedByVoid -> pushStatus "There's nothing there!" statusState
-    | BlockedAction MoveActionBlockedByWall -> pushStatus "You bump up against the wall." statusState
+    | BlockedAction MoveActionBlockedByAlly -> pushStatus statusState "There's an ally there!"
+    | BlockedAction MoveActionBlockedByVoid -> pushStatus statusState "There's nothing there!"
+    | BlockedAction MoveActionBlockedByWall -> pushStatus statusState "You bump up against the wall."
     | CompleteAnyoneAction (AttackAction (_, object)) ->
         pushStatusByController "kill" "kills" (Some object) "!" actor statusState
     | CompleteAnyoneAction (OpenDoorAction _) ->
         pushStatusByController "open" "opens" (Some fakeDoorActor) "." actor statusState
-    | BlockedAction OpenToActionBlockedByVoid -> pushStatus "There's nothing there!" statusState
-    | BlockedAction OpenToActionBlockedByInvalidTile -> pushStatus "There's nothing there to open!" statusState
-    | IncompleteAction OpenAction -> pushStatus "Open in which direction?" statusState
+    | BlockedAction OpenToActionBlockedByVoid -> pushStatus statusState "There's nothing there!"
+    | BlockedAction OpenToActionBlockedByInvalidTile -> pushStatus statusState "There's nothing there to open!"
+    | IncompleteAction OpenAction -> pushStatus statusState "Open in which direction?"
     | CompleteAnyoneAction (CloseDoorAction _) ->
         pushStatusByController "close" "closes" (Some fakeDoorActor) "." actor statusState
-    | BlockedAction CloseToActionBlockedByVoid -> pushStatus "There's nothing there!" statusState
-    | BlockedAction CloseToActionBlockedByInvalidTile -> pushStatus "There's nothing there to close!" statusState
-    | BlockedAction CloseToActionBlockedByActor -> pushStatus "There's something in the way!" statusState
-    | IncompleteAction CloseAction -> pushStatus "Close in which direction?" statusState
-    | BlockedAction MindSwapToActionBlockedByVoid -> pushStatus "There's nothing there!" statusState
-    | BlockedAction MindSwapToActionBlockedByNoActor -> pushStatus "There's no one there!" statusState
-    | BlockedAction MindSwapToActionOnControlledActor -> pushStatus "You already control that!" statusState
-    | IncompleteAction MindSwapAction -> pushStatus "Mind swap in which direction?" statusState
-    | CompleteAnyoneAction (MindSwapActorAction _) -> pushStatus "Done." statusState
+    | BlockedAction CloseToActionBlockedByVoid -> pushStatus statusState "There's nothing there!"
+    | BlockedAction CloseToActionBlockedByInvalidTile -> pushStatus statusState "There's nothing there to close!"
+    | BlockedAction CloseToActionBlockedByActor -> pushStatus statusState "There's something in the way!"
+    | IncompleteAction CloseAction -> pushStatus statusState "Close in which direction?"
+    | BlockedAction MindSwapToActionBlockedByVoid -> pushStatus statusState "There's nothing there!"
+    | BlockedAction MindSwapToActionBlockedByNoActor -> pushStatus statusState "There's no one there!"
+    | BlockedAction MindSwapToActionOnControlledActor -> pushStatus statusState "You already control that!"
+    | IncompleteAction MindSwapAction -> pushStatus statusState "Mind swap in which direction?"
+    | CompleteAnyoneAction (MindSwapActorAction _) -> pushStatus statusState "Done."
     | CompleteAnyoneAction WaitAction -> pushStatusByController "wait" "waits" None "." actor statusState
-    | CompletePlayerAction HelpAction -> pushStatus "Move: arrow keys Open: o Close: c Mind swap: m Wait: . Quit: q" statusState
-    | CompletePlayerAction QuitAction -> pushStatus "Bye! Press any key to exit." statusState // assumes status bar is last line
-    | CompletePlayerAction CancelAction -> pushStatus "OK." statusState
-    | CompletePlayerAction SaveGameAction -> pushStatus "Game saved." statusState
+    | CompletePlayerAction HelpAction -> pushStatus statusState "Move: arrow keys Open: o Close: c Mind swap: m Wait: . Quit: q"
+    | CompletePlayerAction QuitAction -> pushStatus statusState "Bye! Press any key to exit." // assumes status bar is last line
+    | CompletePlayerAction CancelAction -> pushStatus statusState "OK."
+    | CompletePlayerAction SaveGameAction -> pushStatus statusState "Game saved."
     | CompletePlayerAction ToggleTileSetAction ->
-        pushStatus (
-            "Tileset changed to " +
-            match tileset with
-            | DefaultTileset -> "default"
-            | DottedTileset -> "dots"
-            + "."
-            ) statusState
-    | CompletePlayerAction UnknownAction -> pushStatus "Unknown command, type ? for help." statusState
+        "Tileset changed to " +
+        match tileset with
+        | DefaultTileset -> "default"
+        | DottedTileset -> "dots"
+        + "."
+        |> pushStatus statusState
+    | CompletePlayerAction UnknownAction -> pushStatus statusState "Unknown command, type ? for help."
 
 let outputAgentBody startingTileset startingStatusState (inbox: MailboxProcessor<OutputMessage>) =
     let rec loop tileset statusState = async {

@@ -85,7 +85,7 @@ let rec private mainLoop (fileActor: FileActor) (outputActor: OutputActor) world
         outputActor.Post PushDie
         outputActor.Post (PopStatus {Reset = false; FullLinesOnly = false})
     | Some _, CompletePlayerAction QuitAction ->
-        outputActor.Post (PopStatus {Reset = false; FullLinesOnly = true})
+        outputActor.Post (PopStatus {Reset = false; FullLinesOnly = false})
     | _ ->
         outputActor.Post (PopStatusIfReceiverTurnOrFullLineInBuffer {Reset = true; CurrentActor = newWorld.Actors.Head})
         mainLoop fileActor outputActor newWorld newAction
@@ -99,7 +99,7 @@ let private main argv =
         | None -> startingWorldState, startingTileset, startingStatusState, startingAction
     let outputActor = startOutputAgent tileset statusState
     outputActor.Post (Update {Action = action; WorldState = worldState})
-    outputActor.Post (PopStatus {Reset = true; FullLinesOnly = true})
+    outputActor.Post (PopStatus {Reset = true; FullLinesOnly = false})
     mainLoop fileActor outputActor worldState action
     outputActor.PostAndReply ReplyWhenReady
     System.Console.ReadKey() |> ignore
