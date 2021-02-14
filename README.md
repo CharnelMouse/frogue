@@ -4,6 +4,7 @@ A small roguelike I'm making to learn F#.
 
 Current to-dos:
 
+- Fix second status line not showing when all generated on player turn (e.g. help text)
 - Add main menu as precursor to adding encounter scene
 - Switch to separate processes for ouput, AI, etc.
   - Separate map screen updates from status box updates
