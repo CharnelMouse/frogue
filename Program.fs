@@ -73,6 +73,7 @@ let rec private mainLoop (fileActor: FileActor) (outputActor: OutputActor) world
     let newAction = generateAction worldState action
     let postExecuteWorld = executeAction worldState newAction
     outputActor.Post (Update {Action = newAction; WorldState = postExecuteWorld})
+    outputActor.PostAndReply ReplyWhenReady
     match newAction with
     | CompletePlayerAction SaveGameAction ->
         let tileset, statusState = outputActor.PostAndReply OutputStateRequest
@@ -84,10 +85,13 @@ let rec private mainLoop (fileActor: FileActor) (outputActor: OutputActor) world
     | None, _ ->
         outputActor.Post PushDie
         outputActor.Post (PopStatus {Reset = false; FullLinesOnly = false})
+        outputActor.PostAndReply ReplyWhenReady
     | Some _, CompletePlayerAction QuitAction ->
         outputActor.Post (PopStatus {Reset = false; FullLinesOnly = false})
+        outputActor.PostAndReply ReplyWhenReady
     | _ ->
         outputActor.Post (PopStatusIfReceiverTurnOrFullLineInBuffer {Reset = true; CurrentActor = newWorld.Actors.Head})
+        outputActor.PostAndReply ReplyWhenReady
         mainLoop fileActor outputActor newWorld newAction
 
 [<EntryPoint>]
