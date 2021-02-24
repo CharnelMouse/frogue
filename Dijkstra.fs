@@ -1,71 +1,78 @@
 module Dijkstra
-open Types
-open CombatMap
 
-type NodeTypeInfo = {
-    Type: MapTile
-    Cost: int
+type Distance = int
+
+type NodeInfo<'T when 'T : comparison> = {
+    NodeID: 'T
+    Cost: Distance
 }
 
-type private NodeInfo = {
-    Pos: Position
-    Cost: int
+let nodeInfo id cost = {
+    NodeID = id
+    Cost = cost
 }
 
-type private UnvisitedNode = {
-    ItemPosition: Position
-    ItemCost: int
-    CurrentDistance: int
+type EdgeInfo<'T when 'T : comparison> = Map<'T, ('T * Distance) list>
+
+type private UnvisitedNode<'T when 'T : comparison> = {
+    Node: NodeInfo<'T>
+    CurrentDistance: Distance
 }
 
-type VisitedNode = {
-    Position: Position
-    Distance: int
+type VisitedNode<'T when 'T : comparison> = {
+    NodeID: 'T
+    Distance: Distance
 }
 
-let rec private fillAcc visited unvisited nodeInfo =
-    if List.isEmpty unvisited
-        then visited
-    else
-        let next = List.minBy (fun {CurrentDistance = dist} -> dist) unvisited
-        let {ItemPosition = nextPos; ItemCost = nextCost; CurrentDistance = nextDist} = next
-        let neighbours =
-            nodeInfo
-            |> List.filter (fun {Pos = curr} -> List.contains curr (allNeighbours nextPos))
-            |> List.filter (fun {Pos = curr} -> List.forall (fun fin -> fin.Position <> curr) visited)
+let private visitedNode id distance = {
+    NodeID = id
+    Distance = distance
+}
+
+let private cons x y = x :: y
+
+let private addDist dist node =
+    {Node = node; CurrentDistance = dist}
+
+let rec private fillAcc (neighbourInfo: EdgeInfo<'T>) visited unvisited =
+    match unvisited with
+    | [] -> visited
+    | _ ->
+        let {Node = {NodeID = nextNodeID; Cost = nextCost}; CurrentDistance = nextDist} =
+            List.minBy (fun {CurrentDistance = dist} -> dist) unvisited
+        let nextNeighbours =
+            neighbourInfo
+            |> Map.find nextNodeID
+            |> List.filter (fun (curr, _) -> List.forall (fun fin -> fin.NodeID <> curr) visited)
         let unvisitedWithoutNextAndNeighbours =
             unvisited
             |> List.filter
-                (fun {ItemPosition = itemPos} ->
-                    not (List.contains itemPos (nextPos :: (List.map (fun {Pos = neighbourPos} -> neighbourPos) neighbours))))
+                (fun {Node = {NodeID = itemNodeID}} ->
+                    nextNeighbours
+                    |> List.map (fun (pos, _) -> pos)
+                    |> cons nextNodeID
+                    |> List.contains itemNodeID
+                    |> not
+                    )
         let neighbourEntries =
-            neighbours
-            |> List.map (fun {Pos = pos; Cost = cost} -> {ItemPosition = pos; ItemCost = cost; CurrentDistance = nextDist + nextCost})
+            nextNeighbours
+            |> List.map (fun (id, cost) ->
+                {NodeID = id; Cost = cost}
+                |> addDist (nextDist + nextCost)
+                )
         let minCostNeighbourAppearances =
-            neighbours
-            |> List.map (fun {Pos = pos} ->
-                List.filter (fun {ItemPosition = y} -> y = pos) (unvisited @ neighbourEntries)
+            nextNeighbours
+            |> List.map (fun (id, _) ->
+                (unvisited @ neighbourEntries)
+                |> List.filter (fun {Node = {NodeID = y}} -> y = id)
                 |> List.minBy (fun {CurrentDistance = dist} -> dist))
-        nodeInfo
-        |> fillAcc ({Position = nextPos; Distance = nextDist} :: visited) (unvisitedWithoutNextAndNeighbours @ minCostNeighbourAppearances)
+        fillAcc neighbourInfo ((visitedNode nextNodeID nextDist) :: visited) (unvisitedWithoutNextAndNeighbours @ minCostNeighbourAppearances)
 
-let fill destinations tiles map =
-    let validPositions =
-        List.allPairs [0..(map.Width - 1)] [0..(map.Height - 1)]
-        |> List.map (fun (x, y) -> {X = x; Y = y})
-        |> List.choose (fun pos ->
-            let currentTile = getTileAt pos map
-            match List.tryFind (fun t -> currentTile = t.Type) tiles with
-            | Some {Cost = cost} -> Some {Pos = pos; Cost = cost}
-            | None -> None
-            )
-    let (destinationInfo, nonDestinationInfo) =
-        validPositions
-        |> List.partition (fun {Pos = pos} -> List.contains pos destinations)
-    if List.isEmpty destinationInfo
-        then []
-    else
-        let startingQueue =
-            destinationInfo
-            |> List.map (function x -> {ItemPosition = x.Pos; ItemCost = x.Cost; CurrentDistance = 0})
-        fillAcc [] startingQueue nonDestinationInfo
+let fill (nodes: NodeInfo<'T> list) edges destinations = 
+    nodes
+    |> List.choose (fun nodeInfo ->
+        match (List.contains nodeInfo.NodeID destinations) with
+        | true -> Some (addDist 0 nodeInfo)
+        | false -> None
+        )
+    |> fillAcc edges []

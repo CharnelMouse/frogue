@@ -1,6 +1,7 @@
 module Script
 open Types
 open CombatMap
+open CombatGraph
 open CommandParser
 
 let private getAnyoneAction = function
@@ -27,15 +28,15 @@ let decideAction worldState =
                 | Player -> Some position
                 | _ -> None)
         let playerMap =
-            worldState.CombatMap
-            |> Dijkstra.fill playerPositions [
+            playerPositions
+            |> fillCombat worldState.CombatMap [
                 {Type = EmptyTile; Cost = 1}
                 {Type = OpenDoorTile; Cost = 1}
                 {Type = ClosedDoorTile; Cost = 2}
                 ]
         let currentNode =
             playerMap
-            |> List.tryFind (fun {Position = x} -> x = pos)
+            |> List.tryFind (fun {NodeID = x} -> x = pos)
         match currentNode with
         | None -> WaitAction
         | Some {Distance = currentDistance} ->
@@ -44,11 +45,11 @@ let decideAction worldState =
                 |> List.choose (fun dir ->
                     let posInt =
                         playerMap
-                        |> List.tryFind (fun {Position = y} -> neighbour pos dir = y)
+                        |> List.tryFind (fun {NodeID = y} -> neighbour pos dir = y)
                     match posInt with
                     | None -> None
                     | Some {Distance = dist} when dist >= currentDistance -> None
-                    | Some {Position = pos; Distance = dist} -> Some (dir, pos, dist))
+                    | Some {NodeID = pos; Distance = dist} -> Some (dir, pos, dist))
                 |> List.sortBy (fun (_, _, cost) -> cost)
             let nonWaitDownhillActions =
                 downhillNeighbours
