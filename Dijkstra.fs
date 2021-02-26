@@ -44,13 +44,15 @@ let rec private fillAcc (neighbourInfo: EdgeInfo<'T>) visited unvisited =
             neighbourInfo
             |> Map.find nextNodeID
             |> List.filter (fun (curr, _) -> List.forall (fun fin -> fin.NodeID <> curr) visited)
+        let nextAndNeighbourIDs =
+            nextNeighbours
+            |> List.map (fun (id, _) -> id)
+            |> cons nextNodeID
         let unvisitedWithoutNextAndNeighbours =
             unvisited
             |> List.filter
                 (fun {Node = {NodeID = itemNodeID}} ->
-                    nextNeighbours
-                    |> List.map (fun (pos, _) -> pos)
-                    |> cons nextNodeID
+                    nextAndNeighbourIDs
                     |> List.contains itemNodeID
                     |> not
                     )
