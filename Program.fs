@@ -22,6 +22,7 @@ let private levelMap = CombatMap.create 20 10 (importMapTiles [
 let private startingWorldState = {
     Actors = [
         {
+            ID = 0
             Position = {X = 1; Y = 1}
             Tile = PlayerTile
             Controller = Player
@@ -29,6 +30,7 @@ let private startingWorldState = {
             Script = WaitScript
         }
         {
+            ID = 1
             Position = {X = 7; Y = 6}
             Tile = OrcTile
             Controller = AIController
@@ -36,6 +38,7 @@ let private startingWorldState = {
             Script = DumbHunt
         }
         {
+            ID = 2
             Position = {X = 8; Y = 5}
             Tile = OrcTile
             Controller = AIController
@@ -43,6 +46,7 @@ let private startingWorldState = {
             Script = DumbHunt
         }
         {
+            ID = 3
             Position = {X = 17; Y = 7}
             Tile = OrcTile
             Controller = AIController
@@ -50,6 +54,7 @@ let private startingWorldState = {
             Script = DumbHunt
         }
         {
+            ID = 4
             Position = {X = 16; Y = 8}
             Tile = OrcTile
             Controller = AIController

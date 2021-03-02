@@ -30,6 +30,7 @@ type OutputMessage =
 type OutputActor = MailboxProcessor<OutputMessage>
 
 let private fakeDoorActor = {
+    ID = -1
     Name = "door"
     Position = {X = 0; Y = 0}
     Tile = UnknownActorTile

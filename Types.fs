@@ -20,6 +20,8 @@ type Controller =
 | Player
 | AIController
 
+type ActorID = int
+
 type ActorName = string
 
 type AIScript =
@@ -28,6 +30,7 @@ type AIScript =
 | DumbHunt
 
 type Actor = {
+    ID: ActorID
     Position: Position
     Tile: ActorTile
     Controller: Controller

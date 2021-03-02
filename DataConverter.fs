@@ -14,15 +14,24 @@ let private exportActor actor =
         | StandGround -> "standgroundAI"
         | DumbHunt -> "dumbhuntAI"
     let {X = x; Y = y} = actor.Position
-    [name; string (defaultTilesetParser.ActorParser actor.Tile); controller; script; string x; string y]
+    [
+        string actor.ID
+        name
+        string (defaultTilesetParser.ActorParser actor.Tile)
+        controller
+        script
+        string x
+        string y
+        ]
     |> List.toSeq
     |> String.concat ";"
 
 let private importActor (str: string) =
     let vals = Array.toList (str.Split ";")
     match vals with
-    | [name; tile; controller; script; x; y]  ->
+    | [id; name; tile; controller; script; x; y]  ->
         {
+            ID = int id
             Position = {X = int x; Y = int y}
             Tile = getActorTile (char tile)
             Controller =
