@@ -58,8 +58,8 @@ let executeAction worldState action =
         changePlayerPosition worldState newPos
     | CompleteAnyoneAction (MindSwapActorAction (index, controller)) ->
         changeActorController worldState index controller
-    | CompletePlayerAction ToggleTileSetAction -> worldState
-    | CompleteAnyoneAction (AttackAction (index, _)) -> removeActor worldState index
+    | CompleteAnyoneAction (AttackAction (index, _)) ->
+        removeActor worldState index
     | BlockedAction MoveActionBlockedByAlly
     | BlockedAction MoveActionBlockedByVoid
     | BlockedAction MoveActionBlockedByWall
@@ -73,6 +73,7 @@ let executeAction worldState action =
     | BlockedAction MindSwapToActionOnControlledActor
     | CompletePlayerAction StartSession
     | CompletePlayerAction StartSessionWithUnknownTileset
+    | CompletePlayerAction ToggleTileSetAction
     | CompleteAnyoneAction WaitAction
     | CompletePlayerAction HelpAction
     | CompletePlayerAction QuitAction
