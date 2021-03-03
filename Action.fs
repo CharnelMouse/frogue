@@ -5,8 +5,7 @@ let private replaceSingleElementFn index replacer list =
     List.mapi (fun i x -> if i = index then replacer x else x) list
 
 let private changeMapTile map pos tile =
-    replaceSingleElementFn pos.Y (replaceSingleElementFn pos.X (fun x -> tile)) map.Tiles
-    |> CombatMap.create map.Width map.Height
+    {map with Tiles = Map.change pos (fun _ -> Some tile) map.Tiles}
 
 let private changePlayerPosition worldState pos =
     {

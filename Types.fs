@@ -41,7 +41,7 @@ type Actor = {
 type CombatMap = {
     Width: int
     Height: int
-    Tiles: MapTile list list
+    Tiles: Map<Position, MapTile>
 }
 
 type TextBox = {

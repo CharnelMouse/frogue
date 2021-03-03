@@ -58,24 +58,31 @@ let private popActors (stream: string list) =
     (List.map importActor stream.[1..nActors], stream.[(nActors + 1)..])
 
 let private exportMapTiles tiles =
-    List.map (convertMapTilesToString defaultTilesetParser.MapParser) tiles
+    convertMapTilesToString defaultTilesetParser.MapParser tiles
 
-let importMapTiles (tiles: string list) =
-    List.map (function x -> List.map getMapTile (Seq.toList x))  tiles
+let importMapTiles (tiles: string) =
+    tiles
+    |> Seq.toList
+    |> List.map getMapTile
 
 let private pushMap map stream =
+    let tiles =
+        map.Tiles
+        |> Map.toList
+        |> List.sortBy (fun ({X = x; Y = y}, _) -> (y, x))
+        |> List.map (fun (_, tile) -> tile)
     stream @ [
         string map.Width
         string map.Height
     ]
-    @ exportMapTiles map.Tiles
+    @ List.singleton (exportMapTiles tiles)
 
 let private popMap (stream: string list) =
     let width = int stream.[0]
     let height = int stream.[1]
-    let tiles = importMapTiles stream.[2..(height + 1)]
+    let tiles = importMapTiles stream.[2]
     let map = CombatMap.create width height tiles
-    (map, stream.[(height + 2)..])
+    (map, stream.[3..])
 
 let private pushRest statusBar tileset (stream: string list) =
     stream @ [

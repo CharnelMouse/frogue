@@ -2,25 +2,36 @@ module CombatMap
 open Types
 
 let posIsOnMap pos map =
-    let {X = x; Y = y} = pos
-    x >= 0 && x < map.Width && y >= 0 && y < map.Height
+    Map.containsKey pos map.Tiles
+
+let positionsFromDims width height =
+    let xs = List.init width id
+    let ys = List.init height id
+    List.allPairs ys xs // iterate x faster
+    |> List.map (fun (y, x) -> {X = x; Y = y})
 
 let create width height tiles =
-    let widthIsValid = List.length(tiles) = height
-    let heightIsValid = List.reduce (&&) (List.map (function x -> (List.length(x) = width)) tiles)
-    if not (widthIsValid && heightIsValid)
-        then failwith "Invalid map"
-    {
-        Width = width
-        Height = height
-        Tiles = tiles
-    }
+    match List.length tiles = width*height with
+    | true ->
+        let positions = positionsFromDims width height
+        let tileMap =
+            List.zip positions tiles
+            |> Map.ofList
+        {
+            Width = width
+            Height = height
+            Tiles = tileMap
+        }
+    | false ->
+        failwith "Invalid map"
 
-let getTileAt pos map =
-    let {X = x; Y = y} = pos
-    match posIsOnMap pos map with
-    | false -> failwith "position out of map bounds"
-    | true -> map.Tiles.[y].[x]
+let tryGetTileAt pos map =
+    Map.tryFind pos map.Tiles
+
+let combatPositions map =
+    map.Tiles
+    |> Map.toList
+    |> List.map (fun (pos, _) -> pos)
 
 let neighbour {X = x; Y = y} direction =
     match direction with
@@ -32,4 +43,7 @@ let neighbour {X = x; Y = y} direction =
 let allDirections = [East; West; North; South]
 
 let allNeighbours pos =
-    List.map (neighbour pos) allDirections
+    pos
+    |> neighbour
+    |> List.map
+    <| allDirections

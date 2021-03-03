@@ -6,18 +6,21 @@ open Action
 open TimeSystem
 open ActionGenerator
 
-let private levelMap = CombatMap.create 20 10 (importMapTiles [
-    "####################"
-    "#              +    "
-    "#              #   #"
-    "#              #   #"
-    "#              #   #"
-    "#              #   #"
-    "#              #   #"
-    "#              #   #"
-    "#              #   #"
-    "####################"
-])
+let private levelMap =
+    CombatMap.create 20 10 (
+        importMapTiles (String.concat "" [
+        "####################"
+        "#              +    "
+        "#              #   #"
+        "#              #   #"
+        "#              #   #"
+        "#              #   #"
+        "#              #   #"
+        "#              #   #"
+        "#              #   #"
+        "####################"
+        ])
+    )
 
 let private startingWorldState = {
     Actors = [

@@ -11,8 +11,10 @@ let printMap tileset map =
         | DefaultTileset -> defaultTilesetParser
         | DottedTileset -> dottedTilesetParser
     Console.Clear()
-    for row in map.Tiles do
-        row
+    for row in List.init map.Height id do
+        Map.filter (fun {Y = y} _ -> y = row) map.Tiles
+        |> Map.toList
+        |> List.map (fun (_, tile) -> tile)
         |> convertMapTilesToString tilesetParser.MapParser
         |> Console.WriteLine
 
@@ -30,9 +32,9 @@ let printActors tileset actors =
     List.iter (fun x -> writeAt x.Position (getOutputActorTile tileset x.Tile)) actors
 
 let drawTileAt pos map tileset =
-    getTileAt pos map
-    |> getOutputMapTile tileset
-    |> writeAt pos
+    tryGetTileAt pos map
+    |> Option.bind (getOutputMapTile tileset >> Some)
+    |> Option.iter (writeAt pos)
 
 let cycleTileset tileset = 
     match tileset with

@@ -9,14 +9,15 @@ type NodeTypeInfo = {
 }
 
 let private tileCostInfo map tiles pos =
-    let currentTile = getTileAt pos map
-    match List.tryFind (fun t -> currentTile = t.Type) tiles with
-    | Some {Cost = cost} -> Some (nodeInfo pos cost)
-    | None -> None
+    tryGetTileAt pos map
+    |> Option.bind (fun tile ->
+        match List.tryFind (fun t -> tile = t.Type) tiles with
+        | Some {Cost = cost} -> Some (nodeInfo pos cost)
+        | None -> None
+    )
 
 let private nodesFromCombatMap tiles map =
-    List.allPairs [0..(map.Width - 1)] [0..(map.Height - 1)]
-    |> List.map (fun (x, y) -> {X = x; Y = y})
+    combatPositions map
     |> List.choose (tileCostInfo map tiles)
 
 let private edges (nodeInfo: NodeInfo<Position> list) validPositions : EdgeInfo<Position> =

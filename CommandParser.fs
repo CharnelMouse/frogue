@@ -12,56 +12,43 @@ let resolveMoveCommand worldState direction =
         match actorIndex with
             | Some ind -> Some worldState.Actors.[ind].Controller
             | None -> None
-    if not (posIsOnMap newPos map)
-        then BlockedAction MoveActionBlockedByVoid
-    else
-        let targetTileType = getTileAt newPos map
-        match (controller, targetTileType) with
-        | (Some cont, _) when cont = worldState.Actors.Head.Controller -> BlockedAction MoveActionBlockedByAlly
-        | (Some _, _) -> CompleteAnyoneAction (AttackAction (actorIndex.Value, worldState.Actors.[actorIndex.Value]))
-        | (None, WallTile) -> BlockedAction MoveActionBlockedByWall
-        | (None, ClosedDoorTile) -> CompleteAnyoneAction (OpenDoorAction newPos)
-        | (None, _) -> CompleteAnyoneAction (MoveAction  (oldPos, newPos))
+    match (controller, tryGetTileAt newPos map) with
+    | (Some cont, Some _) when cont = worldState.Actors.Head.Controller -> BlockedAction MoveActionBlockedByAlly
+    | (Some _, Some _) -> CompleteAnyoneAction (AttackAction (actorIndex.Value, worldState.Actors.[actorIndex.Value]))
+    | (None, Some WallTile) -> BlockedAction MoveActionBlockedByWall
+    | (None, Some ClosedDoorTile) -> CompleteAnyoneAction (OpenDoorAction newPos)
+    | (None, Some _) -> CompleteAnyoneAction (MoveAction  (oldPos, newPos))
+    | (_, None) -> BlockedAction MoveActionBlockedByVoid
 
 let private resolveOpenToCommand worldState direction =
     let pos = worldState.Actors.Head.Position
     let map = worldState.CombatMap
     let toPos = neighbour pos direction
-    if not (posIsOnMap toPos map)
-        then BlockedAction OpenToActionBlockedByVoid
-    else
-        let targetTileType = getTileAt toPos map
-        match targetTileType with
-        | ClosedDoorTile -> CompleteAnyoneAction (OpenDoorAction toPos)
-        | _ -> BlockedAction OpenToActionBlockedByInvalidTile
+    match tryGetTileAt toPos map with
+    | Some ClosedDoorTile -> CompleteAnyoneAction (OpenDoorAction toPos)
+    | Some _ -> BlockedAction OpenToActionBlockedByInvalidTile
+    | None -> BlockedAction OpenToActionBlockedByVoid
 
 let private resolveCloseToCommand worldState direction =
     let pos = worldState.Actors.Head.Position
     let map = worldState.CombatMap
     let toPos = neighbour pos direction
     let blockingActor = List.tryFind (fun x -> x.Position = neighbour pos direction) worldState.Actors
-    if not (posIsOnMap toPos map)
-        then BlockedAction CloseToActionBlockedByVoid
-    else
-        let targetTileType = getTileAt toPos map
-        match blockingActor with
-        | Some _ -> BlockedAction CloseToActionBlockedByActor
-        | None ->
-            match targetTileType with
-            | OpenDoorTile -> CompleteAnyoneAction (CloseDoorAction toPos)
-            | _ -> BlockedAction CloseToActionBlockedByInvalidTile
+    match tryGetTileAt toPos map, blockingActor with
+    | _, Some _ -> BlockedAction CloseToActionBlockedByActor
+    | Some OpenDoorTile, None -> CompleteAnyoneAction (CloseDoorAction toPos)
+    | Some _, None -> BlockedAction CloseToActionBlockedByInvalidTile
+    | None, None -> BlockedAction CloseToActionBlockedByVoid
 
 let private resolveMindSwapToCommand worldState direction =
     let actor = worldState.Actors.Head
     let pos = actor.Position
     let map = worldState.CombatMap
     let toPos = neighbour pos direction
-    let targetActorIndex = List.tryFindIndex (fun x -> x.Position = toPos) worldState.Actors
-    let targetActor = List.tryFind (fun x -> x.Position = toPos) worldState.Actors
-    if not (posIsOnMap toPos map)
-        then BlockedAction MindSwapToActionBlockedByVoid
-    else
-        match targetActorIndex with
+    match posIsOnMap toPos map with
+    | false -> BlockedAction MindSwapToActionBlockedByVoid
+    | true ->
+        match List.tryFindIndex (fun x -> x.Position = toPos) worldState.Actors with
         | None -> BlockedAction MindSwapToActionBlockedByNoActor
         | Some a when worldState.Actors.[a].Controller = actor.Controller -> BlockedAction MindSwapToActionOnControlledActor
         | Some a -> CompleteAnyoneAction (MindSwapActorAction (a, actor.Controller))
