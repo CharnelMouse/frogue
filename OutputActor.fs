@@ -6,7 +6,7 @@ open MapWriter
 
 type OutputUpdate = {
     Action: Action
-    WorldState: WorldState
+    CombatState: CombatState
 }
 
 type PopStatus = {
@@ -16,7 +16,7 @@ type PopStatus = {
 
 type PopStatusIfReceiverTurnOrFullLineInBuffer = {
     Reset: bool
-    CurrentActor: Actor
+    CurrentActor: CombatActor
 }
 
 type OutputMessage =
@@ -43,20 +43,20 @@ let updateMapOutputTileset tileset action =
     | CompletePlayerAction ToggleTileSetAction -> cycleTileset tileset
     | _ -> tileset
 
-let private updateMapScreen worldState tileset action =
+let private updateMapScreen combatState tileset action =
     match action with
     | CompletePlayerAction StartSession
     | CompletePlayerAction StartSessionWithUnknownTileset
     | CompletePlayerAction ToggleTileSetAction ->
-        redrawMapScreen tileset worldState
+        redrawMapScreen tileset combatState
     | CompleteAnyoneAction (MoveAction (origin, destination)) ->
-        drawTileAt origin worldState.CombatMap tileset
-        writeAt destination (getOutputActorTile tileset worldState.Actors.Head.Tile)
+        drawTileAt origin combatState.CombatMap tileset
+        writeAt destination (getOutputActorTile tileset combatState.Actors.Head.Tile)
     | CompleteAnyoneAction (AttackAction (_, object)) ->
-        drawTileAt object.Position worldState.CombatMap tileset
+        drawTileAt object.Position combatState.CombatMap tileset
     | CompleteAnyoneAction (OpenDoorAction pos)
     | CompleteAnyoneAction (CloseDoorAction pos) ->
-        drawTileAt pos worldState.CombatMap tileset
+        drawTileAt pos combatState.CombatMap tileset
     | CompleteAnyoneAction (MindSwapActorAction _)
     | CompleteAnyoneAction WaitAction
     | CompletePlayerAction HelpAction
@@ -114,10 +114,10 @@ let outputAgentBody startingTileset startingStatusState (inbox: MailboxProcessor
     let rec loop tileset statusState = async {
         let! msg = inbox.Receive()
         match msg with
-        | Update {Action = action; WorldState = worldState} ->
+        | Update {Action = action; CombatState = combatState} ->
             let newTileset = updateMapOutputTileset tileset action
-            updateMapScreen worldState newTileset action
-            let newStatusState = pushActionStatus worldState.Actors.Head newTileset statusState action
+            updateMapScreen combatState newTileset action
+            let newStatusState = pushActionStatus combatState.Actors.Head newTileset statusState action
             return! loop newTileset newStatusState
         | PushDie ->
             return! loop tileset (pushDieMessage statusState)

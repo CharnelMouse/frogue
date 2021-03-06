@@ -4,12 +4,12 @@ type Position = {
    Y: int;
 }
 
-type ActorTile =
+type CombatActorTile =
 | PlayerTile
 | OrcTile
 | UnknownActorTile
 
-type MapTile =
+type CombatMapTile =
 | EmptyTile
 | OpenDoorTile
 | ClosedDoorTile
@@ -24,24 +24,24 @@ type ActorID = int
 
 type ActorName = string
 
-type AIScript =
+type AICombatScript =
 | WaitScript
 | StandGround
 | DumbHunt
 
-type Actor = {
+type CombatActor = {
     ID: ActorID
     Position: Position
-    Tile: ActorTile
+    Tile: CombatActorTile
     Controller: Controller
     Name: ActorName
-    Script: AIScript
+    Script: AICombatScript
 }
 
 type CombatMap = {
     Width: int
     Height: int
-    Tiles: Map<Position, MapTile>
+    Tiles: Map<Position, CombatMapTile>
 }
 
 type TextBox = {
@@ -80,7 +80,7 @@ type CompleteAnyoneAction =
 | OpenDoorAction of Position
 | CloseDoorAction of Position
 | MindSwapActorAction of int * Controller
-| AttackAction of int * Actor
+| AttackAction of int * CombatActor
 | WaitAction
 
 type BlockedAction =
@@ -111,7 +111,7 @@ type Tileset =
 | DefaultTileset
 | DottedTileset
 
-type WorldState = {
-    Actors: Actor list
+type CombatState = {
+    Actors: CombatActor list
     CombatMap: CombatMap
 }

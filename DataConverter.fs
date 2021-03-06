@@ -17,7 +17,7 @@ let private exportActor actor =
     [
         string actor.ID
         name
-        string (defaultTilesetParser.ActorParser actor.Tile)
+        string (defaultTilesetParser.CombatActorParser actor.Tile)
         controller
         script
         string x
@@ -58,7 +58,7 @@ let private popActors (stream: string list) =
     (List.map importActor stream.[1..nActors], stream.[(nActors + 1)..])
 
 let private exportMapTiles tiles =
-    convertMapTilesToString defaultTilesetParser.MapParser tiles
+    convertMapTilesToString defaultTilesetParser.CombatMapParser tiles
 
 let importMapTiles (tiles: string) =
     tiles

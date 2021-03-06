@@ -1,22 +1,22 @@
 module Tilesets
 open Types
 
-type private ActorParser = ActorTile -> char
+type private CombatActorParser = CombatActorTile -> char
 
-type private MapParser = MapTile -> char
+type private CombatMapParser = CombatMapTile -> char
 
-type TilesetParser = {
-    ActorParser: ActorParser
-    MapParser: MapParser
+type CombatTilesetParser = {
+    CombatActorParser: CombatActorParser
+    CombatMapParser: CombatMapParser
 }
 
-let (defaultTilesetParser: TilesetParser) = {
-    ActorParser = fun tile ->
+let (defaultTilesetParser: CombatTilesetParser) = {
+    CombatActorParser = fun tile ->
         match tile with
         | PlayerTile -> '@'
         | OrcTile -> 'o'
         | UnknownActorTile -> failwith "actor tile not found in tileset"
-    MapParser = fun tile ->
+    CombatMapParser = fun tile ->
         match tile with
         | EmptyTile -> ' '
         | OpenDoorTile -> '-'
@@ -25,13 +25,13 @@ let (defaultTilesetParser: TilesetParser) = {
         | UnknownMapTile -> failwith "map tile not found in tileset"
 }
 
-let (dottedTilesetParser: TilesetParser) = {
-    ActorParser = fun tile ->
+let (dottedTilesetParser: CombatTilesetParser) = {
+    CombatActorParser = fun tile ->
         match tile with
         | PlayerTile -> '@'
         | OrcTile -> 'o'
         | UnknownActorTile -> failwith "actor tile not found in tileset"
-    MapParser = fun tile ->
+    CombatMapParser = fun tile ->
         match tile with
         | EmptyTile -> '.'
         | OpenDoorTile -> '-'
@@ -40,7 +40,7 @@ let (dottedTilesetParser: TilesetParser) = {
         | UnknownMapTile -> failwith "map tile not found in tileset"
 }
 
-let convertMapTilesToString (parser: MapParser) (tiles: MapTile list) =
+let convertMapTilesToString (parser: CombatMapParser) (tiles: CombatMapTile list) =
     tiles
     |> List.map (parser >> string)
     |> List.toSeq

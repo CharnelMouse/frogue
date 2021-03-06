@@ -3,8 +3,8 @@ open Types
 open CombatMap
 open Dijkstra
 
-type NodeTypeInfo = {
-    Type: MapTile
+type CombatNodeTypeInfo = {
+    Type: CombatMapTile
     Cost: Distance
 }
 

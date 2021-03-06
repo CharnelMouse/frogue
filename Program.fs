@@ -22,7 +22,7 @@ let private levelMap =
         ])
     )
 
-let private startingWorldState = {
+let private startingCombatState = {
     Actors = [
         {
             ID = 0
@@ -77,17 +77,17 @@ let private startingStatusState = {
 
 let private startingAction = CompletePlayerAction StartSession
 
-let rec private mainLoop (fileActor: FileActor) (outputActor: OutputActor) worldState action =
-    let newAction = generateAction worldState action
-    let postExecuteWorld = executeAction worldState newAction
-    outputActor.Post (Update {Action = newAction; WorldState = postExecuteWorld})
+let rec private mainLoop (fileActor: FileActor) (outputActor: OutputActor) combatState action =
+    let newAction = generateAction combatState action
+    let postExecuteCombat = executeAction combatState newAction
+    outputActor.Post (Update {Action = newAction; CombatState = postExecuteCombat})
     outputActor.PostAndReply ReplyWhenReady
     match newAction with
     | CompletePlayerAction SaveGameAction ->
         let tileset, statusState = outputActor.PostAndReply OutputStateRequest
-        fileActor.Post (SaveGameMessage {WorldState = postExecuteWorld; Tileset = tileset; StatusState = statusState})
+        fileActor.Post (SaveGameMessage {CombatState = postExecuteCombat; Tileset = tileset; StatusState = statusState})
     | _ -> ()
-    let newWorld = updateTime postExecuteWorld newAction
+    let newWorld = updateTime postExecuteCombat newAction
     let anyPlayerActor = List.tryFind (fun a -> a.Controller = Player) newWorld.Actors
     match anyPlayerActor, newAction with
     | None, _ ->
@@ -105,14 +105,14 @@ let rec private mainLoop (fileActor: FileActor) (outputActor: OutputActor) world
 [<EntryPoint>]
 let private main argv =
     let fileActor = startFileAgent "save.sav"
-    let worldState, tileset, statusState, action =
+    let combatState, tileset, statusState, action =
         match fileActor.PostAndReply LoadGameRequest with
-        | Some (ws, ts, ss, act) -> ws, ts, ss, act
-        | None -> startingWorldState, startingTileset, startingStatusState, startingAction
+        | Some (cs, ts, ss, act) -> cs, ts, ss, act
+        | None -> startingCombatState, startingTileset, startingStatusState, startingAction
     let outputActor = startOutputAgent tileset statusState
-    outputActor.Post (Update {Action = action; WorldState = worldState})
+    outputActor.Post (Update {Action = action; CombatState = combatState})
     outputActor.Post (PopStatus {Reset = true; FullLinesOnly = false})
-    mainLoop fileActor outputActor worldState action
+    mainLoop fileActor outputActor combatState action
     outputActor.PostAndReply ReplyWhenReady
     System.Console.ReadKey() |> ignore
     0 // return an integer exit code

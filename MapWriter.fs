@@ -15,18 +15,18 @@ let printMap tileset map =
         Map.filter (fun {Y = y} _ -> y = row) map.Tiles
         |> Map.toList
         |> List.map (fun (_, tile) -> tile)
-        |> convertMapTilesToString tilesetParser.MapParser
+        |> convertMapTilesToString tilesetParser.CombatMapParser
         |> Console.WriteLine
 
 let getOutputActorTile tileset x =
     match tileset with
-    | DefaultTileset -> defaultTilesetParser.ActorParser x
-    | DottedTileset -> dottedTilesetParser.ActorParser x
+    | DefaultTileset -> defaultTilesetParser.CombatActorParser x
+    | DottedTileset -> dottedTilesetParser.CombatActorParser x
 
 let private getOutputMapTile tileset x =
     match tileset with
-    | DefaultTileset -> defaultTilesetParser.MapParser x
-    | DottedTileset -> dottedTilesetParser.MapParser x
+    | DefaultTileset -> defaultTilesetParser.CombatMapParser x
+    | DottedTileset -> dottedTilesetParser.CombatMapParser x
 
 let printActors tileset actors =
     List.iter (fun x -> writeAt x.Position (getOutputActorTile tileset x.Tile)) actors
