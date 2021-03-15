@@ -28,8 +28,14 @@ let private getOutputMapTile tileset x =
     | DefaultTileset -> defaultTilesetParser.CombatMapParser x
     | DottedTileset -> dottedTilesetParser.CombatMapParser x
 
-let printActors tileset actors =
-    List.iter (fun x -> writeAt x.Position (getOutputActorTile tileset x.Tile)) actors
+let printActors tileset actors actorPositions =
+    let ids = Map.fold (fun state id _ -> state @ [id]) [] actorPositions
+    ids
+    |> List.iter (fun id ->
+        let pos = Map.find id actorPositions
+        let {Tile = tile} = Map.find id actors
+        writeAt pos (getOutputActorTile tileset tile)
+    )
 
 let drawTileAt pos map tileset =
     tryGetTileAt pos map
@@ -43,4 +49,4 @@ let cycleTileset tileset =
 
 let redrawMapScreen tileset worldState =
     printMap tileset worldState.CombatMap
-    printActors tileset worldState.Actors
+    printActors tileset worldState.Actors worldState.ActorPositions

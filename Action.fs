@@ -8,21 +8,27 @@ let private changeMapTile map pos tile =
     {map with Tiles = Map.change pos (fun _ -> Some tile) map.Tiles}
 
 let private changePlayerPosition worldState pos =
-    {
-        worldState with
-            Actors = {worldState.Actors.Head with Position = pos} :: worldState.Actors.Tail
-    }
+    let actorID = worldState.ActorCombatQueue.Head
+    let newPositions =
+        worldState.ActorPositions
+        |> Map.change actorID (Option.bind (fun _ -> Some pos))
+    {worldState with ActorPositions = newPositions}
 
-let private changeActorController worldState index controller =
-    {
-        worldState with
-            Actors = List.mapi (fun i x ->
-                match i with
-                | a when a = 0 -> {x with Controller = worldState.Actors.[index].Controller}
-                | a when a = index -> {x with Controller = controller}
-                | _ -> x)
-                worldState.Actors
-    }
+let private changeMaybeActorController controller maybeActor =
+    match maybeActor with
+    | Some actor -> Some {actor with Controller = controller}
+    | None -> None
+
+let private changeActorController worldState id controller =
+    let currentActorID = worldState.ActorCombatQueue.Head
+    let {Controller = targetController} =
+        worldState.Actors
+        |> Map.find id
+    let newActors =
+        worldState.Actors
+        |> Map.change currentActorID (changeMaybeActorController targetController)
+        |> Map.change id (changeMaybeActorController controller)
+    {worldState with Actors = newActors}
 
 let private executeOpenDoorAction worldState pos =
     {worldState with
@@ -34,17 +40,17 @@ let private executeCloseDoorAction worldState pos =
         CombatMap = changeMapTile worldState.CombatMap pos ClosedDoorTile
     }
 
-let private removeActor worldState index =
+let private removeActor worldState id =
     {worldState with
         Actors =
             worldState.Actors
-            |> List.indexed
-            |> List.choose (
-                fun (i, a) ->
-                    match (i, a) with
-                    | (j, _) when j = index -> None
-                    | (_, a) -> Some a
-            )
+            |> Map.remove id
+        ActorCombatQueue =
+            worldState.ActorCombatQueue
+            |> List.filter (fun n -> n <> id)
+        ActorPositions =
+            worldState.ActorPositions
+            |> Map.remove id
     }
 
 let executeAction worldState action =
@@ -57,8 +63,8 @@ let executeAction worldState action =
         changePlayerPosition worldState newPos
     | CompleteAnyoneAction (MindSwapActorAction (index, controller)) ->
         changeActorController worldState index controller
-    | CompleteAnyoneAction (AttackAction (index, _)) ->
-        removeActor worldState index
+    | CompleteAnyoneAction (AttackAction (id, _, _)) ->
+        removeActor worldState id
     | BlockedAction MoveActionBlockedByAlly
     | BlockedAction MoveActionBlockedByVoid
     | BlockedAction MoveActionBlockedByWall

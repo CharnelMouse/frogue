@@ -2,7 +2,7 @@ module DataConverter
 open Types
 open Tilesets
 
-let private exportActor actor =
+let private exportActor (id, actor) =
     let controller =
         match actor.Controller with
         | Player -> "player"
@@ -13,15 +13,12 @@ let private exportActor actor =
         | WaitScript -> "waitAI"
         | StandGround -> "standgroundAI"
         | DumbHunt -> "dumbhuntAI"
-    let {X = x; Y = y} = actor.Position
     [
-        string actor.ID
+        string id
         name
         string (defaultTilesetParser.CombatActorParser actor.Tile)
         controller
         script
-        string x
-        string y
         ]
     |> List.toSeq
     |> String.concat ";"
@@ -29,10 +26,9 @@ let private exportActor actor =
 let private importActor (str: string) =
     let vals = Array.toList (str.Split ";")
     match vals with
-    | [id; name; tile; controller; script; x; y]  ->
+    | [id; name; tile; controller; script]  ->
+        int id,
         {
-            ID = int id
-            Position = {X = int x; Y = int y}
             Tile = getActorTile (char tile)
             Controller =
                 match controller with
@@ -50,12 +46,55 @@ let private importActor (str: string) =
     | _ -> failwith ("invalid actor: wrong length: " + str)
 
 let private pushActors actors stream =
-    let nActors = List.length actors
-    stream @ (string nActors :: List.map exportActor actors)
+    let a = Map.toList actors
+    let nActors = List.length a
+    stream @ (string nActors :: List.map exportActor a)
 
 let private popActors (stream: string list) =
     let nActors = int stream.[0]
-    (List.map importActor stream.[1..nActors], stream.[(nActors + 1)..])
+    (
+        List.map importActor stream.[1..nActors]
+        |> Map.ofList,
+        stream.[(nActors + 1)..]
+    )
+
+let exportActorID = string
+
+let importActorID = int
+
+let private pushActorCombatQueue actorCombatQueue stream =
+    let nActors = List.length actorCombatQueue
+    stream @ (string nActors :: List.map exportActorID actorCombatQueue)
+
+let private popActorCombatQueue (stream: string list) =
+    let nActors = int stream.[0]
+    (List.map importActorID stream.[1..nActors], stream.[(nActors + 1)..])
+
+let exportActorPosition (id, {X = x; Y = y}) =
+    [id; x; y]
+    |> List.map string
+    |> List.toSeq
+    |> String.concat " "
+
+let importActorPosition (str: string) =
+    let tokens =
+        str.Split " "
+        |> Array.toList
+        |> List.map int
+    tokens.[0], {X = tokens.[1]; Y = tokens.[2]}
+
+let private pushActorPositions actorPositions stream =
+    let ap = Map.toList actorPositions
+    let nActors = List.length ap
+    stream @ (string nActors :: List.map exportActorPosition ap)
+
+let private popActorPositions (stream: string list) =
+    let nActors = int stream.[0]
+    (
+        List.map importActorPosition stream.[1..nActors]
+        |> Map.ofList,
+        stream.[(nActors + 1)..]
+    )
 
 let private exportMapTiles tiles =
     convertMapTilesToString defaultTilesetParser.CombatMapParser tiles
@@ -84,7 +123,7 @@ let private popMap (stream: string list) =
     let map = CombatMap.create width height tiles
     (map, stream.[3..])
 
-let private pushRest statusBar tileset (stream: string list) =
+let private pushRest statusBar (tileset: Tileset) (stream: string list) =
     stream @ [
         string statusBar.Start.X
         string statusBar.Start.Y
@@ -93,17 +132,24 @@ let private pushRest statusBar tileset (stream: string list) =
     ]
 
 let exportGameState worldState tileset statusState =
-    let {CombatMap = map; Actors = actors} = worldState
+    let {CombatMap = map; Actors = actors; ActorCombatQueue = actorCombatQueue; ActorPositions = actorPositions} = worldState
     let {StatusBar = statusBar} = statusState
-    pushActors actors []
+    []
+    |> pushActors actors
+    |> pushActorCombatQueue actorCombatQueue
+    |> pushActorPositions actorPositions
     |> pushMap map
     |> pushRest statusBar tileset
 
 let importGameState (stream: string list) =
-    let (actors, mapFirst) = popActors stream
+    let (actors, queueFirst) = popActors stream
+    let (actorCombatQueue, positionsFirst) = popActorCombatQueue queueFirst
+    let (actorPositions, mapFirst) = popActorPositions positionsFirst
     let (map, rest) = popMap mapFirst
     let worldState = {
         Actors = actors
+        ActorCombatQueue = actorCombatQueue
+        ActorPositions = actorPositions
         CombatMap = map
     }
     let statusState = {

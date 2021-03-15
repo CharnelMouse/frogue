@@ -1,10 +1,14 @@
 module TimeSystem
 open Types
 
-let private rotate (actors: 'T list) =
-    actors.Tail @ [actors.Head]
+let private rotate (lst: 'T list) =
+    lst.Tail @ [lst.Head]
 
 let updateTime worldState action = 
     match action with
-        | CompleteAnyoneAction _ -> {worldState with Actors = rotate worldState.Actors}
-        | _ -> worldState
+        | CompleteAnyoneAction _ ->
+            {worldState with
+                ActorCombatQueue = rotate worldState.ActorCombatQueue
+            }
+        | _ ->
+            worldState

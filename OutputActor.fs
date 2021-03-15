@@ -30,9 +30,7 @@ type OutputMessage =
 type OutputActor = MailboxProcessor<OutputMessage>
 
 let private fakeDoorActor = {
-    ID = -1
     Name = "door"
-    Position = {X = 0; Y = 0}
     Tile = UnknownActorTile
     Controller = AIController
     Script = WaitScript
@@ -51,9 +49,13 @@ let private updateMapScreen combatState tileset action =
         redrawMapScreen tileset combatState
     | CompleteAnyoneAction (MoveAction (origin, destination)) ->
         drawTileAt origin combatState.CombatMap tileset
-        writeAt destination (getOutputActorTile tileset combatState.Actors.Head.Tile)
-    | CompleteAnyoneAction (AttackAction (_, object)) ->
-        drawTileAt object.Position combatState.CombatMap tileset
+        let currentActorID = combatState.ActorCombatQueue.Head
+        let currentActor =
+            combatState.Actors
+            |> Map.find currentActorID
+        writeAt destination (getOutputActorTile tileset currentActor.Tile)
+    | CompleteAnyoneAction (AttackAction (_, _, position)) ->
+        drawTileAt position combatState.CombatMap tileset
     | CompleteAnyoneAction (OpenDoorAction pos)
     | CompleteAnyoneAction (CloseDoorAction pos) ->
         drawTileAt pos combatState.CombatMap tileset
@@ -78,7 +80,7 @@ let private pushActionStatus actor tileset statusState action =
     | BlockedAction MoveActionBlockedByAlly -> pushStatus statusState "There's an ally there!"
     | BlockedAction MoveActionBlockedByVoid -> pushStatus statusState "There's nothing there!"
     | BlockedAction MoveActionBlockedByWall -> pushStatus statusState "You bump up against the wall."
-    | CompleteAnyoneAction (AttackAction (_, object)) ->
+    | CompleteAnyoneAction (AttackAction (_, object, _)) ->
         pushStatusByController "kill" "kills" (Some object) "!" actor statusState
     | CompleteAnyoneAction (OpenDoorAction _) ->
         pushStatusByController "open" "opens" (Some fakeDoorActor) "." actor statusState
@@ -117,7 +119,11 @@ let outputAgentBody startingTileset startingStatusState (inbox: MailboxProcessor
         | Update {Action = action; CombatState = combatState} ->
             let newTileset = updateMapOutputTileset tileset action
             updateMapScreen combatState newTileset action
-            let newStatusState = pushActionStatus combatState.Actors.Head newTileset statusState action
+            let currentActorID = combatState.ActorCombatQueue.Head
+            let currentActor =
+                combatState.Actors
+                |> Map.find currentActorID
+            let newStatusState = pushActionStatus currentActor newTileset statusState action
             return! loop newTileset newStatusState
         | PushDie ->
             return! loop tileset (pushDieMessage statusState)

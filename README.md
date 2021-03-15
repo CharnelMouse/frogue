@@ -4,6 +4,7 @@ A small roguelike I'm making to learn F#.
 
 Current to-dos:
 
+- Sort out status stream bug (death text no wrapping properly)
 - Add main menu as precursor to adding encounter scene
 - Make combat more interesting
   - Different attacks / move abilities

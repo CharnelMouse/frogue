@@ -30,8 +30,6 @@ type AICombatScript =
 | DumbHunt
 
 type CombatActor = {
-    ID: ActorID
-    Position: Position
     Tile: CombatActorTile
     Controller: Controller
     Name: ActorName
@@ -80,7 +78,7 @@ type CompleteAnyoneAction =
 | OpenDoorAction of Position
 | CloseDoorAction of Position
 | MindSwapActorAction of int * Controller
-| AttackAction of int * CombatActor
+| AttackAction of ActorID * CombatActor * Position
 | WaitAction
 
 type BlockedAction =
@@ -112,6 +110,8 @@ type Tileset =
 | DottedTileset
 
 type CombatState = {
-    Actors: CombatActor list
+    Actors: Map<ActorID, CombatActor>
+    ActorCombatQueue: ActorID list
+    ActorPositions: Map<ActorID, Position>
     CombatMap: CombatMap
 }

@@ -9,24 +9,33 @@ let private getAnyoneAction = function
 | _ -> None
 
 let decideAction worldState =
-    let {Script = script; Position = pos} = worldState.Actors.Head
+    let actorID = worldState.ActorCombatQueue.Head
+    let actor =
+        worldState.Actors
+        |> Map.find actorID
+    let {Script = script} = actor
+    let pos = Map.find actorID worldState.ActorPositions
     match script with
     | WaitScript -> WaitAction
     | StandGround ->
         let neighbourTiles = allNeighbours pos
-        let neighbourIndex =
-            worldState.Actors
-            |> List.tryFindIndex (fun x -> List.contains x.Position neighbourTiles)
-        match neighbourIndex with
-        | Some ind -> AttackAction (ind, worldState.Actors.[ind])
+        let neighbourID =
+            worldState.ActorPositions
+            |> Map.tryFindKey (fun _ p -> List.contains p neighbourTiles)
+        match neighbourID with
+        | Some id -> AttackAction (id, worldState.Actors.[id], worldState.ActorPositions.[id])
         | None -> WaitAction
     | DumbHunt ->
+        let playerIDs =
+            worldState.Actors
+            |> Map.filter (fun _ {Controller = c} -> c = Player)
+            |> Map.toList
+            |> List.map (fun (id, _) -> id)
         let playerPositions =
-            worldState.Actors.Tail
-            |> List.choose (fun {Position = position; Controller = controller} ->
-                match controller with
-                | Player -> Some position
-                | _ -> None)
+            worldState.ActorPositions
+            |> Map.filter (fun n _ -> List.contains n playerIDs)
+            |> Map.toList
+            |> List.map (fun (_, p) -> p)
         let playerMap =
             playerPositions
             |> fillCombat worldState.CombatMap [

@@ -5,7 +5,11 @@ open CommandParser
 open Script
 
 let generateAction worldState action =
-    match worldState.Actors.Head.Controller with
+    let currentActorID = worldState.ActorCombatQueue.Head
+    let currentActor =
+        worldState.Actors
+        |> Map.find currentActorID
+    match currentActor.Controller with
     | Player ->
         getCommand action
         |> resolveCommand worldState

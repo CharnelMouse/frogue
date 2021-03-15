@@ -24,47 +24,52 @@ let private levelMap =
 
 let private startingCombatState = {
     Actors = [
+        0,
         {
-            ID = 0
-            Position = {X = 1; Y = 1}
             Tile = PlayerTile
             Controller = Player
             Name = "adventurer"
             Script = WaitScript
         }
+        1,
         {
-            ID = 1
-            Position = {X = 7; Y = 6}
             Tile = OrcTile
             Controller = AIController
             Name = "orc"
             Script = DumbHunt
         }
+        2,
         {
-            ID = 2
-            Position = {X = 8; Y = 5}
             Tile = OrcTile
             Controller = AIController
             Name = "orc"
             Script = DumbHunt
         }
+        3,
         {
-            ID = 3
-            Position = {X = 17; Y = 7}
             Tile = OrcTile
             Controller = AIController
             Name = "orc"
             Script = DumbHunt
         }
+        4,
         {
-            ID = 4
-            Position = {X = 16; Y = 8}
             Tile = OrcTile
             Controller = AIController
             Name = "orc"
             Script = DumbHunt
         }
     ]
+    |> Map.ofList
+    ActorCombatQueue = [0..4]
+    ActorPositions = [
+        0, {X = 1; Y = 1}
+        1, {X = 7; Y = 6}
+        2, {X = 8; Y = 5}
+        3, {X = 17; Y = 7}
+        4, {X = 16; Y = 8}
+    ]
+    |> Map.ofList
     CombatMap = levelMap
 }
 
@@ -88,17 +93,25 @@ let rec private mainLoop (fileActor: FileActor) (outputActor: OutputActor) comba
         fileActor.Post (SaveGameMessage {CombatState = postExecuteCombat; Tileset = tileset; StatusState = statusState})
     | _ -> ()
     let newWorld = updateTime postExecuteCombat newAction
-    let anyPlayerActor = List.tryFind (fun a -> a.Controller = Player) newWorld.Actors
-    match anyPlayerActor, newAction with
-    | None, _ ->
+    let anyPlayerCombatActor =
+        newWorld.Actors
+        |> Map.exists (fun id {Controller = c} ->
+            List.contains id newWorld.ActorCombatQueue && c = Player
+            )
+    match anyPlayerCombatActor, newAction with
+    | false, _ ->
         outputActor.Post PushDie
         outputActor.Post (PopStatus {Reset = false; FullLinesOnly = false})
         outputActor.PostAndReply ReplyWhenReady
-    | Some _, CompletePlayerAction QuitAction ->
+    | true, CompletePlayerAction QuitAction ->
         outputActor.Post (PopStatus {Reset = false; FullLinesOnly = false})
         outputActor.PostAndReply ReplyWhenReady
     | _ ->
-        outputActor.Post (PopStatusIfReceiverTurnOrFullLineInBuffer {Reset = true; CurrentActor = newWorld.Actors.Head})
+        let currentActorID = newWorld.ActorCombatQueue.Head
+        let currentActor =
+            newWorld.Actors
+            |> Map.find currentActorID
+        outputActor.Post (PopStatusIfReceiverTurnOrFullLineInBuffer {Reset = true; CurrentActor = currentActor})
         outputActor.PostAndReply ReplyWhenReady
         mainLoop fileActor outputActor newWorld newAction
 

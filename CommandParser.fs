@@ -4,24 +4,36 @@ open CombatMap
 open Command
 
 let resolveMoveCommand worldState direction =
-    let oldPos = worldState.Actors.Head.Position
+    let currentActorID = worldState.ActorCombatQueue.Head
+    let currentActor =
+        worldState.Actors
+        |> Map.find currentActorID
+    let oldPos = Map.find currentActorID worldState.ActorPositions
     let map = worldState.CombatMap
     let newPos = neighbour oldPos direction
-    let actorIndex = List.tryFindIndex (fun x -> x.Position = newPos) worldState.Actors
-    let controller =
-        match actorIndex with
-            | Some ind -> Some worldState.Actors.[ind].Controller
-            | None -> None
-    match (controller, tryGetTileAt newPos map) with
-    | (Some cont, Some _) when cont = worldState.Actors.Head.Controller -> BlockedAction MoveActionBlockedByAlly
-    | (Some _, Some _) -> CompleteAnyoneAction (AttackAction (actorIndex.Value, worldState.Actors.[actorIndex.Value]))
-    | (None, Some WallTile) -> BlockedAction MoveActionBlockedByWall
-    | (None, Some ClosedDoorTile) -> CompleteAnyoneAction (OpenDoorAction newPos)
-    | (None, Some _) -> CompleteAnyoneAction (MoveAction  (oldPos, newPos))
-    | (_, None) -> BlockedAction MoveActionBlockedByVoid
+    let blockingActorID =
+        worldState.ActorPositions
+        |> Map.tryFindKey (fun _ p -> p = newPos)
+    match blockingActorID with
+    | Some id ->
+        let controller = worldState.Actors.[id].Controller
+        match controller, tryGetTileAt newPos map with
+        | cont, Some _ when cont = currentActor.Controller ->
+            BlockedAction MoveActionBlockedByAlly
+        | _, Some _ ->
+            CompleteAnyoneAction (AttackAction (id, worldState.Actors.[id], worldState.ActorPositions.[id]))
+        | _, None ->
+            BlockedAction MoveActionBlockedByVoid
+    | None ->
+        match tryGetTileAt newPos map with
+        | Some WallTile -> BlockedAction MoveActionBlockedByWall
+        | Some ClosedDoorTile -> CompleteAnyoneAction (OpenDoorAction newPos)
+        | Some _ -> CompleteAnyoneAction (MoveAction (oldPos, newPos))
+        | None -> BlockedAction MoveActionBlockedByVoid
 
 let private resolveOpenToCommand worldState direction =
-    let pos = worldState.Actors.Head.Position
+    let currentActorID = worldState.ActorCombatQueue.Head
+    let pos = Map.find currentActorID worldState.ActorPositions
     let map = worldState.CombatMap
     let toPos = neighbour pos direction
     match tryGetTileAt toPos map with
@@ -30,42 +42,76 @@ let private resolveOpenToCommand worldState direction =
     | None -> BlockedAction OpenToActionBlockedByVoid
 
 let private resolveCloseToCommand worldState direction =
-    let pos = worldState.Actors.Head.Position
+    let currentActorID = worldState.ActorCombatQueue.Head
+    let pos = Map.find currentActorID worldState.ActorPositions
     let map = worldState.CombatMap
     let toPos = neighbour pos direction
-    let blockingActor = List.tryFind (fun x -> x.Position = neighbour pos direction) worldState.Actors
+    let blockingActor =
+        worldState.ActorPositions
+        |> Map.exists (fun _ p -> p = neighbour pos direction)
     match tryGetTileAt toPos map, blockingActor with
-    | _, Some _ -> BlockedAction CloseToActionBlockedByActor
-    | Some OpenDoorTile, None -> CompleteAnyoneAction (CloseDoorAction toPos)
-    | Some _, None -> BlockedAction CloseToActionBlockedByInvalidTile
-    | None, None -> BlockedAction CloseToActionBlockedByVoid
+    | _, true -> BlockedAction CloseToActionBlockedByActor
+    | Some OpenDoorTile, false -> CompleteAnyoneAction (CloseDoorAction toPos)
+    | Some _, false -> BlockedAction CloseToActionBlockedByInvalidTile
+    | None, false -> BlockedAction CloseToActionBlockedByVoid
 
 let private resolveMindSwapToCommand worldState direction =
-    let actor = worldState.Actors.Head
-    let pos = actor.Position
+    let currentActorID = worldState.ActorCombatQueue.Head
+    let actor =
+        worldState.Actors
+        |> Map.find currentActorID
+    let pos = Map.find currentActorID worldState.ActorPositions
     let map = worldState.CombatMap
     let toPos = neighbour pos direction
     match posIsOnMap toPos map with
-    | false -> BlockedAction MindSwapToActionBlockedByVoid
+    | false ->
+        BlockedAction MindSwapToActionBlockedByVoid
     | true ->
-        match List.tryFindIndex (fun x -> x.Position = toPos) worldState.Actors with
-        | None -> BlockedAction MindSwapToActionBlockedByNoActor
-        | Some a when worldState.Actors.[a].Controller = actor.Controller -> BlockedAction MindSwapToActionOnControlledActor
-        | Some a -> CompleteAnyoneAction (MindSwapActorAction (a, actor.Controller))
+        let maybeBlockingActorID =
+            worldState.ActorPositions
+            |> Map.tryFindKey (fun _ p -> p = toPos)
+        match maybeBlockingActorID with
+        | None ->
+            BlockedAction MindSwapToActionBlockedByNoActor
+        | Some id ->
+            let blockingActor =
+                worldState.Actors
+                |> Map.find id
+            match blockingActor.Controller with
+            | c when c = actor.Controller ->
+                BlockedAction MindSwapToActionOnControlledActor
+            | _ ->
+                (id, actor.Controller)
+                |> MindSwapActorAction
+                |> CompleteAnyoneAction
 
 let resolveCommand worldState command =
     match command with
-    | CompleteCommand (Move direction) -> resolveMoveCommand worldState direction
-    | CompleteCommand (OpenTo direction) -> resolveOpenToCommand worldState direction
-    | CompleteCommand (CloseTo direction) -> resolveCloseToCommand worldState direction
-    | CompleteCommand (MindSwapTo direction) -> resolveMindSwapToCommand worldState direction
-    | CompleteCommand Wait -> CompleteAnyoneAction WaitAction
-    | CompleteCommand Help -> CompletePlayerAction HelpAction
-    | CompleteCommand Quit -> CompletePlayerAction QuitAction
-    | CompleteCommand Cancel -> CompletePlayerAction CancelAction
-    | CompleteCommand SaveGameCommand -> CompletePlayerAction SaveGameAction
-    | CompleteCommand ToggleTilesetCommand -> CompletePlayerAction ToggleTileSetAction
-    | CompleteCommand UnknownCommand -> CompletePlayerAction UnknownAction
-    | IncompleteCommand Open -> IncompleteAction OpenAction
-    | IncompleteCommand Close -> IncompleteAction CloseAction
-    | IncompleteCommand MindSwap -> IncompleteAction MindSwapAction
+    | CompleteCommand (Move direction) ->
+        resolveMoveCommand worldState direction
+    | CompleteCommand (OpenTo direction) ->
+        resolveOpenToCommand worldState direction
+    | CompleteCommand (CloseTo direction) ->
+        resolveCloseToCommand worldState direction
+    | CompleteCommand (MindSwapTo direction) ->
+        resolveMindSwapToCommand worldState direction
+    | CompleteCommand Wait ->
+        CompleteAnyoneAction WaitAction
+    | CompleteCommand Help ->
+        CompletePlayerAction HelpAction
+    | CompleteCommand Quit ->
+        CompletePlayerAction QuitAction
+    | CompleteCommand Cancel ->
+        CompletePlayerAction CancelAction
+    | CompleteCommand SaveGameCommand ->
+        CompletePlayerAction SaveGameAction
+    | CompleteCommand ToggleTilesetCommand ->
+        CompletePlayerAction ToggleTileSetAction
+    | CompleteCommand UnknownCommand ->
+        CompletePlayerAction UnknownAction
+    | IncompleteCommand Open ->
+        IncompleteAction OpenAction
+    | IncompleteCommand Close ->
+        IncompleteAction CloseAction
+    | IncompleteCommand MindSwap ->
+        IncompleteAction MindSwapAction
