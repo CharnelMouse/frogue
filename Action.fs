@@ -7,7 +7,7 @@ let private replaceSingleElementFn index replacer list =
 let private changeMapTile map pos tile =
     {map with Tiles = Map.change pos (fun _ -> Some tile) map.Tiles}
 
-let private changePlayerPosition combatState pos =
+let private changePlayerPosition pos combatState =
     let actorID = combatState.ActorCombatQueue.Head
     let newPositions =
         combatState.ActorCombatPositions
@@ -19,7 +19,7 @@ let private changeMaybeActorController controller maybeActor =
     | Some actor -> Some {actor with Controller = controller}
     | None -> None
 
-let private changeActorController combatState id controller =
+let private changeActorController id controller combatState =
     let currentActorID = combatState.ActorCombatQueue.Head
     let {Controller = targetController} =
         combatState.Actors
@@ -30,17 +30,17 @@ let private changeActorController combatState id controller =
         |> Map.change id (changeMaybeActorController controller)
     {combatState with Actors = newActors}
 
-let private executeOpenDoorAction combatState pos =
+let private executeOpenDoorAction pos combatState =
     {combatState with
         CombatMap = changeMapTile combatState.CombatMap pos OpenDoorTile
     }
 
-let private executeCloseDoorAction combatState pos =
+let private executeCloseDoorAction pos combatState =
     {combatState with
         CombatMap = changeMapTile combatState.CombatMap pos ClosedDoorTile
     }
 
-let private removeActor combatState id =
+let private removeActor id combatState =
     {combatState with
         Actors =
             combatState.Actors
@@ -56,15 +56,15 @@ let private removeActor combatState id =
 let executeAction combatState action =
     match action with
     | CompleteAnyoneAction (OpenDoorAction toPos) ->
-        executeOpenDoorAction combatState toPos
+        executeOpenDoorAction toPos combatState
     | CompleteAnyoneAction (CloseDoorAction toPos) ->
-        executeCloseDoorAction combatState toPos
+        executeCloseDoorAction toPos combatState
     | CompleteAnyoneAction (MoveAction (_, newPos)) ->
-        changePlayerPosition combatState newPos
+        changePlayerPosition newPos combatState
     | CompleteAnyoneAction (MindSwapActorAction (index, controller)) ->
-        changeActorController combatState index controller
+        changeActorController index controller combatState
     | CompleteAnyoneAction (AttackAction (id, _, _)) ->
-        removeActor combatState id
+        removeActor id combatState
     | BlockedAction MoveActionBlockedByAlly
     | BlockedAction MoveActionBlockedByVoid
     | BlockedAction MoveActionBlockedByWall
@@ -87,4 +87,5 @@ let executeAction combatState action =
     | CompletePlayerAction UnknownAction
     | IncompleteAction OpenAction
     | IncompleteAction CloseAction
-    | IncompleteAction MindSwapAction -> combatState
+    | IncompleteAction MindSwapAction ->
+        combatState
