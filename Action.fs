@@ -7,64 +7,64 @@ let private replaceSingleElementFn index replacer list =
 let private changeMapTile map pos tile =
     {map with Tiles = Map.change pos (fun _ -> Some tile) map.Tiles}
 
-let private changePlayerPosition worldState pos =
-    let actorID = worldState.ActorCombatQueue.Head
+let private changePlayerPosition combatState pos =
+    let actorID = combatState.ActorCombatQueue.Head
     let newPositions =
-        worldState.ActorPositions
+        combatState.ActorCombatPositions
         |> Map.change actorID (Option.bind (fun _ -> Some pos))
-    {worldState with ActorPositions = newPositions}
+    {combatState with ActorCombatPositions = newPositions}
 
 let private changeMaybeActorController controller maybeActor =
     match maybeActor with
     | Some actor -> Some {actor with Controller = controller}
     | None -> None
 
-let private changeActorController worldState id controller =
-    let currentActorID = worldState.ActorCombatQueue.Head
+let private changeActorController combatState id controller =
+    let currentActorID = combatState.ActorCombatQueue.Head
     let {Controller = targetController} =
-        worldState.Actors
+        combatState.Actors
         |> Map.find id
     let newActors =
-        worldState.Actors
+        combatState.Actors
         |> Map.change currentActorID (changeMaybeActorController targetController)
         |> Map.change id (changeMaybeActorController controller)
-    {worldState with Actors = newActors}
+    {combatState with Actors = newActors}
 
-let private executeOpenDoorAction worldState pos =
-    {worldState with
-        CombatMap = changeMapTile worldState.CombatMap pos OpenDoorTile
+let private executeOpenDoorAction combatState pos =
+    {combatState with
+        CombatMap = changeMapTile combatState.CombatMap pos OpenDoorTile
     }
 
-let private executeCloseDoorAction worldState pos =
-    {worldState with
-        CombatMap = changeMapTile worldState.CombatMap pos ClosedDoorTile
+let private executeCloseDoorAction combatState pos =
+    {combatState with
+        CombatMap = changeMapTile combatState.CombatMap pos ClosedDoorTile
     }
 
-let private removeActor worldState id =
-    {worldState with
+let private removeActor combatState id =
+    {combatState with
         Actors =
-            worldState.Actors
+            combatState.Actors
             |> Map.remove id
         ActorCombatQueue =
-            worldState.ActorCombatQueue
+            combatState.ActorCombatQueue
             |> List.filter (fun n -> n <> id)
-        ActorPositions =
-            worldState.ActorPositions
+        ActorCombatPositions =
+            combatState.ActorCombatPositions
             |> Map.remove id
     }
 
-let executeAction worldState action =
+let executeAction combatState action =
     match action with
     | CompleteAnyoneAction (OpenDoorAction toPos) ->
-        executeOpenDoorAction worldState toPos
+        executeOpenDoorAction combatState toPos
     | CompleteAnyoneAction (CloseDoorAction toPos) ->
-        executeCloseDoorAction worldState toPos
+        executeCloseDoorAction combatState toPos
     | CompleteAnyoneAction (MoveAction (_, newPos)) ->
-        changePlayerPosition worldState newPos
+        changePlayerPosition combatState newPos
     | CompleteAnyoneAction (MindSwapActorAction (index, controller)) ->
-        changeActorController worldState index controller
+        changeActorController combatState index controller
     | CompleteAnyoneAction (AttackAction (id, _, _)) ->
-        removeActor worldState id
+        removeActor combatState id
     | BlockedAction MoveActionBlockedByAlly
     | BlockedAction MoveActionBlockedByVoid
     | BlockedAction MoveActionBlockedByWall
@@ -87,4 +87,4 @@ let executeAction worldState action =
     | CompletePlayerAction UnknownAction
     | IncompleteAction OpenAction
     | IncompleteAction CloseAction
-    | IncompleteAction MindSwapAction -> worldState
+    | IncompleteAction MindSwapAction -> combatState

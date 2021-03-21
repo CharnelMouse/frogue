@@ -8,37 +8,37 @@ let private getAnyoneAction = function
 | CompleteAnyoneAction act -> Some act
 | _ -> None
 
-let decideAction worldState =
-    let actorID = worldState.ActorCombatQueue.Head
+let decideAction combatState =
+    let actorID = combatState.ActorCombatQueue.Head
     let actor =
-        worldState.Actors
+        combatState.Actors
         |> Map.find actorID
     let {Script = script} = actor
-    let pos = Map.find actorID worldState.ActorPositions
+    let pos = Map.find actorID combatState.ActorCombatPositions
     match script with
     | WaitScript -> WaitAction
     | StandGround ->
         let neighbourTiles = allNeighbours pos
         let neighbourID =
-            worldState.ActorPositions
+            combatState.ActorCombatPositions
             |> Map.tryFindKey (fun _ p -> List.contains p neighbourTiles)
         match neighbourID with
-        | Some id -> AttackAction (id, worldState.Actors.[id], worldState.ActorPositions.[id])
+        | Some id -> AttackAction (id, combatState.Actors.[id], combatState.ActorCombatPositions.[id])
         | None -> WaitAction
     | DumbHunt ->
         let playerIDs =
-            worldState.Actors
+            combatState.Actors
             |> Map.filter (fun _ {Controller = c} -> c = Player)
             |> Map.toList
             |> List.map (fun (id, _) -> id)
         let playerPositions =
-            worldState.ActorPositions
+            combatState.ActorCombatPositions
             |> Map.filter (fun n _ -> List.contains n playerIDs)
             |> Map.toList
             |> List.map (fun (_, p) -> p)
         let playerMap =
             playerPositions
-            |> fillCombat worldState.CombatMap [
+            |> fillCombat combatState.CombatMap [
                 {Type = EmptyTile; Cost = 1}
                 {Type = OpenDoorTile; Cost = 1}
                 {Type = ClosedDoorTile; Cost = 2}
@@ -63,7 +63,7 @@ let decideAction worldState =
             let nonWaitDownhillActions =
                 downhillNeighbours
                 |> List.choose ((fun (direction, _, _) -> direction)
-                                >> resolveMoveCommand worldState
+                                >> resolveMoveCommand combatState
                                 >> getAnyoneAction)
                 |> List.filter (fun act -> act <> WaitAction)
             match nonWaitDownhillActions with

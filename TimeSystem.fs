@@ -4,11 +4,11 @@ open Types
 let private rotate (lst: 'T list) =
     lst.Tail @ [lst.Head]
 
-let updateTime worldState action = 
+let updateTime combatState action = 
     match action with
         | CompleteAnyoneAction _ ->
-            {worldState with
-                ActorCombatQueue = rotate worldState.ActorCombatQueue
+            {combatState with
+                ActorCombatQueue = rotate combatState.ActorCombatQueue
             }
         | _ ->
-            worldState
+            combatState

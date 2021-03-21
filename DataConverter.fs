@@ -83,12 +83,12 @@ let importActorPosition (str: string) =
         |> List.map int
     tokens.[0], {X = tokens.[1]; Y = tokens.[2]}
 
-let private pushActorPositions actorPositions stream =
+let private pushActorCombatPositions actorPositions stream =
     let ap = Map.toList actorPositions
     let nActors = List.length ap
     stream @ (string nActors :: List.map exportActorPosition ap)
 
-let private popActorPositions (stream: string list) =
+let private popActorCombatPositions (stream: string list) =
     let nActors = int stream.[0]
     (
         List.map importActorPosition stream.[1..nActors]
@@ -131,25 +131,25 @@ let private pushRest statusBar (tileset: Tileset) (stream: string list) =
         string tileset
     ]
 
-let exportGameState worldState tileset statusState =
-    let {CombatMap = map; Actors = actors; ActorCombatQueue = actorCombatQueue; ActorPositions = actorPositions} = worldState
+let exportGameState combatState tileset statusState =
+    let {CombatMap = map; Actors = actors; ActorCombatQueue = actorCombatQueue; ActorCombatPositions = actorCombatPositions} = combatState
     let {StatusBar = statusBar} = statusState
     []
     |> pushActors actors
     |> pushActorCombatQueue actorCombatQueue
-    |> pushActorPositions actorPositions
+    |> pushActorCombatPositions actorCombatPositions
     |> pushMap map
     |> pushRest statusBar tileset
 
 let importGameState (stream: string list) =
     let (actors, queueFirst) = popActors stream
     let (actorCombatQueue, positionsFirst) = popActorCombatQueue queueFirst
-    let (actorPositions, mapFirst) = popActorPositions positionsFirst
+    let (actorCombatPositions, mapFirst) = popActorCombatPositions positionsFirst
     let (map, rest) = popMap mapFirst
-    let worldState = {
+    let combatState = {
         Actors = actors
         ActorCombatQueue = actorCombatQueue
-        ActorPositions = actorPositions
+        ActorCombatPositions = actorCombatPositions
         CombatMap = map
     }
     let statusState = {
@@ -166,4 +166,4 @@ let importGameState (stream: string list) =
         | "DefaultTileset" -> CompletePlayerAction StartSession
         | "DottedTileset" -> CompletePlayerAction StartSession
         | _ -> CompletePlayerAction StartSessionWithUnknownTileset
-    worldState, tileset, statusState, action
+    combatState, tileset, statusState, action

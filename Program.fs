@@ -62,7 +62,7 @@ let private startingCombatState = {
     ]
     |> Map.ofList
     ActorCombatQueue = [0..4]
-    ActorPositions = [
+    ActorCombatPositions = [
         0, {X = 1; Y = 1}
         1, {X = 7; Y = 6}
         2, {X = 8; Y = 5}

@@ -16,7 +16,7 @@ type PopStatus = {
 
 type PopStatusIfReceiverTurnOrFullLineInBuffer = {
     Reset: bool
-    CurrentActor: CombatActor
+    CurrentActor: Actor
 }
 
 type OutputMessage =

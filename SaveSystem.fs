@@ -5,8 +5,8 @@ open DataConverter
 let saveGameExists path =
     File.Exists path
 
-let saveGame path worldState tileset statusState =
-    File.WriteAllLines (path, exportGameState worldState tileset statusState)
+let saveGame path combatState tileset statusState =
+    File.WriteAllLines (path, exportGameState combatState tileset statusState)
 
 let loadGame path =
     File.ReadAllLines path
