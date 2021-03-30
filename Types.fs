@@ -115,3 +115,7 @@ type CombatState = {
     ActorCombatPositions: Map<ActorID, Position>
     CombatMap: CombatMap
 }
+
+type GameState =
+| Combat of CombatState
+| Win of Actor list

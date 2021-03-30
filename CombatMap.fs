@@ -11,8 +11,7 @@ let positionsFromDims width height =
     |> List.map (fun (y, x) -> {X = x; Y = y})
 
 let create width height tiles =
-    match List.length tiles = width*height with
-    | true ->
+    if List.length tiles = width*height then
         let positions = positionsFromDims width height
         let tileMap =
             List.zip positions tiles
@@ -22,7 +21,7 @@ let create width height tiles =
             Height = height
             Tiles = tileMap
         }
-    | false ->
+    else
         failwith "Invalid map"
 
 let tryGetTileAt pos map =
