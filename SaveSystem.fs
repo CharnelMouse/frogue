@@ -12,3 +12,9 @@ let loadGame path =
     File.ReadAllLines path
     |> Array.toList
     |> importGameState
+
+let tryLoadGame path =
+    if saveGameExists path then
+        Some (loadGame path)
+    else
+        None

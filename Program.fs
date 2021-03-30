@@ -1,7 +1,7 @@
 open Types
 open OutputActor
 open DataConverter
-open FileActor
+open SaveSystem
 open Action
 open TimeSystem
 open ActionGenerator
@@ -82,7 +82,7 @@ let private startingStatusState = {
 
 let private startingAction = CompletePlayerAction StartSession
 
-let rec private mainLoop (fileActor: FileActor) (outputActor: OutputActor) combatState action =
+let rec private mainLoop (outputActor: OutputActor) combatState action =
     let newAction = generateAction combatState action
     let postExecuteCombat = executeAction combatState newAction
     outputActor.Post (Update {Action = newAction; CombatState = postExecuteCombat})
@@ -90,7 +90,7 @@ let rec private mainLoop (fileActor: FileActor) (outputActor: OutputActor) comba
     match newAction with
     | CompletePlayerAction SaveGameAction ->
         let tileset, statusState = outputActor.PostAndReply OutputStateRequest
-        fileActor.Post (SaveGameMessage {CombatState = postExecuteCombat; Tileset = tileset; StatusState = statusState})
+        saveGame "save.sav" postExecuteCombat tileset statusState
     | _ -> ()
     let newWorld = updateTime postExecuteCombat newAction
     let anyPlayerCombatActor =
@@ -113,19 +113,18 @@ let rec private mainLoop (fileActor: FileActor) (outputActor: OutputActor) comba
             |> Map.find currentActorID
         outputActor.Post (PopStatusIfReceiverTurnOrFullLineInBuffer {Reset = true; CurrentActor = currentActor})
         outputActor.PostAndReply ReplyWhenReady
-        mainLoop fileActor outputActor newWorld newAction
+        mainLoop outputActor newWorld newAction
 
 [<EntryPoint>]
 let private main argv =
-    let fileActor = startFileAgent "save.sav"
     let combatState, tileset, statusState, action =
-        match fileActor.PostAndReply LoadGameRequest with
+        match tryLoadGame "save.sav" with
         | Some (cs, ts, ss, act) -> cs, ts, ss, act
         | None -> startingCombatState, startingTileset, startingStatusState, startingAction
     let outputActor = startOutputAgent tileset statusState
     outputActor.Post (Update {Action = action; CombatState = combatState})
     outputActor.Post (PopStatus {Reset = true; FullLinesOnly = false})
-    mainLoop fileActor outputActor combatState action
+    mainLoop outputActor combatState action
     outputActor.PostAndReply ReplyWhenReady
     System.Console.ReadKey() |> ignore
     0 // return an integer exit code
