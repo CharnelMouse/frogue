@@ -1,33 +1,8 @@
-module OutputActor
+module Output
 open Types
 open ScreenWriter
 open Status
 open MapWriter
-
-type OutputUpdate = {
-    Action: Action
-    CombatState: CombatState
-}
-
-type PopStatus = {
-    Reset: bool
-    FullLinesOnly: bool
-}
-
-type PopStatusIfReceiverTurnOrFullLineInBuffer = {
-    Reset: bool
-    CurrentActor: Actor
-}
-
-type OutputMessage =
-| Update of OutputUpdate
-| PushDie
-| PopStatus of PopStatus
-| PopStatusIfReceiverTurnOrFullLineInBuffer of PopStatusIfReceiverTurnOrFullLineInBuffer
-| OutputStateRequest of AsyncReplyChannel<Tileset * StatusState>
-| ReplyWhenReady of AsyncReplyChannel<unit>
-
-type OutputActor = MailboxProcessor<OutputMessage>
 
 let private fakeDoorActor = {
     Name = "door"
@@ -112,36 +87,12 @@ let private pushActionStatus actor tileset statusState action =
         |> pushStatus statusState
     | CompletePlayerAction UnknownAction -> pushStatus statusState "Unknown command, type ? for help."
 
-let outputAgentBody startingTileset startingStatusState (inbox: MailboxProcessor<OutputMessage>) =
-    let rec loop tileset statusState = async {
-        let! msg = inbox.Receive()
-        match msg with
-        | Update {Action = action; CombatState = combatState} ->
-            let newTileset = updateMapOutputTileset tileset action
-            updateMapScreen combatState newTileset action
-            let currentActorID = combatState.ActorCombatQueue.Head
-            let currentActor =
-                combatState.Actors
-                |> Map.find currentActorID
-            let newStatusState = pushActionStatus currentActor newTileset statusState action
-            return! loop newTileset newStatusState
-        | PushDie ->
-            return! loop tileset (pushDieMessage statusState)
-        | PopStatus {Reset = reset; FullLinesOnly = fullLinesOnly} ->
-            let newOutputState = popStatus reset fullLinesOnly statusState
-            return! loop tileset newOutputState
-        | PopStatusIfReceiverTurnOrFullLineInBuffer {Reset = reset; CurrentActor = currentActor} ->
-            let newOutputState = popStatusIfReceiverTurnOrFullLineInBuffer reset currentActor statusState
-            return! loop tileset newOutputState
-        | OutputStateRequest replyChannel ->
-            replyChannel.Reply(tileset, statusState)
-            return! loop tileset statusState
-        | ReplyWhenReady replyChannel ->
-            replyChannel.Reply()
-            return! loop tileset statusState
-    }
-    loop startingTileset startingStatusState
-
-let startOutputAgent tileset statusState =
-    outputAgentBody tileset statusState
-    |> MailboxProcessor.Start
+let updateOutputState tileset statusState action combatState =
+    let newTileset = updateMapOutputTileset tileset action
+    updateMapScreen combatState newTileset action
+    let currentActorID = combatState.ActorCombatQueue.Head
+    let currentActor =
+        combatState.Actors
+        |> Map.find currentActorID
+    let newStatusState = pushActionStatus currentActor newTileset statusState action
+    newTileset, newStatusState

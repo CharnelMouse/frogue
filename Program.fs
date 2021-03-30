@@ -1,7 +1,8 @@
 open Types
-open OutputActor
 open DataConverter
 open SaveSystem
+open Status
+open Output
 open Action
 open TimeSystem
 open ActionGenerator
@@ -82,15 +83,13 @@ let private startingStatusState = {
 
 let private startingAction = CompletePlayerAction StartSession
 
-let rec private mainLoop (outputActor: OutputActor) combatState action =
+let rec private mainLoop tileset statusState combatState action =
     let newAction = generateAction combatState action
     let postExecuteCombat = executeAction combatState newAction
-    outputActor.Post (Update {Action = newAction; CombatState = postExecuteCombat})
-    outputActor.PostAndReply ReplyWhenReady
+    let postUpdateTileset, postUpdateStatus = updateOutputState tileset statusState newAction postExecuteCombat
     match newAction with
     | CompletePlayerAction SaveGameAction ->
-        let tileset, statusState = outputActor.PostAndReply OutputStateRequest
-        saveGame "save.sav" postExecuteCombat tileset statusState
+        saveGame "save.sav" postExecuteCombat postUpdateTileset postUpdateStatus
     | _ -> ()
     let newWorld = updateTime postExecuteCombat newAction
     let anyPlayerCombatActor =
@@ -100,20 +99,23 @@ let rec private mainLoop (outputActor: OutputActor) combatState action =
             )
     match anyPlayerCombatActor, newAction with
     | false, _ ->
-        outputActor.Post PushDie
-        outputActor.Post (PopStatus {Reset = false; FullLinesOnly = false})
-        outputActor.PostAndReply ReplyWhenReady
+        postUpdateStatus
+        |> pushDieMessage
+        |> popStatus false false
+        |> ignore
     | true, CompletePlayerAction QuitAction ->
-        outputActor.Post (PopStatus {Reset = false; FullLinesOnly = false})
-        outputActor.PostAndReply ReplyWhenReady
+        postUpdateStatus
+        |> popStatus false false
+        |> ignore
     | _ ->
         let currentActorID = newWorld.ActorCombatQueue.Head
         let currentActor =
             newWorld.Actors
             |> Map.find currentActorID
-        outputActor.Post (PopStatusIfReceiverTurnOrFullLineInBuffer {Reset = true; CurrentActor = currentActor})
-        outputActor.PostAndReply ReplyWhenReady
-        mainLoop outputActor newWorld newAction
+        let newStatusState =
+            postUpdateStatus
+            |> popStatusIfReceiverTurnOrFullLineInBuffer true currentActor
+        mainLoop postUpdateTileset newStatusState newWorld newAction
 
 [<EntryPoint>]
 let private main argv =
@@ -121,10 +123,10 @@ let private main argv =
         match tryLoadGame "save.sav" with
         | Some (cs, ts, ss, act) -> cs, ts, ss, act
         | None -> startingCombatState, startingTileset, startingStatusState, startingAction
-    let outputActor = startOutputAgent tileset statusState
-    outputActor.Post (Update {Action = action; CombatState = combatState})
-    outputActor.Post (PopStatus {Reset = true; FullLinesOnly = false})
-    mainLoop outputActor combatState action
-    outputActor.PostAndReply ReplyWhenReady
+    let newTileset, newStatus = updateOutputState tileset statusState action combatState
+    let newNewStatus =
+        newStatus
+        |> popStatus true false
+    mainLoop newTileset newNewStatus combatState action
     System.Console.ReadKey() |> ignore
     0 // return an integer exit code
