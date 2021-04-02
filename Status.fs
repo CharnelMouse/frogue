@@ -14,6 +14,20 @@ let pushStatus statusState text =
 
 let private charsToString = Array.map string >> String.concat ""
 
+let private splitAtWrap ind (str: string) =
+    let trimStreamPartition (h, t) =
+        (charsToString h).TrimEnd ' ', (charsToString t).TrimStart ' '
+    str.ToCharArray()
+    |> Array.splitAt ind
+    |> function
+    | hs, ts when Array.last hs = ' ' || Array.head ts = ' ' ->
+        hs, ts
+    | hs, ts ->
+        let spaceIndex =
+            Array.FindLastIndex (hs, (fun c -> c = ' '))
+        hs.[0..spaceIndex], Array.append hs.[spaceIndex+1..] ts
+    |> trimStreamPartition
+
 let private popStatusLine reset fullLinesOnly statusState =
     let buffer = statusState.StatusBuffer
     let stream = buffer.Stream
@@ -33,13 +47,7 @@ let private popStatusLine reset fullLinesOnly statusState =
     | _ ->
         let continueString = "<cont.>"
         let stopLength = boxLength - (continueString.Length + 1)
-        let poppedString, remainingStream =
-            stream.ToCharArray()
-            |> Array.splitAt stopLength
-            |> (fun (a, b) ->
-                (charsToString a).TrimEnd ' ',
-                (charsToString b).TrimStart ' '
-               )
+        let poppedString, remainingStream = splitAtWrap stopLength stream
         writeBox (poppedString + " " + continueString) bar reset
         Console.ReadKey(true) |> ignore
         let remainingBuffer = {buffer with Stream = remainingStream}
