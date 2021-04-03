@@ -69,6 +69,35 @@ let private popControllers (stream: string list) =
     let nControllers = int stream.[0]
     List.map importController stream.[1..nControllers] |> Map.ofList, stream.[(nControllers + 1)..]
 
+let private exportControllerRelation ((c1, c2), r) =
+    c1 + ";" + c2 + ";" + string r
+
+let private importControllerRelation (str: string) =
+    let tokens = str.Split ';' |> Array.toList
+    match tokens with
+    | []
+    | [_]
+    | [_; _] ->
+        failwith "invalid controller relation: too few parameters"
+    | _ :: _ :: _ :: _ :: _ ->
+        failwith "invalid controller relation: too many parameters"
+    | [c1; c2; r] ->
+        match r with
+        | "SameController" ->
+            (c1, c2), SameController
+        | "Enemy" ->
+            (c1, c2), Enemy
+        | _ ->
+            failwithf "invalid controller relation: unrecognised relation: %s" r
+
+let private pushControllerRelations controllerRelations stream =
+    let nControllerRelations = Map.count controllerRelations
+    stream @ (string nControllerRelations :: List.map exportControllerRelation (Map.toList controllerRelations))
+
+let private popControllerRelations (stream: string list) =
+    let nControllerRelations = int stream.[0]
+    List.map importControllerRelation stream.[1..nControllerRelations] |> Map.ofList, stream.[(nControllerRelations + 1)..]
+
 let private pushActors actors stream =
     let a = Map.toList actors
     let nActors = List.length a
@@ -162,10 +191,12 @@ let exportGameState combatState tileset statusState =
         ActorCombatQueue = actorCombatQueue
         ActorCombatPositions = actorCombatPositions
         Controllers = controllers
+        ControllerRelations = controllerRelations
         } = combatState
     let {StatusBar = statusBar} = statusState
     []
     |> pushControllers controllers
+    |> pushControllerRelations controllerRelations
     |> pushActors actors
     |> pushActorCombatQueue actorCombatQueue
     |> pushActorCombatPositions actorCombatPositions
@@ -173,7 +204,8 @@ let exportGameState combatState tileset statusState =
     |> pushRest statusBar tileset
 
 let importGameState (stream: string list) =
-    let (controllers, actorsFirst) = popControllers stream
+    let (controllers, relationsFirst) = popControllers stream
+    let (controllerRelations, actorsFirst) = popControllerRelations relationsFirst
     let (actors, queueFirst) = popActors actorsFirst
     let (actorCombatQueue, positionsFirst) = popActorCombatQueue queueFirst
     let (actorCombatPositions, mapFirst) = popActorCombatPositions positionsFirst
@@ -184,6 +216,7 @@ let importGameState (stream: string list) =
         ActorCombatPositions = actorCombatPositions
         CombatMap = map
         Controllers = controllers
+        ControllerRelations = controllerRelations
     }
     let statusState = {
         StatusBar = {Start = {X = int rest.[0]; Y = int rest.[1]}; Length = int rest.[2]}

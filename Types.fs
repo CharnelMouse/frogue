@@ -69,12 +69,17 @@ type Tileset =
 | DefaultTileset
 | DottedTileset
 
+type Relation =
+| SameController
+| Enemy
+
 type CombatState = {
     Actors: Map<ActorID, Actor>
     ActorCombatQueue: ActorID list
     ActorCombatPositions: Map<ActorID, Position>
     CombatMap: CombatMap
     Controllers: Map<ControllerName, ControllerInfo>
+    ControllerRelations: Map<ControllerName*ControllerName, Relation>
 }
 
 type GameState =

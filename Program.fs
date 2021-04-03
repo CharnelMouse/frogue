@@ -78,6 +78,13 @@ let private startingCombatState = {
         "ai", AIController
     ]
     |> Map.ofList
+    ControllerRelations = [
+        ("player", "player"), SameController
+        ("player", "ai"), Enemy
+        ("ai", "player"), Enemy
+        ("ai", "ai"), SameController
+    ]
+    |> Map.ofList
 }
 
 let private startingTileset = DefaultTileset
