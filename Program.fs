@@ -97,25 +97,20 @@ let rec private mainLoop tileset statusState game =
         match action with
         | PlayerAction SaveGameAction ->
             saveGame "save.sav" postExecuteCombat postUpdateTileset postUpdateStatus
-        | _ -> ()
+        | _ ->
+            ()
         let newCombat = updateTime postExecuteCombat action
-        let anyPlayerCombatActor =
+        let playerCombatActors, nonPlayerCombatActors =
             newCombat.Actors
-            |> Map.exists (fun id {Controller = c} ->
-                List.contains id newCombat.ActorCombatQueue && c = Player
-                )
-        let anyNonPlayerCombatActor =
-            newCombat.Actors
-            |> Map.exists (fun id {Controller = c} ->
-                List.contains id newCombat.ActorCombatQueue && c <> Player
-                )
-        match anyPlayerCombatActor, anyNonPlayerCombatActor, action with
-        | false, _, _ ->
+            |> Map.filter (fun id _ -> List.contains id newCombat.ActorCombatQueue)
+            |> Map.partition (fun _ {Controller = c} -> c = Player)
+        match Map.isEmpty playerCombatActors, Map.isEmpty nonPlayerCombatActors, action with
+        | true, _, _ ->
             postUpdateStatus
             |> pushDieMessage
             |> popStatus false false
             |> ignore
-        | true, false, _ ->
+        | false, true, _ ->
             let newStatus =
                 postUpdateStatus
                 |> popStatus false false
@@ -124,11 +119,11 @@ let rec private mainLoop tileset statusState game =
                 |> Map.toList
                 |> List.map (fun (_, a) -> a)
             mainLoop postUpdateTileset newStatus (Win actorList)
-        | true, true, PlayerAction QuitAction ->
+        | false, false, PlayerAction QuitAction ->
             postUpdateStatus
             |> popStatus false false
             |> ignore
-        | true, true, _ ->
+        | false, false, _ ->
             let currentActorID = newCombat.ActorCombatQueue.Head
             let currentActor =
                 newCombat.Actors
