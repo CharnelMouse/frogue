@@ -1,6 +1,7 @@
 module ActionGenerator
 open Types
 open Input
+open ActionTypes
 open CommandParser
 open ScreenWriter
 open Script

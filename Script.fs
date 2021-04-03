@@ -3,6 +3,7 @@ open Types
 open Compass
 open CombatMap
 open CombatGraph
+open ActionTypes
 open CommandParser
 
 let private getAnyoneAction = function

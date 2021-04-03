@@ -1,5 +1,6 @@
 module Output
 open Types
+open ActionTypes
 open ScreenWriter
 open Status
 open MapWriter

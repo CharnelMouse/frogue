@@ -2,6 +2,7 @@ module CommandParser
 open Types
 open CombatMap
 open Command
+open ActionTypes
 
 type BlockedAction =
 | MoveActionBlockedByAlly

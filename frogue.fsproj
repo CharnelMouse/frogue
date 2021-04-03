@@ -12,6 +12,7 @@
     <Compile Include="CombatMap.fs" />
     <Compile Include="Dijkstra.fs" />
     <Compile Include="CombatGraph.fs" />
+    <Compile Include="ActionTypes.fs" />
     <Compile Include="CommandParser.fs" />
     <Compile Include="Tilesets.fs" />
     <Compile Include="DataConverter.fs" />
