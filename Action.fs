@@ -17,12 +17,12 @@ let private changePlayerPosition pos combatState =
 
 let private changeMaybeActorController controller maybeActor =
     match maybeActor with
-    | Some actor -> Some {actor with Controller = controller}
+    | Some actor -> Some {actor with ControllerName = controller}
     | None -> None
 
 let private changeActorController id controller combatState =
     let currentActorID = combatState.ActorCombatQueue.Head
-    let {Controller = targetController} =
+    let {ControllerName = targetController} =
         combatState.Actors
         |> Map.find id
     let newActors =

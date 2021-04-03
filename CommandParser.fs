@@ -34,9 +34,9 @@ let resolveMoveCommand combatState direction =
         |> Map.tryFindKey (fun _ p -> p = newPos)
     match blockingActorID with
     | Some id ->
-        let controller = combatState.Actors.[id].Controller
-        match controller, tryGetTileAt newPos map with
-        | cont, Some _ when cont = currentActor.Controller ->
+        let controllerName = combatState.Actors.[id].ControllerName
+        match controllerName, tryGetTileAt newPos map with
+        | cont, Some _ when cont = currentActor.ControllerName ->
             BlockedAction MoveActionBlockedByAlly
         | _, Some _ ->
             Action (AnyoneAction (AttackAction (id, combatState.Actors.[id], combatState.ActorCombatPositions.[id])))
@@ -95,11 +95,11 @@ let private resolveMindSwapToCommand combatState direction =
             let blockingActor =
                 combatState.Actors
                 |> Map.find id
-            match blockingActor.Controller with
-            | c when c = actor.Controller ->
+            match blockingActor.ControllerName with
+            | c when c = actor.ControllerName ->
                 BlockedAction MindSwapToActionOnControlledActor
             | _ ->
-                (id, actor.Controller)
+                (id, actor.ControllerName)
                 |> MindSwapActorAction
                 |> AnyoneAction
                 |> Action

@@ -29,35 +29,35 @@ let private startingCombatState = {
         0,
         {
             Tile = PlayerTile
-            Controller = Player
+            ControllerName = "player"
             Name = "adventurer"
             Script = WaitScript
         }
         1,
         {
             Tile = OrcTile
-            Controller = AIController
+            ControllerName = "ai"
             Name = "orc"
             Script = DumbHunt
         }
         2,
         {
             Tile = OrcTile
-            Controller = AIController
+            ControllerName = "ai"
             Name = "orc"
             Script = DumbHunt
         }
         3,
         {
             Tile = OrcTile
-            Controller = AIController
+            ControllerName = "ai"
             Name = "orc"
             Script = DumbHunt
         }
         4,
         {
             Tile = OrcTile
-            Controller = AIController
+            ControllerName = "ai"
             Name = "orc"
             Script = DumbHunt
         }
@@ -73,13 +73,18 @@ let private startingCombatState = {
     ]
     |> Map.ofList
     CombatMap = levelMap
+    Controllers = [
+        "player", Player
+        "ai", AIController
+    ]
+    |> Map.ofList
 }
 
 let private startingTileset = DefaultTileset
 
 let private startingStatusState = {
     StatusBar = {Start = {X = 0; Y = levelMap.Height + 1}; Length = 40}
-    StatusBuffer = {Receiver = Player; Stream = ""}
+    StatusBuffer = {Receiver = "player"; Stream = ""}
 }
 
 let rec private mainLoop tileset statusState game =
@@ -104,7 +109,7 @@ let rec private mainLoop tileset statusState game =
         let playerCombatActors, nonPlayerCombatActors =
             newCombat.Actors
             |> Map.filter (fun id _ -> List.contains id newCombat.ActorCombatQueue)
-            |> Map.partition (fun _ {Controller = c} -> c = Player)
+            |> Map.partition (fun _ {ControllerName = cn} -> cn = "player")
         match Map.isEmpty playerCombatActors, Map.isEmpty nonPlayerCombatActors, action with
         | true, _, _ ->
             postUpdateStatus

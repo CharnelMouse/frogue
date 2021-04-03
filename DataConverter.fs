@@ -3,11 +3,7 @@ open Types
 open Tilesets
 
 let private exportActor (id, actor) =
-    let controller =
-        match actor.Controller with
-        | Player -> "player"
-        | AIController -> "ai"
-    let name = actor.Name
+    let {Name = name; ControllerName = controller} = actor
     let script =
         match actor.Script with
         | WaitScript -> "waitAI"
@@ -26,15 +22,11 @@ let private exportActor (id, actor) =
 let private importActor (str: string) =
     let vals = Array.toList (str.Split ";")
     match vals with
-    | [id; name; tile; controller; script]  ->
+    | [id; name; tile; controllerName; script]  ->
         int id,
         {
             Tile = getActorTile (char tile)
-            Controller =
-                match controller with
-                | "player" -> Player
-                | "ai" -> AIController
-                | _ -> failwith ("invalid actor: unrecognised controller: " + controller)
+            ControllerName = controllerName
             Name = name
             Script =
                 match script with
@@ -44,6 +36,38 @@ let private importActor (str: string) =
                 | _ -> failwith ("invalid actor: unrecognised AI: " + script)
         }
     | _ -> failwith ("invalid actor: wrong length: " + str)
+
+let private exportController (name, controllerType) =
+    let ts =
+        match controllerType with
+        | Player -> "player"
+        | AIController -> "ai"
+    name + ";" + ts
+
+let private importController (str: string) =
+    let tokens = str.Split ';' |> Array.toList
+    match tokens with
+    | []
+    | [_] ->
+        failwith "invalid controller: too few parameters"
+    | _ :: _ :: _ :: _ ->
+        failwith "invalid controller: too many parameters"
+    | [n; t] ->
+        match t with
+        | "player" ->
+            n, Player
+        | "ai" ->
+            n, AIController
+        | _ ->
+            failwithf "invalid controller: unrecognised type: %s" t
+
+let private pushControllers controllers stream =
+    let nControllers = Map.count controllers
+    stream @ (string nControllers :: List.map exportController (Map.toList controllers))
+
+let private popControllers (stream: string list) =
+    let nControllers = int stream.[0]
+    List.map importController stream.[1..nControllers] |> Map.ofList, stream.[(nControllers + 1)..]
 
 let private pushActors actors stream =
     let a = Map.toList actors
@@ -132,9 +156,16 @@ let private pushRest statusBar (tileset: Tileset) (stream: string list) =
     ]
 
 let exportGameState combatState tileset statusState =
-    let {CombatMap = map; Actors = actors; ActorCombatQueue = actorCombatQueue; ActorCombatPositions = actorCombatPositions} = combatState
+    let {
+        CombatMap = map
+        Actors = actors
+        ActorCombatQueue = actorCombatQueue
+        ActorCombatPositions = actorCombatPositions
+        Controllers = controllers
+        } = combatState
     let {StatusBar = statusBar} = statusState
     []
+    |> pushControllers controllers
     |> pushActors actors
     |> pushActorCombatQueue actorCombatQueue
     |> pushActorCombatPositions actorCombatPositions
@@ -142,7 +173,8 @@ let exportGameState combatState tileset statusState =
     |> pushRest statusBar tileset
 
 let importGameState (stream: string list) =
-    let (actors, queueFirst) = popActors stream
+    let (controllers, actorsFirst) = popControllers stream
+    let (actors, queueFirst) = popActors actorsFirst
     let (actorCombatQueue, positionsFirst) = popActorCombatQueue queueFirst
     let (actorCombatPositions, mapFirst) = popActorCombatPositions positionsFirst
     let (map, rest) = popMap mapFirst
@@ -151,10 +183,11 @@ let importGameState (stream: string list) =
         ActorCombatQueue = actorCombatQueue
         ActorCombatPositions = actorCombatPositions
         CombatMap = map
+        Controllers = controllers
     }
     let statusState = {
         StatusBar = {Start = {X = int rest.[0]; Y = int rest.[1]}; Length = int rest.[2]}
-        StatusBuffer = {Receiver = Player; Stream = ""}
+        StatusBuffer = {Receiver = "player"; Stream = ""}
     }
     let tileset =
         match rest.[3] with

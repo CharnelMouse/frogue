@@ -71,20 +71,20 @@ let pushDieMessage statusState =
     pushStatus statusState "You die! Press any key to exit."
 
 let private subjectByController subject receiver =
-    match subject.Controller with
+    match subject.ControllerName with
     | a when a = receiver -> "You"
     | _ -> "The " + subject.Name
 
 let private statusByController selfStatus otherSuffix endMark actor object receiver =
     let subject = subjectByController actor receiver
     let suffix =
-        match actor.Controller with
+        match actor.ControllerName with
         | a when a = receiver -> selfStatus
         | _ -> otherSuffix
     subject + " " + suffix +
     match object with
     | None -> endMark
-    | Some a when a.Controller = receiver -> " you" + endMark
+    | Some a when a.ControllerName = receiver -> " you" + endMark
     | Some a -> " the " + a.Name + endMark
 
 let pushStatusByController selfStatus otherSuffix object endMark currentActor statusState =
@@ -94,7 +94,7 @@ let pushStatusByController selfStatus otherSuffix object endMark currentActor st
 let popStatusIfReceiverTurnOrFullLineInBuffer reset currentActor statusState =
     let buffer = statusState.StatusBuffer
     match buffer.Receiver, buffer.Stream.Length with
-    | r, _ when r = currentActor.Controller ->
+    | r, _ when r = currentActor.ControllerName ->
         popStatus reset false statusState
     | _, l when l > statusState.StatusBar.Length ->
         popStatus reset true statusState

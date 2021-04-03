@@ -16,9 +16,13 @@ type CombatMapTile =
 | WallTile
 | UnknownMapTile
 
-type Controller =
+type ControllerName = string
+
+type ControllerType =
 | Player
 | AIController
+
+type ControllerInfo = ControllerType
 
 type ActorID = int
 
@@ -31,7 +35,7 @@ type AICombatScript =
 
 type Actor = {
     Tile: CombatActorTile
-    Controller: Controller
+    ControllerName: ControllerName
     Name: ActorName
     Script: AICombatScript
 }
@@ -48,7 +52,7 @@ type TextBox = {
 }
 
 type StatusBuffer = {
-    Receiver: Controller
+    Receiver: ControllerName
     Stream: string
 }
 
@@ -70,6 +74,7 @@ type CombatState = {
     ActorCombatQueue: ActorID list
     ActorCombatPositions: Map<ActorID, Position>
     CombatMap: CombatMap
+    Controllers: Map<ControllerName, ControllerInfo>
 }
 
 type GameState =

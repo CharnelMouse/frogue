@@ -31,9 +31,14 @@ let decideAction combatState =
         | Some id -> AttackAction (id, combatState.Actors.[id], combatState.ActorCombatPositions.[id])
         | None -> WaitAction
     | DumbHunt ->
+        let playerControllerNames =
+            combatState.Controllers
+            |> Map.filter (fun _ t -> t = Player)
+            |> Map.toList
+            |> List.map (fun (n, _) -> n)
         let playerIDs =
             combatState.Actors
-            |> Map.filter (fun _ {Controller = c} -> c = Player)
+            |> Map.filter (fun _ {ControllerName = c} -> List.contains c playerControllerNames)
             |> Map.toList
             |> List.map (fun (id, _) -> id)
         let playerPositions =

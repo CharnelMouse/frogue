@@ -12,7 +12,7 @@ type AnyoneAction =
 | MoveAction of Position * Position
 | OpenDoorAction of Position
 | CloseDoorAction of Position
-| MindSwapActorAction of ActorID * Controller
+| MindSwapActorAction of ActorID * ControllerName
 | AttackAction of ActorID * Actor * Position
 | WaitAction
 

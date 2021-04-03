@@ -8,7 +8,7 @@ open MapWriter
 let private fakeDoorActor = {
     Name = "door"
     Tile = UnknownActorTile
-    Controller = AIController
+    ControllerName = "dummy"
     Script = WaitScript
     }
 
