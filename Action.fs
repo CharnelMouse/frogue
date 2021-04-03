@@ -55,37 +55,22 @@ let private removeActor id combatState =
 
 let executeAction combatState action =
     match action with
-    | CompleteAnyoneAction (OpenDoorAction toPos) ->
+    | AnyoneAction (OpenDoorAction toPos) ->
         executeOpenDoorAction toPos combatState
-    | CompleteAnyoneAction (CloseDoorAction toPos) ->
+    | AnyoneAction (CloseDoorAction toPos) ->
         executeCloseDoorAction toPos combatState
-    | CompleteAnyoneAction (MoveAction (_, newPos)) ->
+    | AnyoneAction (MoveAction (_, newPos)) ->
         changePlayerPosition newPos combatState
-    | CompleteAnyoneAction (MindSwapActorAction (index, controller)) ->
+    | AnyoneAction (MindSwapActorAction (index, controller)) ->
         changeActorController index controller combatState
-    | CompleteAnyoneAction (AttackAction (id, _, _)) ->
+    | AnyoneAction (AttackAction (id, _, _)) ->
         removeActor id combatState
-    | BlockedAction MoveActionBlockedByAlly
-    | BlockedAction MoveActionBlockedByVoid
-    | BlockedAction MoveActionBlockedByWall
-    | BlockedAction OpenToActionBlockedByVoid
-    | BlockedAction OpenToActionBlockedByInvalidTile
-    | BlockedAction CloseToActionBlockedByVoid
-    | BlockedAction CloseToActionBlockedByInvalidTile
-    | BlockedAction CloseToActionBlockedByActor
-    | BlockedAction MindSwapToActionBlockedByVoid
-    | BlockedAction MindSwapToActionBlockedByNoActor
-    | BlockedAction MindSwapToActionOnControlledActor
-    | CompletePlayerAction StartSession
-    | CompletePlayerAction StartSessionWithUnknownTileset
-    | CompletePlayerAction ToggleTileSetAction
-    | CompleteAnyoneAction WaitAction
-    | CompletePlayerAction HelpAction
-    | CompletePlayerAction QuitAction
-    | CompletePlayerAction CancelAction
-    | CompletePlayerAction SaveGameAction
-    | CompletePlayerAction UnknownAction
-    | IncompleteAction OpenAction
-    | IncompleteAction CloseAction
-    | IncompleteAction MindSwapAction ->
+    | PlayerAction StartSession
+    | PlayerAction StartSessionWithUnknownTileset
+    | PlayerAction ToggleTileSetAction
+    | AnyoneAction WaitAction
+    | PlayerAction HelpAction
+    | PlayerAction QuitAction
+    | PlayerAction CancelAction
+    | PlayerAction SaveGameAction ->
         combatState

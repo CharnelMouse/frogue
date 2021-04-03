@@ -26,21 +26,21 @@ let private newCommandTable = Map [
      Character 'o'                     , IncompleteCommand Open
      Character 'c'                     , IncompleteCommand Close
      Character 'm'                     , IncompleteCommand MindSwap
-     Character '.'                     , CompleteCommand Wait
-     Character '?'                     , CompleteCommand Help
-     Character 'q'                     , CompleteCommand Quit
-     Character 's'                     , CompleteCommand SaveGameCommand
-     Character 't'                     , CompleteCommand ToggleTilesetCommand
-     Special (ConsoleKey.LeftArrow, 0) , CompleteCommand (Move West)
-     Special (ConsoleKey.RightArrow, 0), CompleteCommand (Move East)
-     Special (ConsoleKey.UpArrow, 0)   , CompleteCommand (Move North)
-     Special (ConsoleKey.DownArrow, 0) , CompleteCommand (Move South)
+     Character '.'                     , Command Wait
+     Character '?'                     , Command Help
+     Character 'q'                     , Command Quit
+     Character 's'                     , Command SaveGameCommand
+     Character 't'                     , Command ToggleTilesetCommand
+     Special (ConsoleKey.LeftArrow, 0) , Command (Move West)
+     Special (ConsoleKey.RightArrow, 0), Command (Move East)
+     Special (ConsoleKey.UpArrow, 0)   , Command (Move North)
+     Special (ConsoleKey.DownArrow, 0) , Command (Move South)
 ]
 
 let private getNewCommand() =
     Console.ReadKey(true)
     |> keyboardInput
-    |> tryLookupWithDefault newCommandTable (CompleteCommand UnknownCommand)
+    |> tryLookup newCommandTable
 
 let private directionCommandTable = Map [
     Special (ConsoleKey.LeftArrow , 0), Some West
@@ -60,13 +60,23 @@ let rec private getDirectionOrCancel() =
 
 let private completeDirectionalCommand command =
     match getDirectionOrCancel() with
-    | Some direction -> CompleteCommand (command direction)
-    | None           -> CompleteCommand Cancel
+    | Some direction -> command direction
+    | None           -> Cancel
 
-let getCommand action =
-    match action with
-    | CompletePlayerAction _ | CompleteAnyoneAction _ | BlockedAction _ ->
-        getNewCommand()
-    | IncompleteAction OpenAction -> completeDirectionalCommand OpenTo
-    | IncompleteAction CloseAction -> completeDirectionalCommand CloseTo
-    | IncompleteAction MindSwapAction -> completeDirectionalCommand MindSwapTo
+let rec getCommand messageWriter =
+        let command = getNewCommand()
+        match command with
+        | Some (Command c) ->
+            c
+        | Some (IncompleteCommand Open) ->
+            messageWriter "Open in which direction?"
+            completeDirectionalCommand OpenTo
+        | Some (IncompleteCommand Close) ->
+            messageWriter "Close in which direction?"
+            completeDirectionalCommand CloseTo
+        | Some (IncompleteCommand MindSwap) ->
+            messageWriter "Mind swap in which direction?"
+            completeDirectionalCommand MindSwapTo
+        | None ->
+            messageWriter "Unknown command, type ? for help."
+            getCommand messageWriter

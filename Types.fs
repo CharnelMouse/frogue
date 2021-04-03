@@ -63,7 +63,7 @@ type Direction =
 | East
 | West
 
-type CompletePlayerAction =
+type PlayerAction =
 | StartSession
 | StartSessionWithUnknownTileset
 | HelpAction
@@ -71,9 +71,8 @@ type CompletePlayerAction =
 | CancelAction
 | SaveGameAction
 | ToggleTileSetAction
-| UnknownAction
 
-type CompleteAnyoneAction =
+type AnyoneAction =
 | MoveAction of Position * Position
 | OpenDoorAction of Position
 | CloseDoorAction of Position
@@ -100,10 +99,12 @@ type IncompleteAction =
 | MindSwapAction
 
 type Action =
-| CompletePlayerAction of CompletePlayerAction
-| CompleteAnyoneAction of CompleteAnyoneAction
+| PlayerAction of PlayerAction
+| AnyoneAction of AnyoneAction
+
+type ParsedCommand =
 | BlockedAction of BlockedAction
-| IncompleteAction of IncompleteAction
+| Action of Action
 
 type Tileset =
 | DefaultTileset

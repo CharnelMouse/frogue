@@ -6,9 +6,9 @@ let private rotate (lst: 'T list) =
 
 let updateTime combatState action = 
     match action with
-        | CompleteAnyoneAction _ ->
+        | AnyoneAction _ ->
             {combatState with
                 ActorCombatQueue = rotate combatState.ActorCombatQueue
             }
-        | _ ->
+        | PlayerAction _ ->
             combatState

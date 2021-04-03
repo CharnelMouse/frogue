@@ -21,14 +21,14 @@ let resolveMoveCommand combatState direction =
         | cont, Some _ when cont = currentActor.Controller ->
             BlockedAction MoveActionBlockedByAlly
         | _, Some _ ->
-            CompleteAnyoneAction (AttackAction (id, combatState.Actors.[id], combatState.ActorCombatPositions.[id]))
+            Action (AnyoneAction (AttackAction (id, combatState.Actors.[id], combatState.ActorCombatPositions.[id])))
         | _, None ->
             BlockedAction MoveActionBlockedByVoid
     | None ->
         match tryGetTileAt newPos map with
         | Some WallTile -> BlockedAction MoveActionBlockedByWall
-        | Some ClosedDoorTile -> CompleteAnyoneAction (OpenDoorAction newPos)
-        | Some _ -> CompleteAnyoneAction (MoveAction (oldPos, newPos))
+        | Some ClosedDoorTile -> Action (AnyoneAction (OpenDoorAction newPos))
+        | Some _ -> Action (AnyoneAction (MoveAction (oldPos, newPos)))
         | None -> BlockedAction MoveActionBlockedByVoid
 
 let private resolveOpenToCommand combatState direction =
@@ -37,7 +37,7 @@ let private resolveOpenToCommand combatState direction =
     let map = combatState.CombatMap
     let toPos = neighbour pos direction
     match tryGetTileAt toPos map with
-    | Some ClosedDoorTile -> CompleteAnyoneAction (OpenDoorAction toPos)
+    | Some ClosedDoorTile -> Action (AnyoneAction (OpenDoorAction toPos))
     | Some _ -> BlockedAction OpenToActionBlockedByInvalidTile
     | None -> BlockedAction OpenToActionBlockedByVoid
 
@@ -51,7 +51,7 @@ let private resolveCloseToCommand combatState direction =
         |> Map.exists (fun _ p -> p = neighbour pos direction)
     match tryGetTileAt toPos map, blockingActor with
     | _, true -> BlockedAction CloseToActionBlockedByActor
-    | Some OpenDoorTile, false -> CompleteAnyoneAction (CloseDoorAction toPos)
+    | Some OpenDoorTile, false -> Action (AnyoneAction (CloseDoorAction toPos))
     | Some _, false -> BlockedAction CloseToActionBlockedByInvalidTile
     | None, false -> BlockedAction CloseToActionBlockedByVoid
 
@@ -83,35 +83,28 @@ let private resolveMindSwapToCommand combatState direction =
             | _ ->
                 (id, actor.Controller)
                 |> MindSwapActorAction
-                |> CompleteAnyoneAction
+                |> AnyoneAction
+                |> Action
 
 let resolveCommand combatState command =
     match command with
-    | CompleteCommand (Move direction) ->
+    | Move direction ->
         resolveMoveCommand combatState direction
-    | CompleteCommand (OpenTo direction) ->
+    | OpenTo direction ->
         resolveOpenToCommand combatState direction
-    | CompleteCommand (CloseTo direction) ->
+    | CloseTo direction ->
         resolveCloseToCommand combatState direction
-    | CompleteCommand (MindSwapTo direction) ->
+    | MindSwapTo direction ->
         resolveMindSwapToCommand combatState direction
-    | CompleteCommand Wait ->
-        CompleteAnyoneAction WaitAction
-    | CompleteCommand Help ->
-        CompletePlayerAction HelpAction
-    | CompleteCommand Quit ->
-        CompletePlayerAction QuitAction
-    | CompleteCommand Cancel ->
-        CompletePlayerAction CancelAction
-    | CompleteCommand SaveGameCommand ->
-        CompletePlayerAction SaveGameAction
-    | CompleteCommand ToggleTilesetCommand ->
-        CompletePlayerAction ToggleTileSetAction
-    | CompleteCommand UnknownCommand ->
-        CompletePlayerAction UnknownAction
-    | IncompleteCommand Open ->
-        IncompleteAction OpenAction
-    | IncompleteCommand Close ->
-        IncompleteAction CloseAction
-    | IncompleteCommand MindSwap ->
-        IncompleteAction MindSwapAction
+    | Wait ->
+        Action (AnyoneAction WaitAction)
+    | Help ->
+        Action (PlayerAction HelpAction)
+    | Quit ->
+        Action (PlayerAction QuitAction)
+    | Cancel ->
+        Action (PlayerAction CancelAction)
+    | SaveGameCommand ->
+        Action (PlayerAction SaveGameAction)
+    | ToggleTilesetCommand ->
+        Action (PlayerAction ToggleTileSetAction)

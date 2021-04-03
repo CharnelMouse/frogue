@@ -81,9 +81,9 @@ let private startingStatusState = {
     StatusBuffer = {Receiver = Player; Stream = ""}
 }
 
-let private startingAction = CompletePlayerAction StartSession
+let private startingAction = PlayerAction StartSession
 
-let rec private mainLoop tileset statusState game action =
+let rec private mainLoop tileset statusState game =
     match game with
     | Win actors ->
         actors
@@ -93,14 +93,14 @@ let rec private mainLoop tileset statusState game action =
         |> popStatus false false
         |> ignore
     | Combat combatState ->
-        let newAction = generateAction combatState action
-        let postExecuteCombat = executeAction combatState newAction
-        let postUpdateTileset, postUpdateStatus = updateOutputState tileset statusState newAction postExecuteCombat
-        match newAction with
-        | CompletePlayerAction SaveGameAction ->
+        let action = generateAction combatState statusState
+        let postExecuteCombat = executeAction combatState action
+        let postUpdateTileset, postUpdateStatus = updateOutputState tileset statusState action postExecuteCombat
+        match action with
+        | PlayerAction SaveGameAction ->
             saveGame "save.sav" postExecuteCombat postUpdateTileset postUpdateStatus
         | _ -> ()
-        let newCombat = updateTime postExecuteCombat newAction
+        let newCombat = updateTime postExecuteCombat action
         let anyPlayerCombatActor =
             newCombat.Actors
             |> Map.exists (fun id {Controller = c} ->
@@ -111,7 +111,7 @@ let rec private mainLoop tileset statusState game action =
             |> Map.exists (fun id {Controller = c} ->
                 List.contains id newCombat.ActorCombatQueue && c <> Player
                 )
-        match anyPlayerCombatActor, anyNonPlayerCombatActor, newAction with
+        match anyPlayerCombatActor, anyNonPlayerCombatActor, action with
         | false, _, _ ->
             postUpdateStatus
             |> pushDieMessage
@@ -125,8 +125,8 @@ let rec private mainLoop tileset statusState game action =
                 newCombat.Actors
                 |> Map.toList
                 |> List.map (fun (_, a) -> a)
-            mainLoop postUpdateTileset newStatus (Win actorList) newAction
-        | true, true, CompletePlayerAction QuitAction ->
+            mainLoop postUpdateTileset newStatus (Win actorList)
+        | true, true, PlayerAction QuitAction ->
             postUpdateStatus
             |> popStatus false false
             |> ignore
@@ -138,7 +138,7 @@ let rec private mainLoop tileset statusState game action =
             let newStatusState =
                 postUpdateStatus
                 |> popStatusIfReceiverTurnOrFullLineInBuffer true currentActor
-            mainLoop postUpdateTileset newStatusState (Combat newCombat) newAction
+            mainLoop postUpdateTileset newStatusState (Combat newCombat)
 
 [<EntryPoint>]
 let private main argv =
@@ -150,6 +150,6 @@ let private main argv =
     let newNewStatus =
         newStatus
         |> popStatus true false
-    mainLoop newTileset newNewStatus (Combat combatState) action
+    mainLoop newTileset newNewStatus (Combat combatState)
     System.Console.ReadKey() |> ignore
     0 // return an integer exit code

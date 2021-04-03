@@ -5,8 +5,11 @@ open CombatGraph
 open CommandParser
 
 let private getAnyoneAction = function
-| CompleteAnyoneAction act -> Some act
-| _ -> None
+| Action (AnyoneAction act) ->
+    Some act
+| Action (PlayerAction _)
+| BlockedAction _ ->
+    None
 
 let decideAction combatState =
     let actorID = combatState.ActorCombatQueue.Head
@@ -62,9 +65,11 @@ let decideAction combatState =
                 |> List.sortBy (fun (_, _, cost) -> cost)
             let nonWaitDownhillActions =
                 downhillNeighbours
-                |> List.choose ((fun (direction, _, _) -> direction)
-                                >> resolveMoveCommand combatState
-                                >> getAnyoneAction)
+                |> List.choose (
+                    (fun (direction, _, _) -> direction)
+                    >> resolveMoveCommand combatState
+                    >> getAnyoneAction
+                    )
                 |> List.filter (fun act -> act <> WaitAction)
             match nonWaitDownhillActions with
             | [] -> WaitAction

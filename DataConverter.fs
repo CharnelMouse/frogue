@@ -163,7 +163,7 @@ let importGameState (stream: string list) =
         | _ -> DefaultTileset
     let action =
         match rest.[3] with
-        | "DefaultTileset" -> CompletePlayerAction StartSession
-        | "DottedTileset" -> CompletePlayerAction StartSession
-        | _ -> CompletePlayerAction StartSessionWithUnknownTileset
+        | "DefaultTileset" -> PlayerAction StartSession
+        | "DottedTileset" -> PlayerAction StartSession
+        | _ -> PlayerAction StartSessionWithUnknownTileset
     combatState, tileset, statusState, action

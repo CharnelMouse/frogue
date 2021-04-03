@@ -1,7 +1,12 @@
 namespace Command
 open Types
 
-type CompleteCommand =
+type IncompleteCommand =
+| Open
+| Close
+| MindSwap
+
+type Command =
 | Move of Direction
 | OpenTo of Direction
 | CloseTo of Direction
@@ -12,13 +17,7 @@ type CompleteCommand =
 | Cancel
 | SaveGameCommand
 | ToggleTilesetCommand
-| UnknownCommand
 
-type IncompleteCommand =
-| Open
-| Close
-| MindSwap
-
-type Command =
-| CompleteCommand of CompleteCommand
+type CommandInput =
 | IncompleteCommand of IncompleteCommand
+| Command of Command
