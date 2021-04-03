@@ -24,7 +24,7 @@ let rec generateAction worldState statusState =
         match action with
         | BlockedAction ba ->
             match ba with
-            | MoveActionBlockedByAlly -> writeMessage "There's an ally there!"
+            | MoveActionBlockedByControlledActor -> writeMessage "There's one of your characters there!"
             | MoveActionBlockedByVoid -> writeMessage "There's nothing there!"
             | MoveActionBlockedByWall -> writeMessage "You bump up against the wall."
             | OpenToActionBlockedByVoid -> writeMessage "There's nothing there!"

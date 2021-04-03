@@ -5,7 +5,7 @@ open Command
 open ActionTypes
 
 type BlockedAction =
-| MoveActionBlockedByAlly
+| MoveActionBlockedByControlledActor
 | MoveActionBlockedByWall
 | MoveActionBlockedByVoid
 | OpenToActionBlockedByVoid
@@ -34,13 +34,17 @@ let resolveMoveCommand combatState direction =
         |> Map.tryFindKey (fun _ p -> p = newPos)
     match blockingActorID with
     | Some id ->
-        let controllerName = combatState.Actors.[id].ControllerName
-        match controllerName, tryGetTileAt newPos map with
-        | cont, Some _ when cont = currentActor.ControllerName ->
-            BlockedAction MoveActionBlockedByAlly
-        | _, Some _ ->
+        let blockingControllerName = combatState.Actors.[id].ControllerName
+        let controllerRelation =
+            combatState.ControllerRelations
+            |> Map.find (currentActor.ControllerName, blockingControllerName)
+        match controllerRelation, tryGetTileAt newPos map with
+        | SameController, Some _ ->
+            BlockedAction MoveActionBlockedByControlledActor
+        | Enemy, Some _ ->
             Action (AnyoneAction (AttackAction (id, combatState.Actors.[id], combatState.ActorCombatPositions.[id])))
-        | _, None ->
+        | SameController, None
+        | Enemy, None ->
             BlockedAction MoveActionBlockedByVoid
     | None ->
         match tryGetTileAt newPos map with

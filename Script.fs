@@ -23,38 +23,53 @@ let decideAction combatState =
     match script with
     | WaitScript -> WaitAction
     | StandGround ->
-        let neighbourTiles = allNeighbours pos
-        let neighbourID =
-            combatState.ActorCombatPositions
-            |> Map.tryFindKey (fun _ p -> List.contains p neighbourTiles)
-        match neighbourID with
-        | Some id -> AttackAction (id, combatState.Actors.[id], combatState.ActorCombatPositions.[id])
-        | None -> WaitAction
-    | DumbHunt ->
-        let playerControllerNames =
-            combatState.Controllers
-            |> Map.filter (fun _ t -> t = Player)
+        let enemyControllerNames =
+            combatState.ControllerRelations
+            |> Map.filter (fun (c, _) r -> c = actor.ControllerName && r = Enemy)
             |> Map.toList
-            |> List.map (fun (n, _) -> n)
-        let playerIDs =
-            combatState.Actors
-            |> Map.filter (fun _ {ControllerName = c} -> List.contains c playerControllerNames)
+            |> List.map (fun ((_, c), _) -> c)
+        let neighbourTiles = allNeighbours pos
+        let neighbourIDs =
+            combatState.ActorCombatPositions
+            |> Map.filter (fun _ p -> List.contains p neighbourTiles)
             |> Map.toList
             |> List.map (fun (id, _) -> id)
-        let playerPositions =
+        let neighbourControllers =
+            combatState.Actors
+            |> Map.filter (fun id _ -> List.contains id neighbourIDs)
+        let enemyNeighbourIDs =
+            neighbourControllers
+            |> Map.filter (fun _ a -> List.contains a.ControllerName enemyControllerNames)
+            |> Map.toList
+            |> List.map (fun (id, _) -> id)
+        match enemyNeighbourIDs with
+        | h :: _ -> AttackAction (h, Map.find h combatState.Actors, Map.find h combatState.ActorCombatPositions)
+        | [] -> WaitAction
+    | DumbHunt ->
+        let enemyControllerNames =
+            combatState.ControllerRelations
+            |> Map.filter (fun (c, _) r -> c = actor.ControllerName && r = Enemy)
+            |> Map.toList
+            |> List.map (fun ((_, c), _) -> c)
+        let enemyIDs =
+            combatState.Actors
+            |> Map.filter (fun _ {ControllerName = c} -> List.contains c enemyControllerNames)
+            |> Map.toList
+            |> List.map (fun (id, _) -> id)
+        let enemyPositions =
             combatState.ActorCombatPositions
-            |> Map.filter (fun n _ -> List.contains n playerIDs)
+            |> Map.filter (fun n _ -> List.contains n enemyIDs)
             |> Map.toList
             |> List.map (fun (_, p) -> p)
-        let playerMap =
-            playerPositions
+        let enemyMap =
+            enemyPositions
             |> fillCombat combatState.CombatMap [
                 {Type = EmptyTile; Cost = 1}
                 {Type = OpenDoorTile; Cost = 1}
                 {Type = ClosedDoorTile; Cost = 2}
                 ]
         let currentNode =
-            playerMap
+            enemyMap
             |> List.tryFind (fun {NodeID = x} -> x = pos)
         match currentNode with
         | None -> WaitAction
@@ -63,7 +78,7 @@ let decideAction combatState =
                 allDirections
                 |> List.choose (fun dir ->
                     let posInt =
-                        playerMap
+                        enemyMap
                         |> List.tryFind (fun {NodeID = y} -> neighbour pos dir = y)
                     match posInt with
                     | None -> None
