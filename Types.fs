@@ -63,9 +63,11 @@ type Direction =
 | East
 | West
 
+type SessionStartResult =
+| NormalStart
+| StartWithUnknownTileset
+
 type PlayerAction =
-| StartSession
-| StartSessionWithUnknownTileset
 | HelpAction
 | QuitAction
 | CancelAction

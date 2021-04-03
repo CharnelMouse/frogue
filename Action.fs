@@ -65,8 +65,6 @@ let executeAction combatState action =
         changeActorController index controller combatState
     | AnyoneAction (AttackAction (id, _, _)) ->
         removeActor id combatState
-    | PlayerAction StartSession
-    | PlayerAction StartSessionWithUnknownTileset
     | PlayerAction ToggleTileSetAction
     | AnyoneAction WaitAction
     | PlayerAction HelpAction

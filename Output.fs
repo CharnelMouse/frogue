@@ -18,8 +18,6 @@ let updateMapOutputTileset tileset action =
 
 let private updateMapScreen combatState tileset action =
     match action with
-    | PlayerAction StartSession
-    | PlayerAction StartSessionWithUnknownTileset
     | PlayerAction ToggleTileSetAction ->
         redrawMapScreen tileset combatState
     | AnyoneAction (MoveAction (origin, destination)) ->
@@ -42,12 +40,17 @@ let private updateMapScreen combatState tileset action =
     | PlayerAction CancelAction ->
         ()
 
+let private pushStartupStatus statusState startResult =
+    match startResult with
+    | NormalStart ->
+        pushStatus statusState "Ready."
+        |> popStatus true false
+    | StartWithUnknownTileset ->
+        pushStatus statusState "Save game contained unknown tileset, switching to default."
+        |> popStatus true false
+
 let private pushActionStatus actor tileset statusState action =
     match action with
-    | PlayerAction StartSession ->
-        pushStatus statusState "Ready."
-    | PlayerAction StartSessionWithUnknownTileset ->
-        pushStatus statusState "Save game contained unknown tileset, switching to default."
     | AnyoneAction (MoveAction _) -> statusState
     | AnyoneAction (AttackAction (_, object, _)) ->
         pushStatusByController "kill" "kills" (Some object) "!" actor statusState
@@ -68,6 +71,11 @@ let private pushActionStatus actor tileset statusState action =
         | DottedTileset -> "dots"
         + "."
         |> pushStatus statusState
+
+let startOutput tileset statusState sessionStartResult combatState =
+    redrawMapScreen tileset combatState
+    let newStatusState = pushStartupStatus statusState sessionStartResult
+    tileset, newStatusState
 
 let updateOutputState tileset statusState action combatState =
     let newTileset = updateMapOutputTileset tileset action

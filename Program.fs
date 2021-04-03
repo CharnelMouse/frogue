@@ -81,8 +81,6 @@ let private startingStatusState = {
     StatusBuffer = {Receiver = Player; Stream = ""}
 }
 
-let private startingAction = PlayerAction StartSession
-
 let rec private mainLoop tileset statusState game =
     match game with
     | Win actors ->
@@ -142,11 +140,11 @@ let rec private mainLoop tileset statusState game =
 
 [<EntryPoint>]
 let private main argv =
-    let combatState, tileset, statusState, action =
+    let combatState, tileset, statusState, startResult =
         match tryLoadGame "save.sav" with
-        | Some (cs, ts, ss, act) -> cs, ts, ss, act
-        | None -> startingCombatState, startingTileset, startingStatusState, startingAction
-    let newTileset, newStatus = updateOutputState tileset statusState action combatState
+        | Some (cs, ts, ss, res) -> cs, ts, ss, res
+        | None -> startingCombatState, startingTileset, startingStatusState, NormalStart
+    let newTileset, newStatus = startOutput tileset statusState startResult combatState
     let newNewStatus =
         newStatus
         |> popStatus true false
