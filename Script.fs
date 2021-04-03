@@ -1,5 +1,6 @@
 module Script
 open Types
+open Compass
 open CombatMap
 open CombatGraph
 open CommandParser

@@ -1,7 +1,16 @@
 module Input
 open System
-open Types
+open Compass
 open Command
+
+type IncompleteCommand =
+| Open
+| Close
+| MindSwap
+
+type CommandInput =
+| IncompleteCommand of IncompleteCommand
+| Command of Command
 
 type private Character = char
 type private Special = ConsoleKey * int

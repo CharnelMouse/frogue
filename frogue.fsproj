@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Types.fs" />
+    <Compile Include="Compass.fs" />
     <Compile Include="Command.fs" />
     <Compile Include="Input.fs" />
     <Compile Include="CombatMap.fs" />

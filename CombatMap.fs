@@ -1,5 +1,6 @@
 module CombatMap
 open Types
+open Compass
 
 let posIsOnMap pos map =
     Map.containsKey pos map.Tiles
@@ -38,8 +39,6 @@ let neighbour {X = x; Y = y} direction =
     | South -> {X = x; Y = y + 1}
     | East -> {X = x + 1; Y = y}
     | West -> {X = x - 1; Y = y}
-
-let allDirections = [East; West; North; South]
 
 let allNeighbours pos =
     pos

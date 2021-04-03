@@ -57,12 +57,6 @@ type StatusState = {
     StatusBuffer: StatusBuffer
 }
 
-type Direction =
-| North
-| South
-| East
-| West
-
 type SessionStartResult =
 | NormalStart
 | StartWithUnknownTileset
@@ -82,19 +76,6 @@ type AnyoneAction =
 | AttackAction of ActorID * Actor * Position
 | WaitAction
 
-type BlockedAction =
-| MoveActionBlockedByAlly
-| MoveActionBlockedByWall
-| MoveActionBlockedByVoid
-| OpenToActionBlockedByVoid
-| OpenToActionBlockedByInvalidTile
-| CloseToActionBlockedByVoid
-| CloseToActionBlockedByInvalidTile
-| CloseToActionBlockedByActor
-| MindSwapToActionBlockedByVoid
-| MindSwapToActionBlockedByNoActor
-| MindSwapToActionOnControlledActor
-
 type IncompleteAction =
 | OpenAction
 | CloseAction
@@ -103,10 +84,6 @@ type IncompleteAction =
 type Action =
 | PlayerAction of PlayerAction
 | AnyoneAction of AnyoneAction
-
-type ParsedCommand =
-| BlockedAction of BlockedAction
-| Action of Action
 
 type Tileset =
 | DefaultTileset

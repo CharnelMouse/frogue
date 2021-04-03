@@ -3,6 +3,23 @@ open Types
 open CombatMap
 open Command
 
+type BlockedAction =
+| MoveActionBlockedByAlly
+| MoveActionBlockedByWall
+| MoveActionBlockedByVoid
+| OpenToActionBlockedByVoid
+| OpenToActionBlockedByInvalidTile
+| CloseToActionBlockedByVoid
+| CloseToActionBlockedByInvalidTile
+| CloseToActionBlockedByActor
+| MindSwapToActionBlockedByVoid
+| MindSwapToActionBlockedByNoActor
+| MindSwapToActionOnControlledActor
+
+type ParsedCommand =
+| BlockedAction of BlockedAction
+| Action of Action
+
 let resolveMoveCommand combatState direction =
     let currentActorID = combatState.ActorCombatQueue.Head
     let currentActor =
