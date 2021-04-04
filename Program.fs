@@ -36,53 +36,101 @@ let private startingCombatState = {
         1,
         {
             Tile = OrcTile
-            ControllerName = "ai"
+            ControllerName = "orcs"
             Name = "orc"
             Script = DumbHunt
         }
         2,
         {
             Tile = OrcTile
-            ControllerName = "ai"
+            ControllerName = "orcs"
             Name = "orc"
             Script = DumbHunt
         }
         3,
         {
             Tile = OrcTile
-            ControllerName = "ai"
+            ControllerName = "orcs"
             Name = "orc"
             Script = DumbHunt
         }
         4,
         {
             Tile = OrcTile
-            ControllerName = "ai"
+            ControllerName = "orcs"
             Name = "orc"
+            Script = DumbHunt
+        }
+        5,
+        {
+            Tile = PlayerTile
+            ControllerName = "party"
+            Name = "adventurer"
+            Script = DumbHunt
+        }
+        6,
+        {
+            Tile = TrollTile
+            ControllerName = "trolls"
+            Name = "troll"
+            Script = DumbHunt
+        }
+        7,
+        {
+            Tile = OgreTile
+            ControllerName = "ogres"
+            Name = "ogre"
             Script = DumbHunt
         }
     ]
     |> Map.ofList
-    ActorCombatQueue = [0..4]
+    ActorCombatQueue = [0..7]
     ActorCombatPositions = [
         0, {X = 1; Y = 1}
         1, {X = 7; Y = 6}
         2, {X = 8; Y = 5}
         3, {X = 17; Y = 7}
         4, {X = 16; Y = 8}
+        5, {X = 2; Y = 1}
+        6, {X = 17; Y = 5}
+        7, {X = 14; Y = 2}
     ]
     |> Map.ofList
     CombatMap = levelMap
     Controllers = [
         "player", Player
-        "ai", AIController
+        "orcs", AIController
+        "party", AIController
+        "trolls", AIController
+        "ogres", AIController
     ]
     |> Map.ofList
     ControllerRelations = [
         ("player", "player"), SameController
-        ("player", "ai"), Enemy
-        ("ai", "player"), Enemy
-        ("ai", "ai"), SameController
+        ("player", "orcs"), Enemy
+        ("player", "party"), Ally
+        ("player", "trolls"), Enemy
+        ("player", "ogres"), Enemy
+        ("orcs", "player"), Enemy
+        ("orcs", "orcs"), SameController
+        ("orcs", "party"), Enemy
+        ("orcs", "trolls"), Ally
+        ("orcs", "ogres"), Enemy
+        ("party", "player"), Ally
+        ("party", "orcs"), Enemy
+        ("party", "party"), SameController
+        ("party", "trolls"), Enemy
+        ("party", "ogres"), Enemy
+        ("trolls", "player"), Enemy
+        ("trolls", "orcs"), Ally
+        ("trolls", "party"), Enemy
+        ("trolls", "trolls"), SameController
+        ("trolls", "ogres"), Enemy
+        ("ogres", "player"), Enemy
+        ("ogres", "orcs"), Enemy
+        ("ogres", "party"), Enemy
+        ("ogres", "trolls"), Enemy
+        ("ogres", "ogres"), SameController
     ]
     |> Map.ofList
 }
@@ -113,11 +161,19 @@ let rec private mainLoop tileset statusState game =
         | _ ->
             ()
         let newCombat = updateTime postExecuteCombat action
+        let enemyControllerNames =
+            postExecuteCombat.ControllerRelations
+            |> Map.filter (fun (c, _) r -> c = "player" && r = Enemy)
+            |> Map.toList
+            |> List.map (fun ((_, c), _) -> c)
         let playerCombatActors, nonPlayerCombatActors =
             newCombat.Actors
             |> Map.filter (fun id _ -> List.contains id newCombat.ActorCombatQueue)
             |> Map.partition (fun _ {ControllerName = cn} -> cn = "player")
-        match Map.isEmpty playerCombatActors, Map.isEmpty nonPlayerCombatActors, action with
+        let enemyCombatActors =
+            nonPlayerCombatActors
+            |> Map.filter (fun _ {ControllerName = cn} -> List.contains cn enemyControllerNames)
+        match Map.isEmpty playerCombatActors, Map.isEmpty enemyCombatActors, action with
         | true, _, _ ->
             postUpdateStatus
             |> pushDieMessage

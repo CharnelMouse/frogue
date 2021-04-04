@@ -6,6 +6,7 @@ open ActionTypes
 
 type BlockedAction =
 | MoveActionBlockedByControlledActor
+| MoveActionBlockedByAlly
 | MoveActionBlockedByWall
 | MoveActionBlockedByVoid
 | OpenToActionBlockedByVoid
@@ -41,9 +42,12 @@ let resolveMoveCommand combatState direction =
         match controllerRelation, tryGetTileAt newPos map with
         | SameController, Some _ ->
             BlockedAction MoveActionBlockedByControlledActor
+        | Ally, Some _ ->
+            BlockedAction MoveActionBlockedByAlly
         | Enemy, Some _ ->
             Action (AnyoneAction (AttackAction (id, combatState.Actors.[id], combatState.ActorCombatPositions.[id])))
         | SameController, None
+        | Ally, None
         | Enemy, None ->
             BlockedAction MoveActionBlockedByVoid
     | None ->

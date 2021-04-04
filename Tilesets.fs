@@ -15,6 +15,8 @@ let (defaultTilesetParser: CombatTilesetParser) = {
         match tile with
         | PlayerTile -> '@'
         | OrcTile -> 'o'
+        | TrollTile -> 't'
+        | OgreTile -> 'O'
         | UnknownActorTile -> failwith "actor tile not found in tileset"
     CombatMapParser = fun tile ->
         match tile with
@@ -30,6 +32,8 @@ let (dottedTilesetParser: CombatTilesetParser) = {
         match tile with
         | PlayerTile -> '@'
         | OrcTile -> 'o'
+        | TrollTile -> 't'
+        | OgreTile -> 'O'
         | UnknownActorTile -> failwith "actor tile not found in tileset"
     CombatMapParser = fun tile ->
         match tile with

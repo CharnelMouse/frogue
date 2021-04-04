@@ -7,6 +7,8 @@ type Position = {
 type CombatActorTile =
 | PlayerTile
 | OrcTile
+| TrollTile
+| OgreTile
 | UnknownActorTile
 
 type CombatMapTile =
@@ -71,6 +73,7 @@ type Tileset =
 
 type Relation =
 | SameController
+| Ally
 | Enemy
 
 type CombatState = {
