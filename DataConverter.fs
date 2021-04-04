@@ -1,4 +1,5 @@
 module DataConverter
+open System
 open Types
 open Tilesets
 
@@ -37,29 +38,33 @@ let private importActor (str: string) =
         }
     | _ -> failwith ("invalid actor: wrong length: " + str)
 
-let private exportController (name, controllerType) =
+let private exportController (name, {Type = t; Colour = c}) =
     let ts =
-        match controllerType with
+        match t with
         | Player -> "player"
         | AIController -> "ai"
-    name + ";" + ts
+    name + ";" + ts + ";" + string c
 
 let private importController (str: string) =
     let tokens = str.Split ';' |> Array.toList
     match tokens with
     | []
-    | [_] ->
+    | [_]
+    | [_; _] ->
         failwith "invalid controller: too few parameters"
-    | _ :: _ :: _ :: _ ->
+    | _ :: _ :: _ :: _ :: _ ->
         failwith "invalid controller: too many parameters"
-    | [n; t] ->
-        match t with
-        | "player" ->
-            n, Player
-        | "ai" ->
-            n, AIController
-        | _ ->
-            failwithf "invalid controller: unrecognised type: %s" t
+    | [n; t; c] ->
+        let controllerType =
+            match t with
+            | "player" -> Player
+            | "ai" -> AIController
+            | _ -> failwithf "invalid controller: unrecognised type: %s" t
+        match Enum.TryParse<ConsoleColor>(c) with
+        | false, _ ->
+            failwithf "invalid controller: unrecognised colour: %s" c
+        | true, colour ->
+            n, {Type = controllerType; Colour = colour}
 
 let private pushControllers controllers stream =
     let nControllers = Map.count controllers

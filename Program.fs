@@ -98,11 +98,11 @@ let private startingCombatState = {
     |> Map.ofList
     CombatMap = levelMap
     Controllers = [
-        "player", Player
-        "orcs", AIController
-        "party", AIController
-        "trolls", AIController
-        "ogres", AIController
+        "player", {Type = Player; Colour = System.ConsoleColor.White}
+        "orcs", {Type = AIController; Colour = System.ConsoleColor.Red}
+        "party", {Type = AIController; Colour = System.ConsoleColor.Green}
+        "trolls", {Type = AIController; Colour = System.ConsoleColor.Blue}
+        "ogres", {Type = AIController; Colour = System.ConsoleColor.DarkRed}
     ]
     |> Map.ofList
     ControllerRelations = [
@@ -204,6 +204,7 @@ let rec private mainLoop tileset statusState game =
 
 [<EntryPoint>]
 let private main argv =
+    initialiseScreen()
     let combatState, tileset, statusState, startResult =
         match tryLoadGame "save.sav" with
         | Some (cs, ts, ss, res) -> cs, ts, ss, res

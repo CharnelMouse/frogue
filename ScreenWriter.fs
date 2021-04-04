@@ -2,6 +2,14 @@ module ScreenWriter
 open System
 open Types
 
+let defaultBackground = ConsoleColor.Black
+let defaultForeground = ConsoleColor.White
+
+let initialiseConsole () =
+    Console.CursorVisible <- false
+    Console.BackgroundColor <- defaultBackground
+    Console.ForegroundColor <- defaultForeground
+
 let private cursorTo pos =
     Console.SetCursorPosition(pos.X, pos.Y)
 
@@ -23,7 +31,17 @@ let writeBox str box reset =
     writeFrom box.Start str
     if reset then resetCursor()
 
+let writeBoxColoured str box reset colour =
+    Console.ForegroundColor <- colour
+    writeBox str box reset
+    Console.ForegroundColor <- defaultForeground
+
 let writeAt pos (symb: char)  =
     cursorTo pos
     Console.Write(symb)
     resetCursor()
+
+let writeAtColoured pos symb colour =
+    Console.ForegroundColor <- colour
+    writeAt pos symb
+    Console.ForegroundColor <- defaultForeground

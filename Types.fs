@@ -24,7 +24,10 @@ type ControllerType =
 | Player
 | AIController
 
-type ControllerInfo = ControllerType
+type ControllerInfo = {
+    Type: ControllerType
+    Colour: System.ConsoleColor
+}
 
 type ActorID = int
 

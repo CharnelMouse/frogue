@@ -5,6 +5,9 @@ open ScreenWriter
 open Status
 open MapWriter
 
+let initialiseScreen () =
+    initialiseConsole()
+
 let private fakeDoorActor = {
     Name = "door"
     Tile = UnknownActorTile
@@ -21,19 +24,19 @@ let private updateMapScreen combatState tileset action =
     match action with
     | PlayerAction ToggleTileSetAction ->
         redrawMapScreen tileset combatState
-    | AnyoneAction (MoveAction (origin, destination)) ->
+    | AnyoneAction (MoveAction (origin, _)) ->
         drawTileAt origin combatState.CombatMap tileset
         let currentActorID = combatState.ActorCombatQueue.Head
-        let currentActor =
-            combatState.Actors
-            |> Map.find currentActorID
-        writeAt destination (getOutputActorTile tileset currentActor.Tile)
+        drawActor tileset combatState currentActorID
     | AnyoneAction (AttackAction (_, _, position)) ->
         drawTileAt position combatState.CombatMap tileset
     | AnyoneAction (OpenDoorAction pos)
     | AnyoneAction (CloseDoorAction pos) ->
         drawTileAt pos combatState.CombatMap tileset
-    | AnyoneAction (MindSwapActorAction _)
+    | AnyoneAction (MindSwapActorAction (targetID, targetControllerName)) ->
+        let currentActorID = combatState.ActorCombatQueue.Head
+        drawActor tileset combatState currentActorID
+        drawActor tileset combatState targetID
     | AnyoneAction WaitAction
     | PlayerAction HelpAction
     | PlayerAction SaveGameAction

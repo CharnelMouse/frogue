@@ -11,10 +11,10 @@ let rec generateAction worldState statusState =
     let currentActor =
         worldState.Actors
         |> Map.find currentActorID
-    let currentActorControllerType =
+    let currentActorControllerInfo =
         worldState.Controllers
         |> Map.find currentActor.ControllerName
-    match currentActorControllerType with
+    match currentActorControllerInfo.Type with
     | Player ->
         let writeMessage msg =
             writeBox msg statusState.StatusBar true
